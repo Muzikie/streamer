@@ -4,7 +4,7 @@
   "description": "Muzikie streamer service",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon server.js",
     "start": "pm2 start ./pm2.config.json",
     "stop": "pm2 stop ./pm2.config.json",
     "test": "jest .",

@@ -16,7 +16,7 @@ exports.streamAudio = (req, res) => {
         return res.status(401).send(ERRORS.NO_SUBSCRIPTION);
       }
       // get audio stats (about 3MB)
-      const audioID = req.params.audioID;
+      const audioID = req.params.id;
       // @todo Implement audio file path
       const filePath = `${path.join(__dirname, '../../../', AUDIOS.PATH) + audioID  }.${AUDIOS.EXTENSION}`;
       let audioSize = 0;

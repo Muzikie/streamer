@@ -14,7 +14,7 @@ const streamValidator = require('../../validation/audio/stream');
 
 // Routes
 audioRouter
-  .get('/stream/:audioID', streamValidator, streamAudio);
+  .get('/stream/:id', streamValidator, streamAudio);
 audioRouter
   .route('/:id')
   .get(getAudio)

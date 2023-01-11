@@ -1,17 +1,16 @@
-const Collection = require('../../models/collection');
+const User = require('../../models/user');
 const APIFeatures = require('../../utils/apiFeatures');
 const { RESPONSE_STATUSES } = require('../../constants');
 
-exports.getAllCollections = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
-    const features = new APIFeatures(Collection.find(), req.query)
+    const features = new APIFeatures(User.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
 
     const data = await features.query;
-
     res.status(200).json({
       status: RESPONSE_STATUSES.SUCCESS,
       data,

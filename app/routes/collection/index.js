@@ -7,11 +7,15 @@ const { getCollection } = require('./get');
 const { createCollection } = require('./create');
 // const { deleteCollection } = require('./delete');
 const { updateCollection } = require('./update');
+const { getAudios } = require('./getAudios');
 
 // validators
 // @todo add validators
 
 // Routes
+collectionRouter
+  .route('/:id/audios')
+  .get(getAudios)
 collectionRouter
   .route('/:id')
   .get(getCollection)
