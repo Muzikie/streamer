@@ -51,10 +51,19 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const subscriptionsTable = await getSubscriptionsTable();
 
+	const oldAccount = accountsTable.find(
+		{ address: getLisk32AddressFromPublicKey(tx.senderPublicKey) },
+		dbTrx,
+	);
+
 	// Remove the validator details from the table on transaction reversal
 	const account = {
 		address: getLisk32AddressFromPublicKey(tx.senderPublicKey),
 		publicKey: tx.senderPublicKey,
+		subscription: {
+			owned: oldAccount.subscription.owned.filter(id => id !== dbTrx.id),
+			shared: null,
+		},
 	};
 
 	logger.trace(`Updating account index for the account with address ${account.address}.`);
@@ -69,6 +78,6 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 module.exports = {
 	COMMAND_NAME,
-  applyTransaction,
-  revertTransaction,
+	applyTransaction,
+	revertTransaction,
 };
