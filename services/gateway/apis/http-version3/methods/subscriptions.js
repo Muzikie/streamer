@@ -22,7 +22,32 @@ const { transformParams, response, getSwaggerDescription } = require('../../../s
 module.exports = {
 	version: '2.0',
 	swaggerApiPath: '/subscriptions',
-  tags: ['Subscriptions'],
-  source: subscriptionsSource,
-	envelope: {},
+	tags: ['Subscriptions'],
+	params: {
+		creatorAddress: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+		subscriptionID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+	},
+	get schema() {
+		const subscriptionSchema = {};
+		subscriptionSchema[this.swaggerApiPath] = { get: {} };
+		subscriptionSchema[this.swaggerApiPath].get.tags = this.tags;
+		subscriptionSchema[this.swaggerApiPath].get.summary = 'Requests subscriptions data';
+		subscriptionSchema[this.swaggerApiPath].get.description = getSwaggerDescription({
+			rpcMethod: this.rpcMethod,
+			description: 'Returns subscriptions data',
+		});
+		subscriptionSchema[this.swaggerApiPath].get.parameters = transformParams('subscriptions', this.params);
+		subscriptionSchema[this.swaggerApiPath].get.responses = {
+			200: {
+				description: 'Returns a list of subscriptions',
+				schema: {
+					$ref: '#/definitions/subscriptionsWithEnvelope',
+				},
+			},
+		};
+		Object.assign(subscriptionSchema[this.swaggerApiPath].get.responses, response);
+		return subscriptionSchema;
+	},
+	source: subscriptionsSource,
+	envelope,
 };

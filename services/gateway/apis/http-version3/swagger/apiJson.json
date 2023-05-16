@@ -86,6 +86,10 @@
             {
                 "name": "Market",
                 "description": "Market prices related API calls."
+            },
+            {
+                "name": "Subscription",
+                "description": "Subscription module related API calls."
             }
         ],
         "schemes": [
