@@ -15,16 +15,18 @@
  */
 module.exports = {
 	tableName: 'subscriptions',
-	primaryKey: 'address',
+	primaryKey: 'senderAddress',
 	schema: {
-		address: { type: 'string' },
-		publicKey: { type: 'string', null: true, defaultValue: null },
+		// subscriptionID: { type: 'string' },
+		senderAddress: { type: 'string', null: true, defaultValue: null },
 		price: { type: 'bigInteger', null: true, defaultValue: null },
 		consumable: { type: 'bigInteger', null: true, defaultValue: null },
 		streams: { type: 'bigInteger', null: true, defaultValue: null },
 		// members: @todo enable this as an empty array
 		maxMembers: { type: 'integer', null: true, defaultValue: null },
 	},
-	indexes: {},
+	indexes: {
+		senderAddress: { type: 'string' },
+	},
 	purge: {},
 };

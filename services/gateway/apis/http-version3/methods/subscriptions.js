@@ -22,6 +22,7 @@ const { transformParams, response, getSwaggerDescription } = require('../../../s
 module.exports = {
 	version: '2.0',
 	swaggerApiPath: '/subscriptions',
+	rpcMethod: 'get.subscriptions',
 	tags: ['Subscriptions'],
 	params: {
 		creatorAddress: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },

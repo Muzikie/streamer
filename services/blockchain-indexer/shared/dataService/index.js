@@ -93,6 +93,7 @@ const { getIndexStatus } = require('./indexStatus');
 const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
+const { getSubscriptions } = require('./subscriptions');
 
 module.exports = {
 	// Blocks
@@ -180,4 +181,7 @@ module.exports = {
 	getAnnualInflation,
 	getDefaultRewardAtHeight,
 	getRewardConstants,
+
+	// Subscriptions
+	getSubscriptions,
 };

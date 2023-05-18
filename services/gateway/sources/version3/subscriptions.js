@@ -19,7 +19,7 @@ module.exports = {
 	type: 'moleculer',
 	method: 'indexer.subscriptions',
 	params: {
-		id: 'subscriptionID,string',
+		subscriptionID: '=,string',
 		creatorAddress: '=,string',
 		price: '=,string',
 		consumed: '=,string',

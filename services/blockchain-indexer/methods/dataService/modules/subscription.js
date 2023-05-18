@@ -13,14 +13,17 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-module.exports = {
-	subscriptionID: '=,string',
-	// creatorAddress: '=,string',
-	maxMembers: '=,number',
-	streams: '=,string',
-	price: '=,string',
-	consumable: '=,string',
-	members: ['data.members', {
-		address: '=,string',
-	}],
-};
+const {
+	getSubscriptions,
+} = require('../controllers/subscriptions');
+
+module.exports = [
+	{
+		name: 'subscriptions',
+		controller: getSubscriptions,
+		params: {
+			creatorAddress: { optional: true, type: 'string' },
+			subscriptionID: { optional: true, type: 'string' },
+		},
+	},
+];
