@@ -4,6 +4,7 @@ const {
 } = require('lisk-service-framework');
 
 const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
+const { getEntityID } = require('../../../utils/nft');
 
 const config = require('../../../../config');
 
@@ -33,8 +34,10 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const subscriptionsTable = await getSubscriptionsTable();
 
+	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
+
 	const account = {
-		address: getLisk32AddressFromPublicKey(tx.senderPublicKey),
+		address: senderAddress,
 	};
 
 	logger.trace(`Updating account index for the account with address ${account.address}.`);
@@ -42,7 +45,14 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	logger.debug(`Updated account index for the account with address ${account.address}.`);
 
 	logger.trace(`Indexing subscription with address ${account.address}.`);
-	await subscriptionsTable.upsert(account, dbTrx);
+
+	const subscriptionsNFT = {
+		creatorAddress: senderAddress,
+		subscriptionID: getEntityID(tx),
+		...tx.params,
+	};
+
+	await subscriptionsTable.upsert(subscriptionsNFT, dbTrx);
 	logger.debug(`Indexed subscription with address ${account.address}.`);
 };
 

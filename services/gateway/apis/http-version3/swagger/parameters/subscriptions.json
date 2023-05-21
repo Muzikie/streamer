@@ -1,6 +1,6 @@
 {
-	"senderAddress": {
-			"name": "senderAddress",
+	"creatorAddress": {
+			"name": "creatorAddress",
 			"in": "query",
 			"description": "Lisk account address",
 			"type": "string",

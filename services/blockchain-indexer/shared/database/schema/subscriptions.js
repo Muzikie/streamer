@@ -15,10 +15,10 @@
  */
 module.exports = {
 	tableName: 'subscriptions',
-	primaryKey: 'senderAddress',
+	primaryKey: 'subscriptionID',
 	schema: {
-		// subscriptionID: { type: 'string' },
-		senderAddress: { type: 'string', null: true, defaultValue: null },
+		subscriptionID: { type: 'string', null: true, defaultValue: null },
+		creatorAddress: { type: 'string', null: true, defaultValue: null },
 		price: { type: 'bigInteger', null: true, defaultValue: null },
 		consumable: { type: 'bigInteger', null: true, defaultValue: null },
 		streams: { type: 'bigInteger', null: true, defaultValue: null },

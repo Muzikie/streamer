@@ -15,7 +15,7 @@
  */
 module.exports = {
 	subscriptionID: '=,string',
-	// creatorAddress: '=,string',
+	creatorAddress: '=,string',
 	maxMembers: '=,number',
 	streams: '=,string',
 	price: '=,string',
