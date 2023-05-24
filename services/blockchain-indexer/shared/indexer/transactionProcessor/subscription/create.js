@@ -45,11 +45,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	logger.trace(`Indexing subscription with address ${account.address}.`);
 
-	const subscriptionID = events.find(e => e.module === 'subscription').topics[0];
+	// @todo make sure the process won't break if the event doesn't exist. e.g. do not index.
+	const { data: eventData } = events.find(e => e.module === 'subscription' && e.name === 'subscriptionCreated');
 
 	const subscriptionsNFT = {
-		creatorAddress: senderAddress,
-		subscriptionID,
+		...eventData,
 		...tx.params,
 	};
 

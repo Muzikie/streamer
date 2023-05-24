@@ -146,8 +146,8 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	},
 	// @todo what is this?
 	[MODULE_NAME_SUBSCRIPTION]: {
-		[EVENT_NAME_SUBSCRIPTION_CREATED]: ['transactionID', 'senderAddress', 'subscriptionID'],
-		[EVENT_NAME_SUBSCRIPTION_PURCHASED]: ['transactionID', 'senderAddress', 'subscriptionID'],
+		[EVENT_NAME_SUBSCRIPTION_CREATED]: ['transactionID', 'senderAddress'],
+		[EVENT_NAME_SUBSCRIPTION_PURCHASED]: ['transactionID', 'senderAddress'],
 	},
 };
 
