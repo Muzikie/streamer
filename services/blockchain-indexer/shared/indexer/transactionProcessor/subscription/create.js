@@ -4,7 +4,6 @@ const {
 } = require('lisk-service-framework');
 
 const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
-const { getEntityID } = require('../../../utils/nft');
 
 const config = require('../../../../config');
 
@@ -46,9 +45,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	logger.trace(`Indexing subscription with address ${account.address}.`);
 
+	const subscriptionID = events.find(e => e.module === 'subscription').topics[0];
+
 	const subscriptionsNFT = {
 		creatorAddress: senderAddress,
-		subscriptionID: getEntityID(tx),
+		subscriptionID,
 		...tx.params,
 	};
 

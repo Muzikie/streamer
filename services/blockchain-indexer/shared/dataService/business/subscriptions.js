@@ -23,7 +23,7 @@ const getSubscriptions = async (params = {}) => {
 	logger.info(`ALI: got the total: ${total}`);
 	const resultSet = await subscriptionsTable.find(
 		{ ...params, limit: params.limit || total },
-		['price', 'consumable', 'maxMembers', 'streams'],
+		['subscriptionID', 'creatorAddress', 'price', 'consumable', 'maxMembers', 'streams'],
 	);
 	logger.info(`ALI: got the result ${resultSet.length}`);
 
