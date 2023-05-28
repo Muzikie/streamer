@@ -54,7 +54,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	logger.trace(`Indexing subscription with address ${account.address}.`);
 	await subscriptionsTable.upsert(account, dbTrx);
-	logger.debug(`Indexed subscription with address ${account.address}.`);
+	logger.debug(`Indexed subscription with ID ${dbTrx.id}.`);
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -84,7 +84,7 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	logger.trace(`Remove subscription entry for address ${account.address}.`);
 	const subscriptionPK = account[subscriptionsTableSchema.primaryKey];
 	await subscriptionsTable.deleteByPrimaryKey(subscriptionPK, dbTrx);
-	logger.debug(`Removed subscription entry for address ${account.address}.`);
+	logger.debug(`Removed subscription entry for ID ${subscriptionPK}.`);
 };
 
 module.exports = {
