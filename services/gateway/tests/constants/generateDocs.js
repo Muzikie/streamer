@@ -692,6 +692,37 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
+	'/subscriptions': {
+		get: {
+			description: 'Returns subscriptions data\n RPC => get.subscriptions',
+			parameters: [
+				{
+					$ref: '#/parameters/creatorAddress',
+				},
+				{
+					$ref: '#/parameters/subscriptionID',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns a list of subscriptions',
+					schema: {
+						$ref: '#/definitions/subscriptionsWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+			summary: 'Requests subscriptions data',
+			tags: [
+				'Subscriptions',
+			],
+		},
+	},
 	'/transactions': {
 		get: {
 			tags: [

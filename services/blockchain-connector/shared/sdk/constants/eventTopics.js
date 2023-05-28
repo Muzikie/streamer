@@ -73,6 +73,10 @@ const {
 	MODULE_NAME_LEGACY,
 	EVENT_NAME_ACCOUNT_RECLAIMED,
 	EVENT_NAME_KEYS_REGISTERED,
+
+	MODULE_NAME_SUBSCRIPTION,
+	EVENT_NAME_SUBSCRIPTION_CREATED,
+	EVENT_NAME_SUBSCRIPTION_PURCHASED,
 } = require('./names');
 
 const COMMAND_EXECUTION_RESULT_TOPICS = ['transactionID'];
@@ -139,6 +143,11 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	[MODULE_NAME_LEGACY]: {
 		[EVENT_NAME_ACCOUNT_RECLAIMED]: ['transactionID', 'legacyAddress', 'newAddress'],
 		[EVENT_NAME_KEYS_REGISTERED]: ['transactionID', 'validatorAddress', 'generatorKey', 'blsKey'],
+	},
+	// @todo what is this?
+	[MODULE_NAME_SUBSCRIPTION]: {
+		[EVENT_NAME_SUBSCRIPTION_CREATED]: ['transactionID', 'senderAddress'],
+		[EVENT_NAME_SUBSCRIPTION_PURCHASED]: ['transactionID', 'senderAddress'],
 	},
 };
 
