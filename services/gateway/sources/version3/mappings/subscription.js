@@ -20,7 +20,9 @@ module.exports = {
 	streams: '=,string',
 	price: '=,string',
 	consumable: '=,string',
-	members: ['data.members', {
+	members: ['members', {
 		address: '=,string',
+		name: '=,string',
+		publicKey: '=,string',
 	}],
 };

@@ -23,8 +23,10 @@ module.exports = {
 		creatorAddress: '=,string',
 		price: '=,string',
 		consumed: '=,string',
-		members: ['data.members', {
+		members: ['members', {
 			address: '=,string',
+			name: '=,string',
+			publicKey: '=,string',
 		}],
 		streams: '=,string',
 		maxMembers: '=,number',
