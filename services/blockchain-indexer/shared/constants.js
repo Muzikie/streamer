@@ -132,6 +132,9 @@ const TRANSACTION_VERIFY_RESULT = {
 	OK: 1,
 };
 
+// @todo retrieve this from Core
+const DEV_ADDRESS = 'lskh96jgzfftzff2fta2zvsmba9mvs5cnz9ahr3ke';
+
 module.exports = {
 	updateFinalizedHeight,
 	getFinalizedHeight,
@@ -155,4 +158,5 @@ module.exports = {
 	KV_STORE_KEY,
 	TRANSACTION_STATUS,
 	TRANSACTION_VERIFY_RESULT,
+	DEV_ADDRESS,
 };

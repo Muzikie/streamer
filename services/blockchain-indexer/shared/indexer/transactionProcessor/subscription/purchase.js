@@ -5,6 +5,7 @@ const {
 const BluebirdPromise = require('bluebird');
 
 const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
+const { DEV_ADDRESS } = require('../../../constants');
 
 const config = require('../../../../config');
 
@@ -88,7 +89,6 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const subscriptionsTable = await getSubscriptionsTable();
 	const membersTable = await getMembersTable();
 
-	const lisk32DevAddress = 'lskh96jgzfftzff2fta2zvsmba9mvs5cnz9ahr3ke';
 	const { subscriptionID } = tx.params;
 
 	const subscriptionNFT = await subscriptionsTable.find(
@@ -96,7 +96,7 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 		['subscriptionID', 'creatorAddress', 'price', 'consumable', 'streams', 'maxMembers'],
 		dbTrx,
 	);
-	subscriptionNFT.creatorAddress = lisk32DevAddress;
+	subscriptionNFT.creatorAddress = DEV_ADDRESS;
 	await subscriptionsTable.upsert(subscriptionNFT, dbTrx);
 
 	await BluebirdPromise.map(
