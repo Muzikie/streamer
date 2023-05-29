@@ -5,18 +5,18 @@ const logger = Logger();
 
 const business = require('./business');
 
-const getSubscriptions = async params => {
+const getCollections = async params => {
 	// Store logs
-	if (params.subscriptionID) logger.debug(`Retrieved subscription with ID ${params.subscriptionID} from Lisk Core`);
+	if (params.collectionID) logger.debug(`Retrieved collection with ID ${params.collectionID} from Lisk Core`);
 	else if (params.creatorAddress) logger.debug(`Retrieved subscription with creatorAddress: ${params.creatorAddress} from Lisk Core`);
-	else logger.debug(`Retrieved subscriptions with custom search: ${util.inspect(params)} from Lisk Core`);
+	else logger.debug(`Retrieved collections with custom search: ${util.inspect(params)} from Lisk Core`);
 
 	// Get data from server
-	const response = await business.getSubscriptions(params);
+	const response = await business.getCollections(params);
 
 	return response;
 };
 
 module.exports = {
-	getSubscriptions,
+	getCollections,
 };

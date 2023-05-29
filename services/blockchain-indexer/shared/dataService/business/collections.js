@@ -13,12 +13,12 @@ const getCollectionsIndex = () => getTableInstance(
 );
 
 const getCollections = async (params = {}) => {
-	const collectionTable = await getCollectionsIndex();
+	const collectionsTable = await getCollectionsIndex();
 
 	const total = await collectionsTable.count(params);
 	const resultSet = await collectionsTable.find(
 		{ ...params, limit: params.limit || total },
-		['subscriptionID', 'creatorAddress', 'price', 'consumable', 'maxMembers', 'streams'],
+		['collectionID', 'creatorAddress', 'name', 'releaseYear', 'collectionType'],
 	);
 
 	const result = {
@@ -33,5 +33,5 @@ const getCollections = async (params = {}) => {
 };
 
 module.exports = {
-	getSubscriptions,
+	getCollections,
 };
