@@ -2,8 +2,10 @@ const {
 	Logger,
 	MySQL: { getTableInstance },
 } = require('lisk-service-framework');
+const BluebirdPromise = require('bluebird');
 
 const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
+const { DEV_ADDRESS } = require('../../../constants');
 
 const config = require('../../../../config');
 
@@ -12,6 +14,7 @@ const logger = Logger();
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
 const subscriptionsTableSchema = require('../../../database/schema/subscriptions');
+const membersTableSchema = require('../../../database/schema/members');
 
 const getAccountsTable = () => getTableInstance(
 	accountsTableSchema.tableName,
@@ -25,6 +28,12 @@ const getSubscriptionsTable = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
+const getMembersTable = () => getTableInstance(
+	membersTableSchema.tableName,
+	membersTableSchema,
+	MYSQL_ENDPOINT,
+);
+
 // Command specific constants
 const COMMAND_NAME = 'purchase';
 
@@ -32,59 +41,73 @@ const COMMAND_NAME = 'purchase';
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const subscriptionsTable = await getSubscriptionsTable();
+	const membersTable = await getMembersTable();
 
-	const oldAccount = accountsTable.find(
-		{ address: getLisk32AddressFromPublicKey(tx.senderPublicKey) },
+	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
+	const { subscriptionID } = tx.params;
+
+	logger.trace(`Indexing subscription with address ${subscriptionID}.`);
+	const subscriptionNFT = await subscriptionsTable.find(
+		{ subscriptionID },
+		['subscriptionID', 'creatorAddress', 'price', 'consumable', 'streams', 'maxMembers'],
 		dbTrx,
 	);
-
-	const oldIds = oldAccount ? oldAccount.subscription.owned : [];
-
-	const account = {
-		address: getLisk32AddressFromPublicKey(tx.senderPublicKey),
-		subscription: {
-			owned: [...oldIds, dbTrx.id],
-			shared: dbTrx.id,
-		},
-	};
-
-	logger.trace(`Updating account index for the account with address ${account.address}.`);
-	await accountsTable.upsert(account, dbTrx);
-	logger.debug(`Updated account index for the account with address ${account.address}.`);
-
-	logger.trace(`Indexing subscription with address ${account.address}.`);
-	await subscriptionsTable.upsert(account, dbTrx);
+	subscriptionNFT.creatorAddress = senderAddress;
+	await subscriptionsTable.upsert(subscriptionNFT, dbTrx);
 	logger.debug(`Indexed subscription with ID ${dbTrx.id}.`);
+
+	// Update members in accounts and members table
+	await BluebirdPromise.map(
+		tx.params.members,
+		async member => {
+			const oldAccount = { address: member };
+			logger.trace(`Updating account index for the account with address ${member}.`);
+			await accountsTable.upsert(oldAccount, dbTrx);
+			logger.debug(`Updated account index for the account with address ${member}.`);
+
+			const memberData = {
+				address: member,
+				shared: subscriptionID,
+			};
+
+			logger.trace(`Updating member index for the member with address ${member}.`);
+			await membersTable.upsert(memberData, dbTrx);
+			logger.debug(`Updated member index for the member with address ${member}.`);
+			return true;
+		},
+		{ concurrency: tx.params.members.length },
+	);
+
+	// Update sender in accounts table
+	const senderAccount = { address: senderAddress };
+	await accountsTable.upsert(senderAccount, dbTrx);
+	logger.trace(`Indexed subscription purchase with account address ${senderAddress}.`);
 };
 
 // eslint-disable-next-line no-unused-vars
 const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
-	const accountsTable = await getAccountsTable();
 	const subscriptionsTable = await getSubscriptionsTable();
+	const membersTable = await getMembersTable();
 
-	const oldAccount = accountsTable.find(
-		{ address: getLisk32AddressFromPublicKey(tx.senderPublicKey) },
+	const { subscriptionID } = tx.params;
+
+	const subscriptionNFT = await subscriptionsTable.find(
+		{ subscriptionID },
+		['subscriptionID', 'creatorAddress', 'price', 'consumable', 'streams', 'maxMembers'],
 		dbTrx,
 	);
+	subscriptionNFT.creatorAddress = DEV_ADDRESS;
+	await subscriptionsTable.upsert(subscriptionNFT, dbTrx);
 
-	// Remove the validator details from the table on transaction reversal
-	const account = {
-		address: getLisk32AddressFromPublicKey(tx.senderPublicKey),
-		publicKey: tx.senderPublicKey,
-		subscription: {
-			owned: oldAccount.subscription.owned.filter(id => id !== dbTrx.id),
-			shared: oldAccount.subscription.shared === dbTrx.id ? null : oldAccount.subscription.shared,
+	await BluebirdPromise.map(
+		tx.params.member,
+		async member => {
+			logger.trace(`Remove member index for the members with address ${member}.`);
+			await membersTable.deleteByPrimaryKey(member, dbTrx);
+			logger.debug(`Updated member index for the members with address ${member}.`);
 		},
-	};
-
-	logger.trace(`Updating account index for the account with address ${account.address}.`);
-	await accountsTable.upsert(account, dbTrx);
-	logger.debug(`Updated account index for the account with address ${account.address}.`);
-
-	logger.trace(`Remove subscription entry for address ${account.address}.`);
-	const subscriptionPK = account[subscriptionsTableSchema.primaryKey];
-	await subscriptionsTable.deleteByPrimaryKey(subscriptionPK, dbTrx);
-	logger.debug(`Removed subscription entry for ID ${subscriptionPK}.`);
+		{ concurrency: tx.params.member.length },
+	);
 };
 
 module.exports = {
