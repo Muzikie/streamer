@@ -12,6 +12,10 @@ const logger = Logger();
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
 const collectionsTableSchema = require('../../../database/schema/collections');
+const {
+	MODULE_NAME_COLLECTION,
+	EVENT_NAME_COLLECTION_CREATED,
+} = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
 const getAccountsTable = () => getTableInstance(
 	accountsTableSchema.tableName,
@@ -45,8 +49,10 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	logger.trace(`Indexing collections with address ${account.address}.`);
 
-	// @todo make sure the process won't break if the event doesn't exist. e.g. do not index.
-	const { data: eventData = {} } = events.find(e => e.module === 'collection' && e.name === 'collectionCreated');
+	const { data: eventData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_COLLECTION
+			&& name === EVENT_NAME_COLLECTION_CREATED,
+	);
 
 	const collectionsNFT = {
 		...eventData,
