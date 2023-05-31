@@ -11,7 +11,7 @@ const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
-const collectionsTableSchema = require('../../../database/schema/collection');
+const collectionsTableSchema = require('../../../database/schema/collections');
 
 const getAccountsTable = () => getTableInstance(
 	accountsTableSchema.tableName,
@@ -31,7 +31,7 @@ const COMMAND_NAME = 'create';
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
-	const collectionsTable = await getCllectionsTable();
+	const collectionsTable = await getCollectionsTable();
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 

@@ -1,7 +1,7 @@
 const {
 	MySQL: { getTableInstance },
 } = require('lisk-service-framework');
-const transactionsIndexSchema = require('../../database/schema/collection');
+const transactionsIndexSchema = require('../../database/schema/collections');
 const config = require('../../../config');
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;

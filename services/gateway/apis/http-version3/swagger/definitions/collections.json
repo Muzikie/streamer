@@ -2,11 +2,11 @@
 	"collection": {
 		"type": "object",
 		"required": [
-			"name",
-			"creatorAddress",
 			"collectionID",
 			"releaseYear",
-			"collectionType"
+			"name",
+			"collectionType",
+			"creatorAddress"
 		],
 		"properties": {
 			"collectionID": {

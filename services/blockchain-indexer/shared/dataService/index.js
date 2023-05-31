@@ -94,6 +94,7 @@ const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
 const { getSubscriptions } = require('./subscriptions');
+const { getCollections } = require('./collections');
 
 module.exports = {
 	// Blocks
@@ -184,4 +185,7 @@ module.exports = {
 
 	// Subscriptions
 	getSubscriptions,
+
+	// Collections
+	getCollections,
 };

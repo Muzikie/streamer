@@ -1,4 +1,3 @@
-
 const collection = require('./mappings/collection');
 
 module.exports = {
@@ -10,8 +9,9 @@ module.exports = {
 		creatorAddress: '=,string',
 		releaseYear: '=,string',
 		collectionType: '=,number',
-		// audios: ['data.audios', {
-		// 	address: '=,string',
+		// audios: ['audios', {
+		// 	audioID: '=,string',
+		// 	name: '=,number',
 		// }],
 		limit: '=,number',
 		offset: '=,number',
