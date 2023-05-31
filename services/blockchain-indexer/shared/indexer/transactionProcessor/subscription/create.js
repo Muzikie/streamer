@@ -41,7 +41,9 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	logger.debug(`Updated account index for the account with address ${senderAddress}.`);
 
 	logger.trace(`Indexing subscription with address ${senderAddress}.`);
-	const { data: eventData } = events.find(e => e.module === 'subscription' && e.name === 'subscriptionCreated');
+
+	// @todo make sure the process won't break if the event doesn't exist. e.g. do not index.
+	const { data: eventData = {} } = events.find(e => e.module === 'subscription' && e.name === 'subscriptionCreated');
 
 	const subscriptionsNFT = {
 		...eventData,

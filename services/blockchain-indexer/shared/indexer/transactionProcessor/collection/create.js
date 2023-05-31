@@ -46,7 +46,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	logger.trace(`Indexing collections with address ${account.address}.`);
 
 	// @todo make sure the process won't break if the event doesn't exist. e.g. do not index.
-	const { data: eventData } = events.find(e => e.module === 'collection' && e.name === 'collectionsCreated');
+	const { data: eventData = {} } = events.find(e => e.module === 'collection' && e.name === 'collectionCreated');
 
 	const collectionsNFT = {
 		...eventData,
