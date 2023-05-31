@@ -35,7 +35,7 @@ const getSubscriptions = async (params = {}) => {
 		subscriptionSet,
 		async subscription => {
 			const membersSet = await membersTable.find(
-				{ shared: subscription.subscriptionID },
+				{ shared: subscription.subscriptionID, removedBy: null },
 				['address'],
 			);
 			subscription.members = membersSet.map(member => ({ address: member.address }));

@@ -66,7 +66,9 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 			logger.debug(`Updated account index for the account with address ${member}.`);
 
 			const memberData = {
+				id: member.concat(`-${tx.nonce.toString()}`),
 				address: member,
+				addedBy: tx.id,
 				shared: subscriptionID,
 			};
 
@@ -99,15 +101,7 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	subscriptionNFT.creatorAddress = DEV_ADDRESS;
 	await subscriptionsTable.upsert(subscriptionNFT, dbTrx);
 
-	await BluebirdPromise.map(
-		tx.params.member,
-		async member => {
-			logger.trace(`Remove member index for the members with address ${member}.`);
-			await membersTable.deleteByPrimaryKey(member, dbTrx);
-			logger.debug(`Updated member index for the members with address ${member}.`);
-		},
-		{ concurrency: tx.params.member.length },
-	);
+	await membersTable.delete({ shared: subscriptionID }, dbTrx);
 };
 
 module.exports = {
