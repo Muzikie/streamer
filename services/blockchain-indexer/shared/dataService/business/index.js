@@ -95,6 +95,7 @@ const {
 	getNetworkPeersStatistics,
 } = require('./network');
 const { getSubscriptions } = require('./subscriptions');
+const { getCollections } = require('./collections');
 
 module.exports = {
 	// Generators
@@ -179,4 +180,7 @@ module.exports = {
 
 	// subscriptions
 	getSubscriptions,
+
+	// collections
+	getCollections,
 };

@@ -90,6 +90,10 @@
             {
                 "name": "Subscription",
                 "description": "Subscription module related API calls."
+            },
+            {
+                "name": "Collection",
+                "description": "Collection module related API calls."
             }
         ],
         "schemes": [
