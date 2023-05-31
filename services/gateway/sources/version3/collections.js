@@ -2,7 +2,7 @@ const collection = require('./mappings/collection');
 
 module.exports = {
 	type: 'moleculer',
-	method: 'indexer.collection',
+	method: 'indexer.collections',
 	params: {
 		name: '=,string',
 		collectionID: '=,string',
