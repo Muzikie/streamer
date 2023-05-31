@@ -407,6 +407,37 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
+	'/collections': {
+		get: {
+			description: 'Returns collections data\n RPC => get.collections',
+			parameters: [
+				{
+					$ref: '#/parameters/creatorAddress',
+				},
+				{
+					$ref: '#/parameters/collectionID',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns a list of collections',
+					schema: {
+						$ref: '#/definitions/collectionsWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+			summary: 'Requests collections data',
+			tags: [
+				'Collections',
+			],
+		},
+	},
 	'/events': {
 		get: {
 			tags: [
