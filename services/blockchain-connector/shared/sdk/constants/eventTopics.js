@@ -80,6 +80,8 @@ const {
 
 	MODULE_NAME_COLLECTION,
 	EVENT_NAME_COLLECTION_CREATED,
+	EVENT_NAME_COLLECTION_ATTRIBUTESET,
+
 } = require('./names');
 
 const COMMAND_EXECUTION_RESULT_TOPICS = ['transactionID'];
@@ -153,6 +155,7 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	},
 	[MODULE_NAME_COLLECTION]: {
 		[EVENT_NAME_COLLECTION_CREATED]: ['transactionID', 'senderAddress'],
+		[EVENT_NAME_COLLECTION_ATTRIBUTESET]: ['transactionID', 'senderAddress'],
 	},
 };
 

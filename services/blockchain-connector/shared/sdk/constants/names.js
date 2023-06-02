@@ -90,9 +90,10 @@ const MODULE_NAME_SUBSCRIPTION = 'subscription';
 const EVENT_NAME_SUBSCRIPTION_CREATED = 'subscriptionCreated';
 const EVENT_NAME_SUBSCRIPTION_PURCHASED = 'subscriptionPurchased';
 
-// Collections
+// Collection
 const MODULE_NAME_COLLECTION = 'collection';
 const EVENT_NAME_COLLECTION_CREATED = 'collectionCreated';
+const EVENT_NAME_COLLECTION_ATTRIBUTESET = 'collectionAttributeSet';
 
 module.exports = {
 	MODULE_NAME_AUTH,
@@ -162,4 +163,5 @@ module.exports = {
 
 	MODULE_NAME_COLLECTION,
 	EVENT_NAME_COLLECTION_CREATED,
+	EVENT_NAME_COLLECTION_ATTRIBUTESET,
 };
