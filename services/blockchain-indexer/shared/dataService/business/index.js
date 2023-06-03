@@ -96,6 +96,7 @@ const {
 } = require('./network');
 const { getSubscriptions } = require('./subscriptions');
 const { getCollections } = require('./collections');
+const { getAudios } = require('./audios');
 
 module.exports = {
 	// Generators
@@ -183,4 +184,7 @@ module.exports = {
 
 	// collections
 	getCollections,
+
+	// audios
+	getAudios,
 };

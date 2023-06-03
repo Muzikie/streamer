@@ -25,6 +25,7 @@ const expectedResponseForRegisterHttpApi = {
 		'app-registry.blockchain.apps.meta.tokens.supported',
 		'indexer.blocks',
 		'indexer.collections',
+		'indexer.audios',
 		'indexer.events',
 		'fees.estimates',
 		'indexer.generators',
@@ -61,6 +62,7 @@ const expectedResponseForRegisterHttpApi = {
 	aliases: {
 		'GET blocks/assets': 'indexer.blocks.assets',
 		'GET collections': 'indexer.collections',
+		'GET audios': 'indexer.audios',
 		'GET blockchain/apps': 'indexer.blockchain.apps',
 		'GET blockchain/apps/meta/list': 'app-registry.blockchain.apps.meta.list',
 		'GET blockchain/apps/meta': 'app-registry.blockchain.apps.meta',
@@ -117,6 +119,7 @@ const expectedResponseForRegisterRpcApi = {
 				'app-registry.blockchain.apps.meta.tokens.supported',
 				'indexer.blocks',
 				'indexer.collections',
+				'indexer.audios',
 				'indexer.events',
 				'fees.estimates',
 				'indexer.generators',
@@ -151,6 +154,7 @@ const expectedResponseForRegisterRpcApi = {
 			aliases: {
 				'get.blocks.assets': 'indexer.blocks.assets',
 				'get.collections': 'indexer.collections',
+				'get.audios': 'indexer.audios',
 				'get.blockchain.apps': 'indexer.blockchain.apps',
 				'get.blockchain.apps.meta.list': 'app-registry.blockchain.apps.meta.list',
 				'get.blockchain.apps.meta': 'app-registry.blockchain.apps.meta',

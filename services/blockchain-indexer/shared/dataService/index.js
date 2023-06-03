@@ -95,6 +95,7 @@ const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
 const { getSubscriptions } = require('./subscriptions');
 const { getCollections } = require('./collections');
+const { getAudios } = require('./audios');
 
 module.exports = {
 	// Blocks
@@ -188,4 +189,7 @@ module.exports = {
 
 	// Collections
 	getCollections,
+
+	// Audios
+	getAudios,
 };
