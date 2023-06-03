@@ -11,7 +11,7 @@ const MYSQL_ENDPOINT = config.endpoints.mysql;
 const collectionsTableSchema = require('../../../database/schema/collections');
 const {
 	MODULE_NAME_COLLECTION,
-	EVENT_NAME_COLLECTION_ATTRIBUTESET,
+	EVENT_NAME_COLLECTION_ATTRIBUTE_SET,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
 const getCollectionsTable = () => getTableInstance(
@@ -38,7 +38,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	const { data: eventData = {} } = events.find(
 		({ module, name }) => module === MODULE_NAME_COLLECTION
-			&& name === EVENT_NAME_COLLECTION_ATTRIBUTESET,
+			&& name === EVENT_NAME_COLLECTION_ATTRIBUTE_SET,
 	);
 
 	const { collectionID, ...updates } = {
