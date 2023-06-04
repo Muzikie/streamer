@@ -9,7 +9,7 @@ module.exports = {
 	rpcMethod: 'get.audios',
 	tags: ['Audios'],
 	params: {
-		creatorAddress: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+		creatorAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
 		audioID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
 	},
 	get schema() {
