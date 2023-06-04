@@ -19,6 +19,11 @@ module.exports = {
 			shares: '=,number',
 			income: '=,number',
 		}],
+		fit: ['fit', {
+			address: '=,string',
+			name: '=,string',
+			role: '=,string',
+		}],
 		limit: '=,number',
 		offset: '=,number',
 		sort: '=,string',

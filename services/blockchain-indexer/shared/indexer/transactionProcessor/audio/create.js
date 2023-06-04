@@ -14,6 +14,7 @@ const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
 const audiosTableSchema = require('../../../database/schema/audios');
 const ownersTableSchema = require('../../../database/schema/owners');
+const fitsTableSchema = require('../../../database/schema/fits');
 const {
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
@@ -37,6 +38,12 @@ const getOwnersTable = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
+const getFitsTable = () => getTableInstance(
+	fitsTableSchema.tableName,
+	fitsTableSchema,
+	MYSQL_ENDPOINT,
+);
+
 // Command specific constants
 const COMMAND_NAME = 'create';
 
@@ -45,6 +52,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const audiosTable = await getAudiosTable();
 	const ownersTable = await getOwnersTable();
+	const fitsTable = await getFitsTable();
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
@@ -66,8 +74,9 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		tx.params.owners,
 		async owner => {
 			const memberInfo = {
-				id: owner.address.concat(`${eventData.audioID}-${tx.nonce.toString()}`),
 				...owner,
+				audioID: eventData.audioID,
+				nonce: eventData.nonce,
 				shares: 0,
 			};
 			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
@@ -76,6 +85,23 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 			return true;
 		},
 		{ concurrency: tx.params.members.length },
+	);
+
+	// Insert fits
+	await BluebirdPromise.map(
+		tx.params.fit,
+		async fit => {
+			const fitInfo = {
+				address: fit,
+				role: 'co-artist', // TODO: get role from tx.params.fit
+				audioID: eventData.audioID,
+			};
+			logger.trace(`Updating fits index for the account with address ${fit}.`);
+			await fitsTable.upsert(fitInfo, dbTrx);
+			logger.debug(`Updated fits index for the account with address ${fit}.`);
+			return true;
+		},
+		{ concurrency: tx.params.fit.length },
 	);
 
 	logger.trace(`Updating owners index for the audio with audioID ${account.address}.`);

@@ -6,7 +6,8 @@
 			"name",
 			"releaseYear",
 			"collectionID",
-			"creatorAddress"
+			"creatorAddress",
+			"fit"
 		],
 		"properties": {
 			"audioID": {
@@ -53,6 +54,31 @@
 						"example": "genesis_84",
 						"description": "Delegate name"
 					}
+				}
+			},
+			"fit": {
+				"type": "object",
+				"required": [
+						"address",
+						"name",
+						"role"
+				],
+				"properties": {
+						"address": {
+								"type": "string",
+								"example": "lskdwsyfmcko6mcd357446yatromr9vzgu7eb8y99",
+								"description": "Address of the block generator."
+						},
+						"name": {
+								"type": "string",
+								"example": "genesis_3",
+								"description": "Name of the block generator."
+						},
+						"role": {
+							"type": "string",
+							"example": "guitarist",
+							"description": "Role of the artist in creation of the audio."
+						}
 				}
 			}
 		}
