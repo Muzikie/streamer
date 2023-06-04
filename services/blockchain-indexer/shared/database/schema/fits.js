@@ -1,5 +1,5 @@
 module.exports = {
-	tableName: 'owners',
+	tableName: 'fits',
 	primaryKey: ['address', 'audioID'],
 	schema: {
 		address: { type: 'string', null: true, defaultValue: null },

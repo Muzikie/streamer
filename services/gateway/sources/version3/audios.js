@@ -9,11 +9,11 @@ module.exports = {
 		creatorAddress: '=,string',
 		releaseYear: '=,string',
 		collectionID: '=,string',
-		audios: ['collection', {
+		collection: {
 			collectionType: '=,string',
 			releaseYear: '=,number',
 			name: '=,number',
-		}],
+		},
 		owners: ['owners', {
 			address: '=,string',
 			shares: '=,number',

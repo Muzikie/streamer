@@ -57,17 +57,17 @@ const getAudios = async (params = {}) => {
 
 			const ownersData = await ownersTable.find(
 				{ audioID: audio.audioID },
-				['address', 'shared', 'income'],
+				['address', 'share', 'income'],
 			);
 
 			const fitData = await fitsTable.find(
 				{ audioID: audio.audioID },
-				['address', 'shared', 'income'],
+				['address', 'role'],
 			);
 
 			return {
 				...audio,
-				collection: collectionData,
+				collection: collectionData.length ? collectionData[0] : {},
 				owners: ownersData,
 				fit: fitData,
 			};

@@ -76,7 +76,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 			const memberInfo = {
 				...owner,
 				audioID: eventData.audioID,
-				nonce: eventData.nonce,
+				nonce: tx.nonce,
 				shares: 0,
 			};
 			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
@@ -84,7 +84,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 			logger.debug(`Updated owner index for the account with address ${owner.address}.`);
 			return true;
 		},
-		{ concurrency: tx.params.members.length },
+		{ concurrency: tx.params.owners.length },
 	);
 
 	// Insert fits

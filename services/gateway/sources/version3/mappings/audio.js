@@ -4,14 +4,18 @@ module.exports = {
 	audioID: '=,string',
 	collectionID: '=,string',
 	creatorAddress: '=,string',
-	audios: ['collection', {
+	collection: {
 		collectionType: '=,string',
 		releaseYear: '=,number',
-		name: '=,number',
-	}],
+		name: '=,string',
+	},
 	owners: ['owners', {
 		address: '=,string',
 		shares: '=,number',
 		income: '=,number',
+	}],
+	fit: ['fit', {
+		address: '=,string',
+		role: '=,string',
 	}],
 };
