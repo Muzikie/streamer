@@ -3,11 +3,11 @@ module.exports = {
 	primaryKey: 'audioID',
 	schema: {
 		audioID: { type: 'string' },
-		name: { type: 'string', null: true, defaultValue: null },
-		releaseYear: { type: 'string', null: true, defaultValue: null },
+		name: { type: 'string' },
+		releaseYear: { type: 'string' },
 		collectionID: { type: 'string' },
-		audioSignature: { type: 'string', null: true, defaultValue: null },
-		coverHash: { type: 'string', null: true, defaultValue: null },
+		audioSignature: { type: 'string' },
+		audioHash: { type: 'string' },
 		creatorAddress: { type: 'string' },
 	},
 	indexes: {
