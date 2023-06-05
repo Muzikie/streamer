@@ -25,7 +25,7 @@ const getFitsTable = () => getTableInstance(
 );
 
 // Command specific constants
-const COMMAND_NAME = 'create';
+const COMMAND_NAME = 'setAttributes';
 
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
