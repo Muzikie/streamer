@@ -57,7 +57,7 @@ const getAudios = async (params = {}) => {
 
 			const ownersData = await ownersTable.find(
 				{ audioID: audio.audioID },
-				['address', 'share', 'income'],
+				['address', 'shares', 'income'],
 			);
 
 			const featData = await featsTable.find(
