@@ -83,6 +83,8 @@ const {
 	EVENT_NAME_COLLECTION_ATTRIBUTE_SET,
 	EVENT_NAME_COLLECTION_TRANSFERED,
 
+	MODULE_NAME_AUDIO,
+	EVENT_NAME_AUDIO_CREATED,
 } = require('./names');
 
 const COMMAND_EXECUTION_RESULT_TOPICS = ['transactionID'];
@@ -158,6 +160,9 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 		[EVENT_NAME_COLLECTION_CREATED]: ['transactionID', 'senderAddress'],
 		[EVENT_NAME_COLLECTION_ATTRIBUTE_SET]: ['transactionID', 'senderAddress'],
 		[EVENT_NAME_COLLECTION_TRANSFERED]: ['transactionID', 'senderAddress'],
+	},
+	[MODULE_NAME_AUDIO]: {
+		[EVENT_NAME_AUDIO_CREATED]: ['transactionID', 'senderAddress'],
 	},
 };
 

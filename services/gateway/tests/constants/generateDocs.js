@@ -14,6 +14,37 @@
  *
  */
 const createApiDocsExpectedResponse = {
+	'/audios': {
+		get: {
+			description: 'Returns audios data\n RPC => get.audios',
+			parameters: [
+				{
+					$ref: '#/parameters/creatorAddress',
+				},
+				{
+					$ref: '#/parameters/audioID',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns a list of audios',
+					schema: {
+						$ref: '#/definitions/audiosWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+			summary: 'Requests audios data',
+			tags: [
+				'Audios',
+			],
+		},
+	},
 	'/blocks/assets': {
 		get: {
 			tags: [
