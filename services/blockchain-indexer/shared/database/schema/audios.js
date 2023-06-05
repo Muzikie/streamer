@@ -8,7 +8,7 @@ module.exports = {
 		collectionID: { type: 'string' },
 		audioSignature: { type: 'string', null: true, defaultValue: null },
 		coverHash: { type: 'string', null: true, defaultValue: null },
-		creatorAddress: { type: 'string', null: true, defaultValue: null },
+		creatorAddress: { type: 'string' },
 	},
 	indexes: {
 		creatorAddress: { type: 'string' },
