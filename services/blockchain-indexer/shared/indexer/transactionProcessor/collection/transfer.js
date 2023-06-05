@@ -3,26 +3,12 @@ const {
 	MySQL: { getTableInstance },
 } = require('lisk-service-framework');
 
-const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
-
 const config = require('../../../../config');
 
 const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
-const accountsTableSchema = require('../../../database/schema/accounts');
 const collectionsTableSchema = require('../../../database/schema/collections');
-const {
-	MODULE_NAME_COLLECTION,
-	EVENT_NAME_COLLECTION_CREATED,
-	EVENT_NAME_COLLECTION_TRANSFERED,
-} = require('../../../../../blockchain-connector/shared/sdk/constants/names');
-
-const getAccountsTable = () => getTableInstance(
-	accountsTableSchema.tableName,
-	accountsTableSchema,
-	MYSQL_ENDPOINT,
-);
 
 const getCollectionsTable = () => getTableInstance(
 	collectionsTableSchema.tableName,
@@ -35,33 +21,18 @@ const COMMAND_NAME = 'transfer';
 
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
-	const accountsTable = await getAccountsTable();
 	const collectionsTable = await getCollectionsTable();
-
-	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
-
-	const account = {
-		address: senderAddress,
-	};
-
-	logger.trace(`Updating account index for the account with address ${account.address}.`);
-	await accountsTable.upsert(account, dbTrx);
-	logger.debug(`Updated account index for the account with address ${account.address}.`);
-
-	logger.trace(`Indexing collections with new address ${account.address}.`);
-
-	const { data: eventData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_COLLECTION
-			&& name === EVENT_NAME_COLLECTION_TRANSFERED,
+	const [collectionNFT] = await collectionsTable.find(
+		{ collectionID: tx.params.collectionID },
+		['collectionID', 'name', 'collectionType', 'releaseYear'],
+		dbTrx,
 	);
 
-	const collectionsNFT = {
-		...eventData,
-		...tx.params,
-	};
+	collectionNFT.creatorAddress = tx.params.address;
+	logger.trace(`Indexing collections with new address ${collectionNFT.creatorAddress}.`);
 
-	await collectionsTable.upsert(collectionsNFT, dbTrx);
-	logger.debug(`Indexed collection with ID ${eventData.collectionsID}.`);
+	await collectionsTable.upsert(collectionNFT, dbTrx);
+	logger.debug(`Indexed collection with ID ${collectionNFT.collectionsID}.`);
 };
 
 // eslint-disable-next-line no-unused-vars
