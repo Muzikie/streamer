@@ -76,7 +76,6 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 			const memberInfo = {
 				...owner,
 				audioID: eventData.audioID,
-				nonce: tx.nonce,
 				shares: 0,
 			};
 			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
