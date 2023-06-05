@@ -87,10 +87,10 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	await accountsTable.upsert(account, dbTrx);
 	logger.debug(`Updated account index for the account with address ${account.address}.`);
 
-	logger.trace(`Remove subscription entry for address ${account.address}.`);
+	logger.trace(`Remove collection entry for address ${account.address}.`);
 	const collectionPK = account[collectionsTableSchema.primaryKey];
 	await collectionsTable.deleteByPrimaryKey(collectionPK, dbTrx);
-	logger.debug(`Removed subscription entry for ID ${collectionPK}.`);
+	logger.debug(`Removed collection entry for ID ${collectionPK}.`);
 };
 
 module.exports = {

@@ -16,6 +16,7 @@
 // TODO: Expected response for registerApi method should be dynamically constructed
 const expectedResponseForRegisterHttpApi = {
 	whitelist: [
+		'indexer.audios',
 		'indexer.blocks.assets',
 		'indexer.blockchain.apps',
 		'app-registry.blockchain.apps.meta.list',
@@ -61,6 +62,7 @@ const expectedResponseForRegisterHttpApi = {
 	aliases: {
 		'GET blocks/assets': 'indexer.blocks.assets',
 		'GET collections': 'indexer.collections',
+		'GET audios': 'indexer.audios',
 		'GET blockchain/apps': 'indexer.blockchain.apps',
 		'GET blockchain/apps/meta/list': 'app-registry.blockchain.apps.meta.list',
 		'GET blockchain/apps/meta': 'app-registry.blockchain.apps.meta',
@@ -108,6 +110,7 @@ const expectedResponseForRegisterRpcApi = {
 	events: {
 		request: {
 			whitelist: [
+				'indexer.audios',
 				'indexer.blocks.assets',
 				'indexer.blockchain.apps',
 				'app-registry.blockchain.apps.meta.list',
@@ -151,6 +154,7 @@ const expectedResponseForRegisterRpcApi = {
 			aliases: {
 				'get.blocks.assets': 'indexer.blocks.assets',
 				'get.collections': 'indexer.collections',
+				'get.audios': 'indexer.audios',
 				'get.blockchain.apps': 'indexer.blockchain.apps',
 				'get.blockchain.apps.meta.list': 'app-registry.blockchain.apps.meta.list',
 				'get.blockchain.apps.meta': 'app-registry.blockchain.apps.meta',

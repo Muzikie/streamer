@@ -25,7 +25,7 @@ module.exports = {
 	rpcMethod: 'get.subscriptions',
 	tags: ['Subscriptions'],
 	params: {
-		creatorAddress: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+		creatorAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
 		subscriptionID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
 	},
 	get schema() {
