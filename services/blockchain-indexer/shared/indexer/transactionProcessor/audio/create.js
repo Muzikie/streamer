@@ -14,7 +14,7 @@ const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
 const audiosTableSchema = require('../../../database/schema/audios');
 const ownersTableSchema = require('../../../database/schema/owners');
-const fitsTableSchema = require('../../../database/schema/fits');
+const featsTableSchema = require('../../../database/schema/feats');
 const {
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
@@ -38,9 +38,9 @@ const getOwnersTable = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
-const getFitsTable = () => getTableInstance(
-	fitsTableSchema.tableName,
-	fitsTableSchema,
+const getFeatsTable = () => getTableInstance(
+	featsTableSchema.tableName,
+	featsTableSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -52,7 +52,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const audiosTable = await getAudiosTable();
 	const ownersTable = await getOwnersTable();
-	const fitsTable = await getFitsTable();
+	const featsTable = await getFeatsTable();
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
@@ -87,21 +87,21 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		{ concurrency: tx.params.owners.length },
 	);
 
-	// Insert fits
+	// Insert feats
 	await BluebirdPromise.map(
-		tx.params.fit,
-		async fit => {
-			const fitInfo = {
-				address: fit,
-				role: 'co-artist', // TODO: get role from tx.params.fit
+		tx.params.feat,
+		async feat => {
+			const featInfo = {
+				address: feat,
+				role: 'co-artist', // TODO: get role from tx.params.feat
 				audioID: eventData.audioID,
 			};
-			logger.trace(`Updating fits index for the account with address ${fit}.`);
-			await fitsTable.upsert(fitInfo, dbTrx);
-			logger.debug(`Updated fits index for the account with address ${fit}.`);
+			logger.trace(`Updating feats index for the account with address ${feat}.`);
+			await featsTable.upsert(featInfo, dbTrx);
+			logger.debug(`Updated feats index for the account with address ${feat}.`);
 			return true;
 		},
-		{ concurrency: tx.params.fit.length },
+		{ concurrency: tx.params.feat.length },
 	);
 
 	logger.trace(`Updating owners index for the audio with audioID ${account.address}.`);
@@ -123,6 +123,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const audiosTable = await getAudiosTable();
 	const ownersTable = await getOwnersTable();
+	const featsTable = await getFeatsTable();
 
 	const { data: eventData = {} } = events.find(
 		({ module, name }) => module === MODULE_NAME_AUDIO
@@ -132,6 +133,10 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	logger.trace(`Deleting owners corresponding the audio ID ${eventData.audioID}.`);
 	await ownersTable.delete({ audioID: eventData.audioID }, dbTrx);
 	logger.trace(`Deleted owners corresponding the audio ID ${eventData.audioID}.`);
+
+	logger.trace(`Deleting feats corresponding the audio ID ${eventData.audioID}.`);
+	await featsTable.delete({ audioID: eventData.audioID }, dbTrx);
+	logger.trace(`Deleted feats corresponding the audio ID ${eventData.audioID}.`);
 
 	logger.trace(`Removing audio entry for ID ${eventData.audioID}.`);
 	await audiosTable.deleteByPrimaryKey(eventData.audioID, dbTrx);

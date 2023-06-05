@@ -19,7 +19,7 @@ module.exports = {
 			shares: '=,number',
 			income: '=,number',
 		}],
-		fit: ['fit', {
+		feat: ['feat', {
 			address: '=,string',
 			name: '=,string',
 			role: '=,string',

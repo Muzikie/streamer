@@ -6,7 +6,7 @@ const BluebirdPromise = require('bluebird');
 const transactionsIndexSchema = require('../../database/schema/audios');
 const collectionsIndexSchema = require('../../database/schema/collections');
 const ownersIndexSchema = require('../../database/schema/owners');
-const fitsIndexSchema = require('../../database/schema/fits');
+const featsIndexSchema = require('../../database/schema/feats');
 const config = require('../../../config');
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
@@ -29,9 +29,9 @@ const getOwnersIndex = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
-const getFitsIndex = () => getTableInstance(
-	fitsIndexSchema.tableName,
-	fitsIndexSchema,
+const getFeatsIndex = () => getTableInstance(
+	featsIndexSchema.tableName,
+	featsIndexSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -39,7 +39,7 @@ const getAudios = async (params = {}) => {
 	const audiosTable = await getAudiosIndex();
 	const collectionsTable = await getCollectionsIndex();
 	const ownersTable = await getOwnersIndex();
-	const fitsTable = await getFitsIndex();
+	const featsTable = await getFeatsIndex();
 
 	const total = await audiosTable.count(params);
 	const audioData = await audiosTable.find(
@@ -60,7 +60,7 @@ const getAudios = async (params = {}) => {
 				['address', 'share', 'income'],
 			);
 
-			const fitData = await fitsTable.find(
+			const featData = await featsTable.find(
 				{ audioID: audio.audioID },
 				['address', 'role'],
 			);
@@ -69,7 +69,7 @@ const getAudios = async (params = {}) => {
 				...audio,
 				collection: collectionData.length ? collectionData[0] : {},
 				owners: ownersData,
-				fit: fitData,
+				feat: featData,
 			};
 		},
 		{ concurrency: audioData.length },
