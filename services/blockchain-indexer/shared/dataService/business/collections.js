@@ -17,7 +17,7 @@ const getCollections = async (params = {}) => {
 
 	const total = await collectionsTable.count(params);
 	const resultSet = await collectionsTable.find(
-		{ ...params, limit: params.limit || total },
+		{ ...params, limit: params.limit || 10 },
 		['collectionID', 'creatorAddress', 'name', 'releaseYear', 'collectionType'],
 	);
 

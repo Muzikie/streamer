@@ -90,9 +90,11 @@ const MODULE_NAME_SUBSCRIPTION = 'subscription';
 const EVENT_NAME_SUBSCRIPTION_CREATED = 'subscriptionCreated';
 const EVENT_NAME_SUBSCRIPTION_PURCHASED = 'subscriptionPurchased';
 
-// Collections
+// Collection
 const MODULE_NAME_COLLECTION = 'collection';
 const EVENT_NAME_COLLECTION_CREATED = 'collectionCreated';
+const EVENT_NAME_COLLECTION_ATTRIBUTE_SET = 'collectionAttributeSet';
+const EVENT_NAME_COLLECTION_TRANSFERED = 'collectionTransfered';
 
 // Audios
 const MODULE_NAME_AUDIO = 'audio';
@@ -166,6 +168,8 @@ module.exports = {
 
 	MODULE_NAME_COLLECTION,
 	EVENT_NAME_COLLECTION_CREATED,
+	EVENT_NAME_COLLECTION_ATTRIBUTE_SET,
+	EVENT_NAME_COLLECTION_TRANSFERED,
 
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
