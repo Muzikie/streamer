@@ -18,6 +18,7 @@ const featsTableSchema = require('../../../database/schema/feats');
 const {
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
+	EVENT_NAME_COMMAND_EXECUTION_RESULT,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
 const getAccountsTable = () => getTableInstance(
@@ -49,13 +50,29 @@ const COMMAND_NAME = 'create';
 
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
+	// Do not process failed transactions
+	const { data: commandExecutedData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_AUDIO
+			&& name === EVENT_NAME_COMMAND_EXECUTION_RESULT,
+	);
+	if (!commandExecutedData.success) {
+		return false;
+	}
+
 	const accountsTable = await getAccountsTable();
 	const audiosTable = await getAudiosTable();
 	const ownersTable = await getOwnersTable();
 	const featsTable = await getFeatsTable();
 
+	// Use event data to get audioID
+	const { data: audioCreatedData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_AUDIO
+			&& name === EVENT_NAME_AUDIO_CREATED,
+	);
+
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
+	// Store a record of the sender account
 	const account = {
 		address: senderAddress,
 	};
@@ -64,19 +81,13 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	await accountsTable.upsert(account, dbTrx);
 	logger.debug(`Updated account index for the account with address ${account.address}.`);
 
-	const { data: eventData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
-			&& name === EVENT_NAME_AUDIO_CREATED,
-	);
-
-	// Insert owners
+	// Store owners
 	await BluebirdPromise.map(
 		tx.params.owners,
 		async owner => {
 			const memberInfo = {
 				...owner,
-				audioID: eventData.audioID,
-				shares: 0,
+				audioID: audioCreatedData.audioID,
 			};
 			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
 			await ownersTable.upsert(memberInfo, dbTrx);
@@ -86,14 +97,14 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		{ concurrency: tx.params.owners.length },
 	);
 
-	// Insert feats
+	// Store feats
 	await BluebirdPromise.map(
 		tx.params.feat,
 		async feat => {
 			const featInfo = {
 				address: feat,
-				role: 'co-artist', // TODO: get role from tx.params.feat
-				audioID: eventData.audioID,
+				role: 'co-artist',
+				audioID: audioCreatedData.audioID,
 			};
 			logger.trace(`Updating feats index for the account with address ${feat}.`);
 			await featsTable.upsert(featInfo, dbTrx);
@@ -109,13 +120,15 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	logger.trace(`Indexing audios with address ${account.address}.`);
 
+	// And finally, store the audio
 	const audiosNFT = {
-		...eventData,
+		...audioCreatedData,
 		...tx.params,
 	};
 
 	await audiosTable.upsert(audiosNFT, dbTrx);
-	logger.debug(`Indexed audio with ID ${eventData.audiosID}.`);
+	logger.debug(`Indexed audio with ID ${audioCreatedData.audiosID}.`);
+	return true;
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -124,22 +137,22 @@ const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const ownersTable = await getOwnersTable();
 	const featsTable = await getFeatsTable();
 
-	const { data: eventData = {} } = events.find(
+	const { data: audioCreatedData = {} } = events.find(
 		({ module, name }) => module === MODULE_NAME_AUDIO
 			&& name === EVENT_NAME_AUDIO_CREATED,
 	);
 
-	logger.trace(`Deleting owners corresponding the audio ID ${eventData.audioID}.`);
-	await ownersTable.delete({ audioID: eventData.audioID }, dbTrx);
-	logger.trace(`Deleted owners corresponding the audio ID ${eventData.audioID}.`);
+	logger.trace(`Deleting owners corresponding the audio ID ${audioCreatedData.audioID}.`);
+	await ownersTable.delete({ audioID: audioCreatedData.audioID }, dbTrx);
+	logger.trace(`Deleted owners corresponding the audio ID ${audioCreatedData.audioID}.`);
 
-	logger.trace(`Deleting feats corresponding the audio ID ${eventData.audioID}.`);
-	await featsTable.delete({ audioID: eventData.audioID }, dbTrx);
-	logger.trace(`Deleted feats corresponding the audio ID ${eventData.audioID}.`);
+	logger.trace(`Deleting feats corresponding the audio ID ${audioCreatedData.audioID}.`);
+	await featsTable.delete({ audioID: audioCreatedData.audioID }, dbTrx);
+	logger.trace(`Deleted feats corresponding the audio ID ${audioCreatedData.audioID}.`);
 
-	logger.trace(`Removing audio entry for ID ${eventData.audioID}.`);
-	await audiosTable.deleteByPrimaryKey(eventData.audioID, dbTrx);
-	logger.debug(`Removed audio entry for ID ${eventData.audioID}.`);
+	logger.trace(`Removing audio entry for ID ${audioCreatedData.audioID}.`);
+	await audiosTable.deleteByPrimaryKey(audioCreatedData.audioID, dbTrx);
+	logger.debug(`Removed audio entry for ID ${audioCreatedData.audioID}.`);
 };
 
 module.exports = {
