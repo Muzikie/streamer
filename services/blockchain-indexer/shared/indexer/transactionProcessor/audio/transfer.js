@@ -12,6 +12,11 @@ const logger = Logger();
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const ownersTableSchema = require('../../../database/schema/owners');
 
+const {
+	MODULE_NAME_AUDIO,
+	EVENT_NAME_COMMAND_EXECUTION_RESULT,
+} = require('../../../../../blockchain-connector/shared/sdk/constants/names');
+
 const getOwnersTable = () => getTableInstance(
 	ownersTableSchema.tableName,
 	ownersTableSchema,
@@ -23,17 +28,25 @@ const COMMAND_NAME = 'transfer';
 
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
+	const { data: commandExecutedData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_AUDIO
+			&& name === EVENT_NAME_COMMAND_EXECUTION_RESULT,
+	);
+	if (!commandExecutedData.success) {
+		return false;
+	}
+
 	const ownersTable = await getOwnersTable();
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 	const {
-		address: recipientAddress,
 		audioID,
+		address: recipientAddress,
 		shares: transferredShares,
-	} = tx.params.address;
+	} = tx.params;
 
-	const sender = await ownersTable.find({ audioID, address: senderAddress }, dbTrx);
-	let recipient = await ownersTable.find({ audioID, address: recipientAddress }, dbTrx);
+	const [sender] = await ownersTable.find({ audioID, address: senderAddress }, ['address', 'audioID', 'shares', 'income'], dbTrx);
+	let [recipient] = await ownersTable.find({ audioID, address: recipientAddress }, ['address', 'audioID', 'shares', 'income'], dbTrx);
 
 	// Transfer the shares
 	logger.trace(`Updating owner index for the account with address ${senderAddress}.`);
@@ -43,6 +56,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	} else {
 		await ownersTable.upsert(sender, dbTrx);
 	}
+
 	logger.debug(`Updated owner index for the account with address ${senderAddress}.`);
 
 	logger.trace(`Updating owner index for the account with address ${recipientAddress}.`);
@@ -57,6 +71,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	}
 	await ownersTable.upsert(recipient, dbTrx);
 	logger.debug(`Updated owner index for the account with address ${recipientAddress}.`);
+	return true;
 };
 
 // eslint-disable-next-line no-unused-vars
