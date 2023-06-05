@@ -1,11 +1,11 @@
 module.exports = {
 	tableName: 'owners',
-	primaryKey: ['address', 'audioID', 'nonce'],
+	primaryKey: ['address', 'audioID'],
 	schema: {
-		address: { type: 'string', null: true, defaultValue: null },
+		address: { type: 'string' },
 		audioID: { type: 'string' },
-		shares: { type: 'integer', min: 1, max: 100 },
-		income: { type: 'bigInteger', null: true, defaultValue: 0 },
+		shares: { type: 'integer' },
+		income: { type: 'bigInteger', defaultValue: 0 },
 	},
 	indexes: {
 		creatorAddress: { type: 'string' },
