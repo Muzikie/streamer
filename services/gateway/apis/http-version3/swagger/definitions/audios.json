@@ -7,7 +7,7 @@
 			"releaseYear",
 			"collectionID",
 			"creatorAddress",
-			"fit"
+			"feat"
 		],
 		"properties": {
 			"audioID": {
@@ -56,7 +56,7 @@
 					}
 				}
 			},
-			"fit": {
+			"feat": {
 				"type": "object",
 				"required": [
 						"address",

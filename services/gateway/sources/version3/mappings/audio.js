@@ -14,7 +14,7 @@ module.exports = {
 		shares: '=,number',
 		income: '=,number',
 	}],
-	fit: ['fit', {
+	feat: ['feat', {
 		address: '=,string',
 		role: '=,string',
 	}],
