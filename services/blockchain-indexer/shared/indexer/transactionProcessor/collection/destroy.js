@@ -28,6 +28,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		dbTrx,
 	);
 
+	logger.trace(`Deleting collection with ID ${collectionNFT.collectionID}.`);
 	await collectionsTable.delete(collectionNFT, dbTrx);
 	logger.debug(`Deleted collection with ID ${collectionNFT.collectionsID}.`);
 };
