@@ -97,6 +97,7 @@ const EVENT_NAME_COLLECTION_CREATED = 'collectionCreated';
 // Audios
 const MODULE_NAME_AUDIO = 'audio';
 const EVENT_NAME_AUDIO_CREATED = 'audioCreated';
+const EVENT_NAME_AUDIO_STREAMED = 'audioStreamed';
 
 module.exports = {
 	MODULE_NAME_AUTH,
@@ -169,4 +170,5 @@ module.exports = {
 
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
+	EVENT_NAME_AUDIO_STREAMED,
 };
