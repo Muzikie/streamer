@@ -468,6 +468,36 @@ const createApiDocsExpectedResponse = {
 				'Collections',
 			],
 		},
+		'/profiles': {
+			get: {
+				description: 'Returns profiles data\n RPC => get.profiles',
+				parameters: [
+					{
+						$ref: '#/parameters/creatorAddress',
+					},
+					{
+						$ref: '#/parameters/profileID',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of profiles',
+						schema: {
+							$ref: '#/definitions/profilesWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
+					},
+				},
+				summary: 'Requests profiles data',
+				tags: [
+					'Profiles',
+				],
+			},
 	},
 	'/events': {
 		get: {
