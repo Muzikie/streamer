@@ -11,7 +11,7 @@ const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
-const collectionsTableSchema = require('../../../database/schema/collections');
+const ProfilesTableSchema = require('../../../database/schema/profiles');
 const {
 	MODULE_NAME_PROFILE,
 	EVENT_NAME_PROFILE_CREATED,
@@ -24,8 +24,8 @@ const getAccountsTable = () => getTableInstance(
 );
 
 const getProfilesTable = () => getTableInstance(
-	collectionsTableSchema.tableName,
-	collectionsTableSchema,
+	ProfilesTableSchema.tableName,
+	ProfilesTableSchema,
 	MYSQL_ENDPOINT,
 );
 
