@@ -18,6 +18,7 @@ const getProfiles = async (params = {}) => {
 	const resultSet = await profilesTable.find(
 		{ ...params, limit: params.limit || 10 },
 		['profileID', 'name', 'nickName', 'description', 'socialAccounts', 'creatorAddress'],
+		// ['profileID', 'name', 'nickName', 'description', 'creatorAddress'],
 	);
 
 	const result = {
