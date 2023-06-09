@@ -36,7 +36,7 @@ const COMMAND_NAME = 'create';
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const profilesTable = await getProfilesTable();
-
+	console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Start to write");
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
 	const account = {
