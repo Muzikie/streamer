@@ -2,6 +2,7 @@ const {
 	Logger,
 	MySQL: { getTableInstance },
 } = require('lisk-service-framework');
+const BluebirdPromise = require('bluebird');
 
 const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
 
@@ -11,7 +12,9 @@ const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
-const ProfilesTableSchema = require('../../../database/schema/profiles');
+const profilesTableSchema = require('../../../database/schema/profiles');
+const socialAccountsTableSchema = require('../../../database/schema/socialAccounts');
+
 const {
 	MODULE_NAME_PROFILE,
 	EVENT_NAME_PROFILE_CREATED,
@@ -24,8 +27,14 @@ const getAccountsTable = () => getTableInstance(
 );
 
 const getProfilesTable = () => getTableInstance(
-	ProfilesTableSchema.tableName,
-	ProfilesTableSchema,
+	profilesTableSchema.tableName,
+	profilesTableSchema,
+	MYSQL_ENDPOINT,
+);
+
+const getSocialAccountsTable = () => getTableInstance(
+	socialAccountsTableSchema.tableName,
+	socialAccountsTableSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -36,7 +45,7 @@ const COMMAND_NAME = 'create';
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const profilesTable = await getProfilesTable();
-	console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Start to write");
+	const socialAccountsTable = await getSocialAccountsTable();
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
 	const account = {
@@ -58,8 +67,22 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		...eventData,
 		...tx.params,
 	};
-	console.log('eventData>>>', eventData);
-	console.log('tx.params>>>', tx.params);
+
+	await BluebirdPromise.map(
+		tx.params.socialAccounts,
+		async socialAccount => {
+			const socialInfo = {
+				profileID: eventData.profileID,
+				username: socialAccount.username,
+				platform: socialAccount.platform,
+			};
+			logger.trace(`Inserting social sccounts for the profile with ID ${eventData.profileID}.`);
+			await socialAccountsTable.upsert(socialInfo, dbTrx);
+			logger.debug(`Inserted social sccounts for the profile with ID ${eventData.profileID}.`);
+			return true;
+		},
+		{ concurrency: tx.params.socialAccounts.length },
+	);
 
 	await profilesTable.upsert(profile, dbTrx);
 	logger.debug(`Indexed profile with ID ${eventData.profileID}.`);

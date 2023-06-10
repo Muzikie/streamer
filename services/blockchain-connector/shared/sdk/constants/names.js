@@ -100,7 +100,7 @@ const EVENT_NAME_COLLECTION_TRANSFERED = 'collectionTransfered';
 const MODULE_NAME_AUDIO = 'audio';
 const EVENT_NAME_AUDIO_CREATED = 'audioCreated';
 
-// Audios
+// Profiles
 const MODULE_NAME_PROFILE = 'profile';
 const EVENT_NAME_PROFILE_CREATED = 'profileCreated';
 

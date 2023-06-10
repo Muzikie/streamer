@@ -1123,8 +1123,8 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
-}
+};
 
 module.exports = {
 	createApiDocsExpectedResponse,
-}
+};
