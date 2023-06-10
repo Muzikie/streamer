@@ -83,6 +83,8 @@ const {
 
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
+	EVENT_NAME_AUDIO_STREAMED,
+	EVENT_NAME_AUDIO_INCOME_RECLAIMED,
 } = require('./names');
 
 const COMMAND_EXECUTION_RESULT_TOPICS = ['transactionID'];
@@ -159,6 +161,8 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	},
 	[MODULE_NAME_AUDIO]: {
 		[EVENT_NAME_AUDIO_CREATED]: ['transactionID', 'senderAddress'],
+		[EVENT_NAME_AUDIO_STREAMED]: ['transactionID', 'senderAddress'],
+		[EVENT_NAME_AUDIO_INCOME_RECLAIMED]: ['transactionID', 'senderAddress'],
 	},
 };
 

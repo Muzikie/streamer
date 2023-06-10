@@ -65,10 +65,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const featsTable = await getFeatsTable();
 
 	// Use event data to get audioID
-	const { data: audioCreatedData = {} } = events.find(
+	const eventData = events.find(
 		({ module, name }) => module === MODULE_NAME_AUDIO
 			&& name === EVENT_NAME_AUDIO_CREATED,
 	);
+	const { data: audioCreatedData } = eventData || { data: {} };
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
@@ -127,7 +128,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	};
 
 	await audiosTable.upsert(audiosNFT, dbTrx);
-	logger.debug(`Indexed audio with ID ${audioCreatedData.audiosID}.`);
+	logger.debug(`Indexed audio with ID ${audioCreatedData.audioID}.`);
 	return true;
 };
 
