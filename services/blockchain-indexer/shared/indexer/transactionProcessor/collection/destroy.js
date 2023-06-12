@@ -22,15 +22,11 @@ const COMMAND_NAME = 'destroy';
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const collectionsTable = await getCollectionsTable();
-	const [collectionNFT] = await collectionsTable.find(
-		{ collectionID: tx.params.collectionID },
-		['collectionID'],
-		dbTrx,
-	);
+	const { collectionID } = tx.params;
 
-	logger.trace(`Deleting collection with ID ${collectionNFT.collectionID}.`);
-	await collectionsTable.delete(collectionNFT, dbTrx);
-	logger.debug(`Deleted collection with ID ${collectionNFT.collectionsID}.`);
+	logger.trace(`Deleting collection with ID ${collectionID}.`);
+	await collectionsTable.delete({ collectionID }, dbTrx);
+	logger.debug(`Deleted collection with ID ${collectionID}.`);
 };
 
 // eslint-disable-next-line no-unused-vars
