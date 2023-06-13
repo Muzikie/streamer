@@ -90,14 +90,20 @@ const MODULE_NAME_SUBSCRIPTION = 'subscription';
 const EVENT_NAME_SUBSCRIPTION_CREATED = 'subscriptionCreated';
 const EVENT_NAME_SUBSCRIPTION_PURCHASED = 'subscriptionPurchased';
 
-// Collections
+// Collection
 const MODULE_NAME_COLLECTION = 'collection';
 const EVENT_NAME_COLLECTION_CREATED = 'collectionCreated';
+const EVENT_NAME_COLLECTION_ATTRIBUTE_SET = 'collectionAttributeSet';
+const EVENT_NAME_COLLECTION_TRANSFERED = 'collectionTransfered';
 
 // Audios
 const MODULE_NAME_AUDIO = 'audio';
 const EVENT_NAME_AUDIO_CREATED = 'audioCreated';
 const EVENT_NAME_AUDIO_STREAMED = 'audioStreamed';
+
+// Profiles
+const MODULE_NAME_PROFILE = 'profile';
+const EVENT_NAME_PROFILE_CREATED = 'profileCreated';
 
 module.exports = {
 	MODULE_NAME_AUTH,
@@ -167,8 +173,13 @@ module.exports = {
 
 	MODULE_NAME_COLLECTION,
 	EVENT_NAME_COLLECTION_CREATED,
+	EVENT_NAME_COLLECTION_ATTRIBUTE_SET,
+	EVENT_NAME_COLLECTION_TRANSFERED,
 
 	MODULE_NAME_AUDIO,
 	EVENT_NAME_AUDIO_CREATED,
 	EVENT_NAME_AUDIO_STREAMED,
+
+	MODULE_NAME_PROFILE,
+	EVENT_NAME_PROFILE_CREATED,
 };
