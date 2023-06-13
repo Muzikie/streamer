@@ -96,6 +96,7 @@ const { getGenerators } = require('./generators');
 const { getSubscriptions } = require('./subscriptions');
 const { getCollections } = require('./collections');
 const { getAudios } = require('./audios');
+const { getProfiles } = require('./profiles');
 
 module.exports = {
 	// Blocks
@@ -192,4 +193,7 @@ module.exports = {
 
 	// Audios
 	getAudios,
+
+	// Profiles
+	getProfiles,
 };

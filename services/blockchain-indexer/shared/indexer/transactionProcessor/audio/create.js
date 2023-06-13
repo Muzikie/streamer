@@ -86,12 +86,12 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	await BluebirdPromise.map(
 		tx.params.owners,
 		async owner => {
-			const memberInfo = {
+			const ownerInfo = {
 				...owner,
 				audioID: audioCreatedData.audioID,
 			};
 			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
-			await ownersTable.upsert(memberInfo, dbTrx);
+			await ownersTable.upsert(ownerInfo, dbTrx);
 			logger.debug(`Updated owner index for the account with address ${owner.address}.`);
 			return true;
 		},
