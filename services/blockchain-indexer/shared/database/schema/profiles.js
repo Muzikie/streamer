@@ -6,16 +6,6 @@ module.exports = {
 		name: { type: 'string', null: true, defaultValue: null },
 		nickName: { type: 'string', null: true, defaultValue: null },
 		description: { type: 'string', null: true, defaultValue: null },
-		// @TODO: Modify Schema in order to support social media accounts
-		// socialAccounts: { type: 'array',
-		// 	items: {
-		// 		type: 'object',
-		// 		props: {
-		// 			username: { type: 'string', null: true, defaultValue: null },
-		// 			platform: { type: 'integer', null: true, defaultValue: null },
-		// 		},
-		// 	},
-		// },
 		avatarHash: { type: 'string', null: true, defaultValue: null },
 		avatarSignature: { type: 'string', null: true, defaultValue: null },
 		bannerHash: { type: 'string', null: true, defaultValue: null },
