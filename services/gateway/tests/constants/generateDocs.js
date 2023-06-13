@@ -498,626 +498,627 @@ const createApiDocsExpectedResponse = {
 					'Profiles',
 				],
 			},
-	},
-	'/events': {
-		get: {
-			tags: [
-				'Events',
-			],
-			summary: 'Requests events data',
-			description: 'Returns events data\n RPC => get.events',
-			parameters: [
-				{
-					$ref: '#/parameters/transactionID',
-				},
-				{
-					$ref: '#/parameters/senderAddress',
-				},
-				{
-					$ref: '#/parameters/topic',
-				},
-				{
-					$ref: '#/parameters/blockID',
-				},
-				{
-					$ref: '#/parameters/height',
-				},
-				{
-					$ref: '#/parameters/timestamp',
-				},
-				{
-					$ref: '#/parameters/limit',
-				},
-				{
-					$ref: '#/parameters/offset',
-				},
-				{
-					name: 'sort',
-					in: 'query',
-					description: 'Fields to sort results by.',
-					required: false,
-					type: 'string',
-					enum: [
-						'height:asc',
-						'height:desc',
-						'timestamp:asc',
-						'timestamp:desc',
-					],
-					default: 'timestamp:desc',
-				},
-				{
-					name: 'order',
-					in: 'query',
-					description: 'Fields to order results by. The order condition is applied after the sort condition, usually to break ties when the sort condition results in collision.',
-					required: false,
-					type: 'string',
-					enum: [
-						'index:asc',
-						'index:desc',
-					],
-					default: 'index:asc',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of events',
-					schema: {
-						$ref: '#/definitions/eventsWithEnvelope',
+		},
+		'/events': {
+			get: {
+				tags: [
+					'Events',
+				],
+				summary: 'Requests events data',
+				description: 'Returns events data\n RPC => get.events',
+				parameters: [
+					{
+						$ref: '#/parameters/transactionID',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+					{
+						$ref: '#/parameters/senderAddress',
+					},
+					{
+						$ref: '#/parameters/topic',
+					},
+					{
+						$ref: '#/parameters/blockID',
+					},
+					{
+						$ref: '#/parameters/height',
+					},
+					{
+						$ref: '#/parameters/timestamp',
+					},
+					{
+						$ref: '#/parameters/limit',
+					},
+					{
+						$ref: '#/parameters/offset',
+					},
+					{
+						name: 'sort',
+						in: 'query',
+						description: 'Fields to sort results by.',
+						required: false,
+						type: 'string',
+						enum: [
+							'height:asc',
+							'height:desc',
+							'timestamp:asc',
+							'timestamp:desc',
+						],
+						default: 'timestamp:desc',
+					},
+					{
+						name: 'order',
+						in: 'query',
+						description: 'Fields to order results by. The order condition is applied after the sort condition, usually to break ties when the sort condition results in collision.',
+						required: false,
+						type: 'string',
+						enum: [
+							'index:asc',
+							'index:desc',
+						],
+						default: 'index:asc',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of events',
+						schema: {
+							$ref: '#/definitions/eventsWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/fees': {
-		get: {
-			tags: [
-				'Fee',
-			],
-			summary: 'Requests fee estimates',
-			description: 'Returns fee estimates\n RPC => get.fees',
-			responses: {
-				200: {
-					description: 'Returns the fee estimate per byte used for transaction fee calculation',
-					schema: {
-						$ref: '#/definitions/FeeEstimateEnvelope',
+		'/fees': {
+			get: {
+				tags: [
+					'Fee',
+				],
+				summary: 'Requests fee estimates',
+				description: 'Returns fee estimates\n RPC => get.fees',
+				responses: {
+					200: {
+						description: 'Returns the fee estimate per byte used for transaction fee calculation',
+						schema: {
+							$ref: '#/definitions/FeeEstimateEnvelope',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/generators': {
-		get: {
-			tags: [
-				'Generators',
-			],
-			summary: 'Requests generators list',
-			description: 'Returns generators list\n RPC => get.generators',
-			parameters: [
-				{
-					$ref: '#/parameters/limit',
-				},
-				{
-					$ref: '#/parameters/offset',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of generators',
-					schema: {
-						$ref: '#/definitions/generatorsWithEnvelope',
+		'/generators': {
+			get: {
+				tags: [
+					'Generators',
+				],
+				summary: 'Requests generators list',
+				description: 'Returns generators list\n RPC => get.generators',
+				parameters: [
+					{
+						$ref: '#/parameters/limit',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+					{
+						$ref: '#/parameters/offset',
 					},
-				},
-			},
-		},
-	},
-	'/index/status': {
-		get: {
-			tags: [
-				'Index Status',
-			],
-			summary: 'Requests current indexing status.',
-			description: 'Returns current indexing status.\n RPC => get.index.status',
-			responses: {
-				200: {
-					description: 'Returns the current index status information.',
-					schema: {
-						$ref: '#/definitions/IndexStatus',
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of generators',
+						schema: {
+							$ref: '#/definitions/generatorsWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/invoke': {
-		post: {
-			tags: [
-				'Proxy',
-			],
-			summary: 'Proxy request to directly invoke application endpoint',
-			description: 'Returns endpoint response from the blockchain application in its original form.\n RPC => post.invoke',
-			parameters: [
-				{
-					$ref: '#/parameters/invokeParams',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns endpoint response from the blockchain application in its original form.',
-					schema: {
-						$ref: '#/definitions/invokeWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+		'/index/status': {
+			get: {
+				tags: [
+					'Index Status',
+				],
+				summary: 'Requests current indexing status.',
+				description: 'Returns current indexing status.\n RPC => get.index.status',
+				responses: {
+					200: {
+						description: 'Returns the current index status information.',
+						schema: {
+							$ref: '#/definitions/IndexStatus',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/market/prices': {
-		get: {
-			tags: [
-				'Market',
-			],
-			parameters: [
+		'/invoke': {
+			post: {
+				tags: [
+					'Proxy',
+				],
+				summary: 'Proxy request to directly invoke application endpoint',
+				description: 'Returns endpoint response from the blockchain application in its original form.\n RPC => post.invoke',
+				parameters: [
+					{
+						$ref: '#/parameters/invokeParams',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns endpoint response from the blockchain application in its original form.',
+						schema: {
+							$ref: '#/definitions/invokeWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
+					},
+				},
+			},
+		},
+		'/market/prices': {
+			get: {
+				tags: [
+					'Market',
+				],
+				parameters: [
 
-			],
-			summary: 'Requests market prices',
-			description: 'Returns market prices\n RPC => get.market.prices',
-			responses: {
-				200: {
-					description: 'Returns a list of market prices by currency pairs',
-					schema: {
-						$ref: '#/definitions/MarketPricesWithEnvelope',
+				],
+				summary: 'Requests market prices',
+				description: 'Returns market prices\n RPC => get.market.prices',
+				responses: {
+					200: {
+						description: 'Returns a list of market prices by currency pairs',
+						schema: {
+							$ref: '#/definitions/MarketPricesWithEnvelope',
+						},
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-		},
-	},
-	'/network/statistics': {
-		get: {
-			tags: [
-				'Network',
-			],
-			summary: 'Requests network statistics',
-			description: 'Returns network statistics data\n RPC => get.network.statistics',
-			responses: {
-				200: {
-					description: 'Returns the network statistics information',
-					schema: {
-						$ref: '#/definitions/NetworkStatistics',
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/network/status': {
-		get: {
-			tags: [
-				'Network',
-			],
-			summary: 'Requests network status',
-			description: 'Returns network status\n RPC => get.network.status',
-			responses: {
-				200: {
-					description: 'Returns the network status information',
-					schema: {
-						$ref: '#/definitions/NetworkStatus',
+		'/network/statistics': {
+			get: {
+				tags: [
+					'Network',
+				],
+				summary: 'Requests network statistics',
+				description: 'Returns network statistics data\n RPC => get.network.statistics',
+				responses: {
+					200: {
+						description: 'Returns the network statistics information',
+						schema: {
+							$ref: '#/definitions/NetworkStatistics',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/network/peers': {
-		get: {
-			tags: [
-				'Network',
-			],
-			summary: 'Requests peers data',
-			description: 'Returns peers data\n RPC => get.network.peers',
-			parameters: [
-				{
-					$ref: '#/parameters/ip',
-				},
-				{
-					$ref: '#/parameters/networkVersion',
-				},
-				{
-					$ref: '#/parameters/state',
-				},
-				{
-					$ref: '#/parameters/height',
-				},
-				{
-					$ref: '#/parameters/limit',
-				},
-				{
-					$ref: '#/parameters/offset',
-				},
-				{
-					name: 'sort',
-					in: 'query',
-					description: 'Fields to sort results by.',
-					required: false,
-					type: 'string',
-					enum: [
-						'height:asc',
-						'height:desc',
-						'networkVersion:asc',
-						'networkVersion:desc',
-					],
-					default: 'height:desc',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of peer nodes in the network',
-					schema: {
-						$ref: '#/definitions/PeersWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+		'/network/status': {
+			get: {
+				tags: [
+					'Network',
+				],
+				summary: 'Requests network status',
+				description: 'Returns network status\n RPC => get.network.status',
+				responses: {
+					200: {
+						description: 'Returns the network status information',
+						schema: {
+							$ref: '#/definitions/NetworkStatus',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/subscriptions': {
-		get: {
-			description: 'Returns subscriptions data\n RPC => get.subscriptions',
-			parameters: [
-				{
-					$ref: '#/parameters/creatorAddress',
-				},
-				{
-					$ref: '#/parameters/subscriptionID',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of subscriptions',
-					schema: {
-						$ref: '#/definitions/subscriptionsWithEnvelope',
+		'/network/peers': {
+			get: {
+				tags: [
+					'Network',
+				],
+				summary: 'Requests peers data',
+				description: 'Returns peers data\n RPC => get.network.peers',
+				parameters: [
+					{
+						$ref: '#/parameters/ip',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+					{
+						$ref: '#/parameters/networkVersion',
 					},
-				},
-			},
-			summary: 'Requests subscriptions data',
-			tags: [
-				'Subscriptions',
-			],
-		},
-	},
-	'/transactions': {
-		get: {
-			tags: [
-				'Transactions',
-			],
-			summary: 'Requests transactions data',
-			description: 'Returns transactions data\n RPC => get.transactions',
-			parameters: [
-				{
-					$ref: '#/parameters/transactionID',
-				},
-				{
-					$ref: '#/parameters/moduleCommand',
-				},
-				{
-					$ref: '#/parameters/senderAddress',
-				},
-				{
-					$ref: '#/parameters/address',
-				},
-				{
-					$ref: '#/parameters/recipientAddress',
-				},
-				{
-					$ref: '#/parameters/blockID',
-				},
-				{
-					$ref: '#/parameters/height',
-				},
-				{
-					$ref: '#/parameters/timestamp',
-				},
-				{
-					$ref: '#/parameters/executionStatus',
-				},
-				{
-					$ref: '#/parameters/nonce',
-				},
-				{
-					$ref: '#/parameters/limit',
-				},
-				{
-					$ref: '#/parameters/offset',
-				},
-				{
-					name: 'sort',
-					in: 'query',
-					description: 'Fields to sort results by.',
-					required: false,
-					type: 'string',
-					enum: [
-						'height:asc',
-						'height:desc',
-						'timestamp:asc',
-						'timestamp:desc',
-					],
-					default: 'timestamp:desc',
-				},
-				{
-					name: 'order',
-					in: 'query',
-					description: 'Fields to order results by. The order condition is applied after the sort condition, usually to break ties when the sort condition results in collision.',
-					required: false,
-					type: 'string',
-					enum: [
-						'index:asc',
-						'index:desc',
-					],
-					default: 'index:asc',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of transactions',
-					schema: {
-						$ref: '#/definitions/TransactionsWithEnvelope',
+					{
+						$ref: '#/parameters/state',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+					{
+						$ref: '#/parameters/height',
+					},
+					{
+						$ref: '#/parameters/limit',
+					},
+					{
+						$ref: '#/parameters/offset',
+					},
+					{
+						name: 'sort',
+						in: 'query',
+						description: 'Fields to sort results by.',
+						required: false,
+						type: 'string',
+						enum: [
+							'height:asc',
+							'height:desc',
+							'networkVersion:asc',
+							'networkVersion:desc',
+						],
+						default: 'height:desc',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of peer nodes in the network',
+						schema: {
+							$ref: '#/definitions/PeersWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
 		},
-		post: {
-			tags: [
-				'Transactions',
-			],
-			summary: 'Post transactions',
-			description: 'Post transactions and return transactionID\n RPC => post.transactions',
-			parameters: [
-				{
-					$ref: '#/parameters/transaction',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Broadcast transaction',
-					schema: {
-						$ref: '#/definitions/postTransactionWithEnvelope',
+		'/subscriptions': {
+			get: {
+				description: 'Returns subscriptions data\n RPC => get.subscriptions',
+				parameters: [
+					{
+						$ref: '#/parameters/creatorAddress',
+					},
+					{
+						$ref: '#/parameters/subscriptionID',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of subscriptions',
+						schema: {
+							$ref: '#/definitions/subscriptionsWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequestEnvelope',
+				summary: 'Requests subscriptions data',
+				tags: [
+					'Subscriptions',
+				],
+			},
+		},
+		'/transactions': {
+			get: {
+				tags: [
+					'Transactions',
+				],
+				summary: 'Requests transactions data',
+				description: 'Returns transactions data\n RPC => get.transactions',
+				parameters: [
+					{
+						$ref: '#/parameters/transactionID',
+					},
+					{
+						$ref: '#/parameters/moduleCommand',
+					},
+					{
+						$ref: '#/parameters/senderAddress',
+					},
+					{
+						$ref: '#/parameters/address',
+					},
+					{
+						$ref: '#/parameters/recipientAddress',
+					},
+					{
+						$ref: '#/parameters/blockID',
+					},
+					{
+						$ref: '#/parameters/height',
+					},
+					{
+						$ref: '#/parameters/timestamp',
+					},
+					{
+						$ref: '#/parameters/executionStatus',
+					},
+					{
+						$ref: '#/parameters/nonce',
+					},
+					{
+						$ref: '#/parameters/limit',
+					},
+					{
+						$ref: '#/parameters/offset',
+					},
+					{
+						name: 'sort',
+						in: 'query',
+						description: 'Fields to sort results by.',
+						required: false,
+						type: 'string',
+						enum: [
+							'height:asc',
+							'height:desc',
+							'timestamp:asc',
+							'timestamp:desc',
+						],
+						default: 'timestamp:desc',
+					},
+					{
+						name: 'order',
+						in: 'query',
+						description: 'Fields to order results by. The order condition is applied after the sort condition, usually to break ties when the sort condition results in collision.',
+						required: false,
+						type: 'string',
+						enum: [
+							'index:asc',
+							'index:desc',
+						],
+						default: 'index:asc',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of transactions',
+						schema: {
+							$ref: '#/definitions/TransactionsWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
-				500: {
-					description: 'Internal server error',
-					schema: {
-						$ref: '#/definitions/serverErrorEnvelope',
+			},
+			post: {
+				tags: [
+					'Transactions',
+				],
+				summary: 'Post transactions',
+				description: 'Post transactions and return transactionID\n RPC => post.transactions',
+				parameters: [
+					{
+						$ref: '#/parameters/transaction',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Broadcast transaction',
+						schema: {
+							$ref: '#/definitions/postTransactionWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequestEnvelope',
+						},
+					},
+					500: {
+						description: 'Internal server error',
+						schema: {
+							$ref: '#/definitions/serverErrorEnvelope',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/schemas': {
-		get: {
-			tags: [
-				'Schemas',
-			],
-			summary: 'Requests schemas.',
-			description: 'Returns schemas.\n RPC => get.schemas',
-			responses: {
-				200: {
-					description: 'Returns a list of schemas.',
-					schema: {
-						$ref: '#/definitions/SchemaWithEnvelope',
+		'/schemas': {
+			get: {
+				tags: [
+					'Schemas',
+				],
+				summary: 'Requests schemas.',
+				description: 'Returns schemas.\n RPC => get.schemas',
+				responses: {
+					200: {
+						description: 'Returns a list of schemas.',
+						schema: {
+							$ref: '#/definitions/SchemaWithEnvelope',
+						},
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-		},
-	},
-	'/transactions/dryrun': {
-		post: {
-			tags: [
-				'Transactions',
-			],
-			summary: 'Dry run transactions.',
-			description: 'Dry run transactions.\n RPC => post.transactions.dryrun',
-			parameters: [
-				{
-					$ref: '#/parameters/dryrunTransaction',
-				},
-			],
-			responses: {
-				200: {
-					description: "Dry run transactions. 'errorMessage' is available only when 'result: -1'.",
-					schema: {
-						$ref: '#/definitions/dryTransactionWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-				500: {
-					description: 'Internal server error',
-					schema: {
-						$ref: '#/definitions/serverErrorEnvelope',
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/transactions/statistics': {
-		get: {
-			tags: [
-				'Transactions',
-			],
-			summary: 'Requests transaction statistics',
-			description: 'Returns transaction statistics\n RPC => get.transactions.statistics',
-			parameters: [
-				{
-					name: 'interval',
-					in: 'query',
-					description: 'interval to query statistics',
-					required: true,
-					type: 'string',
-					enum: [
-						'day',
-						'month',
-					],
-				},
-				{
-					$ref: '#/parameters/limit',
-				},
-				{
-					$ref: '#/parameters/offset',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of transactions statistics by date or month',
-					schema: {
-						$ref: '#/definitions/TransactionsStatisticsWithEnvelope',
+		'/transactions/dryrun': {
+			post: {
+				tags: [
+					'Transactions',
+				],
+				summary: 'Dry run transactions.',
+				description: 'Dry run transactions.\n RPC => post.transactions.dryrun',
+				parameters: [
+					{
+						$ref: '#/parameters/dryrunTransaction',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+				],
+				responses: {
+					200: {
+						description: "Dry run transactions. 'errorMessage' is available only when 'result: -1'.",
+						schema: {
+							$ref: '#/definitions/dryTransactionWithEnvelope',
+						},
 					},
-				},
-				503: {
-					description: 'Service Unavailable',
-					schema: {
-						$ref: '#/definitions/serviceUnavailable',
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
+					},
+					500: {
+						description: 'Internal server error',
+						schema: {
+							$ref: '#/definitions/serverErrorEnvelope',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/auth': {
-		get: {
-			tags: [
-				'Auth',
-			],
-			summary: 'Requests auth details by address',
-			description: 'Returns auth details by address\n RPC => get.auth',
-			parameters: [
-				{
-					$ref: '#/parameters/address',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Auth details',
-					schema: {
-						$ref: '#/definitions/authWithEnvelope',
+		'/transactions/statistics': {
+			get: {
+				tags: [
+					'Transactions',
+				],
+				summary: 'Requests transaction statistics',
+				description: 'Returns transaction statistics\n RPC => get.transactions.statistics',
+				parameters: [
+					{
+						name: 'interval',
+						in: 'query',
+						description: 'interval to query statistics',
+						required: true,
+						type: 'string',
+						enum: [
+							'day',
+							'month',
+						],
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+					{
+						$ref: '#/parameters/limit',
 					},
-				},
-			},
-		},
-	},
-	'/validator': {
-		get: {
-			tags: [
-				'Validator',
-			],
-			summary: 'Requests validator information',
-			description: 'Returns validator information\n RPC => get.validator',
-			parameters: [
-				{
-					$ref: '#/parameters/address',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns validator information by address',
-					schema: {
-						$ref: '#/definitions/validatorWithEnvelope',
+					{
+						$ref: '#/parameters/offset',
 					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+				],
+				responses: {
+					200: {
+						description: 'Returns a list of transactions statistics by date or month',
+						schema: {
+							$ref: '#/definitions/TransactionsStatisticsWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
+					},
+					503: {
+						description: 'Service Unavailable',
+						schema: {
+							$ref: '#/definitions/serviceUnavailable',
+						},
 					},
 				},
 			},
 		},
-	},
-	'/validator/validate-bls-key': {
-		post: {
-			tags: [
-				'Validator',
-			],
-			summary: 'Validates a BLS key against its corresponding Proof of Possession.',
-			description: 'Validates a BLS key against its corresponding Proof of Possession.\n RPC => post.validator.validate-bls-key',
-			parameters: [
-				{
-					$ref: '#/parameters/validateBLSKeyParams',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a boolean representing the validity of the supplied BLS key and Proof of Possession.',
-					schema: {
-						$ref: '#/definitions/blsKeyValidationWithEnvelope',
+		'/auth': {
+			get: {
+				tags: [
+					'Auth',
+				],
+				summary: 'Requests auth details by address',
+				description: 'Returns auth details by address\n RPC => get.auth',
+				parameters: [
+					{
+						$ref: '#/parameters/address',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Auth details',
+						schema: {
+							$ref: '#/definitions/authWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
+			},
+		},
+		'/validator': {
+			get: {
+				tags: [
+					'Validator',
+				],
+				summary: 'Requests validator information',
+				description: 'Returns validator information\n RPC => get.validator',
+				parameters: [
+					{
+						$ref: '#/parameters/address',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns validator information by address',
+						schema: {
+							$ref: '#/definitions/validatorWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
+					},
+				},
+			},
+		},
+		'/validator/validate-bls-key': {
+			post: {
+				tags: [
+					'Validator',
+				],
+				summary: 'Validates a BLS key against its corresponding Proof of Possession.',
+				description: 'Validates a BLS key against its corresponding Proof of Possession.\n RPC => post.validator.validate-bls-key',
+				parameters: [
+					{
+						$ref: '#/parameters/validateBLSKeyParams',
+					},
+				],
+				responses: {
+					200: {
+						description: 'Returns a boolean representing the validity of the supplied BLS key and Proof of Possession.',
+						schema: {
+							$ref: '#/definitions/blsKeyValidationWithEnvelope',
+						},
+					},
+					400: {
+						description: 'Bad request',
+						schema: {
+							$ref: '#/definitions/badRequest',
+						},
 					},
 				},
 			},
