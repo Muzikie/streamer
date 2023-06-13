@@ -31,10 +31,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const profilesTable = await getProfilesTable();
 	const socialAccountsTable = await getSocialAccountsTable();
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
-	
+
 	const account = {
 		address: senderAddress,
 	};
+
 	logger.trace(`Indexing profiles with address ${account.address}.`);
 	const [existingProfile] = await profilesTable.find(
 		{ profileID: tx.params.profileID },
@@ -46,19 +47,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	}
 
 	const newProfile = {
-		// Copy existing profile properties
 		...tx.params,
-		// Use the existing creatorAddress, prevent changing it
+		profileID: existingProfile.profileID,
+		creatorAddress: existingProfile.creatorAddress,
 	};
-	newProfile.profileID = existingProfile.profileID;
-	newProfile.creatorAddress = existingProfile.creatorAddress;
 
-	// // Copy properties from tx.params.profile dynamically
-	// Object.keys(tx.params.profile).forEach((property) => {
-	// 	if (property !== 'profileID' && property !== 'creatorAddress') {
-	// 		profile[property] = tx.params.profile[property];
-	// 	}
-	// });
 	// Delete existing social account records
 	await socialAccountsTable.delete({ profileID: existingProfile.profileID }, dbTrx);
 
@@ -80,7 +73,6 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	);
 
 	// Update the profile record
-
 	await profilesTable.upsert(newProfile, dbTrx);
 	logger.debug(`Updated profile with ID ${existingProfile.profileID}.`);
 };
