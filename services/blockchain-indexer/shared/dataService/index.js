@@ -67,6 +67,7 @@ const {
 	getPendingTransactions,
 	reloadAllPendingTransactions,
 	postTransactions,
+	submitTransactions,
 	getTransactionsByBlockID,
 	dryRunTransactions,
 } = require('./transactions');
@@ -127,6 +128,7 @@ module.exports = {
 	getPendingTransactions,
 	reloadAllPendingTransactions,
 	postTransactions,
+	submitTransactions,
 	getTransactionsByBlockID,
 	dryRunTransactions,
 

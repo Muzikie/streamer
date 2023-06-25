@@ -123,6 +123,13 @@ const postTransactions = async params => {
 	}
 };
 
+const submitTransactions = async (params) => {
+	// Here we should receive the file and transaction
+	return {
+		message: 'Transaction submitted successfully',
+	};
+};
+
 const initPendingTransactionsList = () => dataService.loadAllPendingTransactions();
 
 const reload = () => dataService.loadAllPendingTransactions();
@@ -137,6 +144,7 @@ module.exports = {
 	getPendingTransactions,
 	initPendingTransactionsList,
 	reloadAllPendingTransactions: reload,
+	submitTransactions,
 	postTransactions,
 	getTransactionsByBlockID: dataService.getTransactionsByBlockID,
 	dryRunTransactions,

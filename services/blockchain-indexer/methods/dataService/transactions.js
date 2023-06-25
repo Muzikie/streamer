@@ -13,14 +13,17 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-
+const multer = require('multer');
 const {
 	getTransactions,
 	getPendingTransactions,
 	postTransactions,
+	submitTransactions,
 	getSchemas,
 	dryRunTransactions,
 } = require('./controllers/transactions');
+
+const upload = multer().single('file');
 
 module.exports = [
 	{
@@ -50,10 +53,17 @@ module.exports = [
 		params: {},
 	},
 	{
-		name: 'transactions.post',
+		name: 'transactions.post', // This is the registered name in the moleculer registry
 		controller: postTransactions,
 		params: {
 			transaction: { optional: false, type: 'string' },
+		},
+	},
+	{
+		name: 'transactions.submit', // This is the registered name in the moleculer registry
+		controller: submitTransactions,
+		params: {
+			transaction: { optional: true, type: 'string' },
 		},
 	},
 	{

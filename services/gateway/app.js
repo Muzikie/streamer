@@ -116,6 +116,7 @@ tempApp.run().then(async () => {
 					'Access-Control-Request-Method',
 					'Access-Control-Request-Headers',
 					'Access-Control-Max-Age',
+					'Accept',
 				],
 				exposedHeaders: [],
 				credentials: false,
