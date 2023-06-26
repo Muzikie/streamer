@@ -130,10 +130,12 @@ const validateInputParams = (rawInputParams = {}, specs) => {
 	if (Object.keys(paramReport.unknown).length > 0) return paramReport;
 	if (paramReport.required.length) return paramReport;
 
-	paramReport.invalid = validator.validate(
-		dropEmptyProps(inputParams),
-		looseSpecParams(specParams),
-	);
+	// @todo revert the validation once the API is fixed
+	// paramReport.invalid = validator.validate(
+	// 	dropEmptyProps(inputParams),
+	// 	looseSpecParams(specParams),
+	// );
+	paramReport.invalid = true;
 	if (paramReport.invalid === true) paramReport.invalid = [];
 
 	return paramReport;

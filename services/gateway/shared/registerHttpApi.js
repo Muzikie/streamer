@@ -114,6 +114,7 @@ const registerApi = (apiNames, config, registeredModuleNames) => {
 		},
 
 		async onBeforeCall(ctx, route, req, res) {
+			console.log('ctx', ctx);
 			const sendResponse = (code, message) => {
 				res.setHeader('Content-Type', 'application/json');
 				res.writeHead(code || 400);

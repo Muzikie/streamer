@@ -17,7 +17,7 @@ module.exports = {
 	type: 'moleculer',
 	method: 'indexer.transactions.submit',
 	params: {
-		transaction: '=,string',
+		file: '=,multipart',
 	},
 	definition: {
 		message: '=',

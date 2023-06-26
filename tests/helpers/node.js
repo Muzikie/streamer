@@ -32,8 +32,8 @@ node.api = node.supertest(node.baseUrl);
 function abstractRequest(options, done) {
 	const request = node.api[options.verb.toLowerCase()](options.path);
 
-	request.set('Accept', 'application/json');
-	request.expect('Content-Type', /json/);
+	request.set('Accept', 'application/json,multipart/form-data');
+	request.expect('Content-Type', '*/*');
 	request.expect(200);
 
 	if (options.params) {

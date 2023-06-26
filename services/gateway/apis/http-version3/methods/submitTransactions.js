@@ -23,7 +23,7 @@ module.exports = {
 	rpcMethod: 'submit.transactions', // not this
 	tags: ['Transactions'],
 	params: {
-		transaction: { optional: true, type: 'string' },
+		file: { optional: true, type: 'multipart' },
 	},
 	get schema() {
 		const submitTransactionSchema = {};
