@@ -24,6 +24,12 @@ const createApiDocsExpectedResponse = {
 				{
 					$ref: '#/parameters/audioID',
 				},
+				{
+					$ref: '#/parameters/collectionID',
+				},
+				{
+					$ref: '#/parameters/ownerAddress',
+				},
 			],
 			responses: {
 				200: {

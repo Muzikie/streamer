@@ -47,10 +47,13 @@ const getAudios = async (params = {}) => {
 		// audiosID
 		const audioIDs = await ownersTable.find(
 			{ address: params.ownerAddress },
-			['audioID'],
+			['audioID', 'shares'],
 		);
+
+		const filteredAudioIDs = audioIDs.filter(audio => audio.shares > 0);
+
 		audioData = await BluebirdPromise.map(
-			audioIDs,
+			filteredAudioIDs,
 			async (audioID) => {
 				const audio = await audiosTable.find(
 					{ audioID: audioID.audioID },
