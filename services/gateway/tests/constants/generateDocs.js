@@ -764,6 +764,9 @@ const createApiDocsExpectedResponse = {
 				{
 					$ref: '#/parameters/subscriptionID',
 				},
+				{
+					$ref: '#/parameters/memberAddress',
+				},
 			],
 			responses: {
 				200: {
