@@ -20,48 +20,52 @@ const getMembersIndex = () => getTableInstance(
 	membersIndexSchema,
 	MYSQL_ENDPOINT,
 );
-const getActiveSubscriptionsForMember = async (params = {}) => {
+const getActiveSubscriptionsByMemberAddress = async (params = {}) => {
 	const membersTable = await getMembersIndex();
 	const subscriptionsTable = await getSubscriptionsIndex();
-
-	// Find rows [project on 'shared' field] that has address == memberAddress && removedBy == null
-	const total = await subscriptionsTable.count(params);
-	const members = await membersTable.find(
-		{ ...params, limit: params.limit || total },
-		// ['subscriptionID', 'creatorAddress', 'price', 'consumable', 'maxMembers', 'streams'],
-		['id', 'address', 'shared', 'addedBy', 'removedBy'],
-	);
-	// We assume that member is always on just 1 active subscription
-	// Find all subscriptions that (subscriptionID == 'shared')
-	const data = await BluebirdPromise.map(
-		members,
-		async member => {
-			const subscriptions = await subscriptionsTable.find(
-				{ shared: member.shared }, // member[0]
-				['subscriptionID', 'creatorAddress', 'price', 'consumable', 'maxMembers', 'streams'],
-			);
-			member.subscription = subscriptions.map(
-				subscription => ({ subscriptionID: subscription.shared }));
-			return member;
-		},
-		{ concurrency: members.length },
-	);
-
 	const result = {
-		data,
+		data: {},
 		meta: {
-			count: data.length,
+			count: 0,
 			offset: parseInt(params.offset, 10) || 0,
-			total,
+			total: 0,
 		},
 	};
-	return result;
+	try {
+		const member = await membersTable.find(
+			{ address: params.memberAddress },
+			['id', 'address', 'shared', 'addedBy', 'removedBy'],
+		);
+		if (member) {
+			const data = await subscriptionsTable.find(
+				{ subscriptionID: member[0].shared },
+				['subscriptionID', 'creatorAddress', 'price', 'consumable', 'maxMembers', 'streams'],
+			);
+			if (data) {
+				return {
+					data,
+					meta: {
+						count: 1,
+						offset: parseInt(params.offset, 10) || 0,
+						total: 1,
+					},
+				};
+			}
+		}
+		return result;
+	} catch (error) {
+		return {
+			data: {},
+			meta: {
+				count: 0,
+				offset: parseInt(params.offset, 10) || 0,
+				total: 0,
+			},
+		};
+	}
 };
 
-const getSubscriptions = async (params = {}) => {
-	if (params.memberAddress !== null) {
-		return getActiveSubscriptionsForMember(params);
-	}
+const getSubscriptionsBySubscriptionIdOrCreatorAddress = async (params = {}) => {
 	const subscriptionsTable = await getSubscriptionsIndex();
 	const membersTable = await getMembersIndex();
 
@@ -93,6 +97,13 @@ const getSubscriptions = async (params = {}) => {
 		},
 	};
 	return result;
+};
+
+const getSubscriptions = async (params = {}) => {
+	if (params.memberAddress) {
+		return getActiveSubscriptionsByMemberAddress(params);
+	}
+	return getSubscriptionsBySubscriptionIdOrCreatorAddress(params);
 };
 
 module.exports = {

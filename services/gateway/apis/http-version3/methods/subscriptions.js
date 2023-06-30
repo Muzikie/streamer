@@ -27,7 +27,7 @@ module.exports = {
 	params: {
 		creatorAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
 		subscriptionID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
-		memberAddress: { type: 'string', required: false },
+		memberAddress: { optional: true, type: 'string' },
 	},
 	get schema() {
 		const subscriptionSchema = {};
