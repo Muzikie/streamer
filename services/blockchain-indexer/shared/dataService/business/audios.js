@@ -62,7 +62,7 @@ const getAudios = async (params = {}) => {
 
 				return audio[0];
 			},
-			{ concurrency: audioIDs.length },
+			{ concurrency: filteredAudioIDs.length },
 		);
 	} else {
 		audioData = await audiosTable.find(
