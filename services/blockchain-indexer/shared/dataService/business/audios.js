@@ -41,11 +41,37 @@ const getAudios = async (params = {}) => {
 	const ownersTable = await getOwnersIndex();
 	const featsTable = await getFeatsIndex();
 
-	const total = await audiosTable.count(params);
-	const audioData = await audiosTable.find(
-		{ ...params, limit: params.limit || total },
-		['audioID', 'creatorAddress', 'name', 'releaseYear', 'collectionID'],
-	);
+	let audioData = [];
+
+	if (params.ownerAddress) {
+		// audiosID
+		const audioIDs = await ownersTable.find(
+			{ address: params.ownerAddress },
+			['audioID', 'shares'],
+		);
+
+		const filteredAudioIDs = audioIDs.filter(audio => audio.shares > 0);
+
+		audioData = await BluebirdPromise.map(
+			filteredAudioIDs,
+			async (audioID) => {
+				const audio = await audiosTable.find(
+					{ audioID: audioID.audioID },
+					['audioID', 'creatorAddress', 'name', 'releaseYear', 'collectionID'],
+				);
+
+				return audio[0];
+			},
+			{ concurrency: filteredAudioIDs.length },
+		);
+	} else {
+		audioData = await audiosTable.find(
+			{ ...params, limit: params.limit },
+			['audioID', 'creatorAddress', 'name', 'releaseYear', 'collectionID'],
+		);
+	}
+
+	const total = audioData.length;
 
 	const data = await BluebirdPromise.map(
 		audioData,
