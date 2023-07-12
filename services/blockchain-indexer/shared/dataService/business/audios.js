@@ -46,7 +46,7 @@ const getAudios = async (params = {}) => {
 	if (params.ownerAddress) {
 		// audiosID
 		const audioIDs = await ownersTable.find(
-			{ address: params.ownerAddress },
+			{ address: params.ownerAddress, limit: params.limit },
 			['audioID', 'shares'],
 		);
 

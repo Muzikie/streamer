@@ -13,6 +13,8 @@ module.exports = {
 		audioID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
 		collectionID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
 		ownerAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
+		limit: { optional: true, type: 'number', min: 1, max: 100, default: 10 },
+		offset: { optional: true, type: 'number', min: 0, default: 0 },
 	},
 	get schema() {
 		const audioSchema = {};

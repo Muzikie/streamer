@@ -25,8 +25,7 @@ const getProfiles = async (params = {}) => {
 	const total = await profilesTable.count(params);
 	const profilesData = await profilesTable.find(
 		{ ...params, limit: params.limit || 10 },
-		// ['profileID', 'name', 'nickName', 'description', 'socialAccounts', 'creatorAddress'],
-		['profileID', 'name', 'nickName', 'description', 'creatorAddress'],
+		['profileID', 'name', 'nickName', 'description', 'creatorAddress', 'avatarHash', 'avatarSignature', 'bannerHash', 'bannerSignature'],
 	);
 	const socialAccountsTable = await getSocialAccountsIndex();
 
