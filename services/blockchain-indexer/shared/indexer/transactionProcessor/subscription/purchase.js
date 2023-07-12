@@ -62,7 +62,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		async member => {
 			const oldAccount = { address: member };
 			logger.trace(`Updating account index for the account with address ${member}.`);
-			await accountsTable.upsert(oldAccount, dbTrx);
+			await accountsTable.upsert(oldAccount, dbTrx);// Create account for that member if not exists
 			logger.debug(`Updated account index for the account with address ${member}.`);
 
 			const memberData = {
@@ -71,7 +71,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 				addedBy: tx.id,
 				shared: subscriptionID,
 			};
-
+			// subscription members
 			logger.trace(`Updating member index for the member with address ${member}.`);
 			await membersTable.upsert(memberData, dbTrx);
 			logger.debug(`Updated member index for the member with address ${member}.`);

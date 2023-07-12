@@ -2,11 +2,11 @@ module.exports = {
 	tableName: 'members',
 	primaryKey: 'id',
 	schema: {
-		id: { type: 'string' },
-		address: { type: 'string' },
-		shared: { type: 'string', null: true },
-		addedBy: { type: 'string', null: true },
-		removedBy: { type: 'string', null: true },
+		id: { type: 'string' }, // memberAddress-nonce
+		address: { type: 'string' }, // memberAddress
+		shared: { type: 'string', null: true }, // subscriptionID
+		addedBy: { type: 'string', null: true }, // transactionID
+		removedBy: { type: 'string', null: true }, // transactionID
 	},
 	indexes: {
 		shared: { type: 'key' },
