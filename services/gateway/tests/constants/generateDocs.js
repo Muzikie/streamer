@@ -30,6 +30,12 @@ const createApiDocsExpectedResponse = {
 				{
 					$ref: '#/parameters/ownerAddress',
 				},
+				{
+					$ref: '#/parameters/limit',
+				},
+				{
+					$ref: '#/parameters/offset',
+				},
 			],
 			responses: {
 				200: {
