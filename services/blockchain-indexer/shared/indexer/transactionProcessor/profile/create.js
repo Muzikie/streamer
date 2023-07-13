@@ -73,12 +73,11 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		async socialAccount => {
 			const socialInfo = {
 				profileID: eventData.profileID,
-				username: socialAccount.username,
-				platform: socialAccount.platform,
+				...socialAccount,
 			};
-			logger.trace(`Inserting social sccounts for the profile with ID ${eventData.profileID}.`);
+			logger.trace(`Inserting social accounts for the profile with ID ${eventData.profileID}.`);
 			await socialAccountsTable.upsert(socialInfo, dbTrx);
-			logger.debug(`Inserted social sccounts for the profile with ID ${eventData.profileID}.`);
+			logger.debug(`Inserted social accounts for the profile with ID ${eventData.profileID}.`);
 			return true;
 		},
 		{ concurrency: tx.params.socialAccounts.length },
