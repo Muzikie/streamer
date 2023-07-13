@@ -58,6 +58,11 @@ const expectedResponseForRegisterHttpApi = [
 			'indexer.validateBLSKey',
 			'export.transactions.csv',
 			'export.transactions.schedule',
+			'indexer.audios',
+			'indexer.collections',
+			'connector.invokeEndpoint', // connector or indexer?
+			'indexer.profiles',
+			'indexer.token.balances',
 		],
 		aliases: {
 			'GET blocks/assets': 'indexer.blocks.assets',
@@ -101,6 +106,9 @@ const expectedResponseForRegisterHttpApi = [
 			'POST validator/validate-bls-key': 'indexer.validateBLSKey',
 			'GET export/download': 'export.transactions.csv',
 			'GET export/transactions': 'export.transactions.schedule',
+			'GET collections': 'indexer.collections',
+			'GET profiles': 'indexer.profiles',
+			'GET audios': 'indexer.audios',
 		},
 		path: '/v3',
 		etag: 'strong',
@@ -122,6 +130,7 @@ const expectedResponseForRegisterRpcApi = {
 	events: {
 		request: {
 			whitelist: [
+				'indexer.audios',
 				'indexer.blocks.assets',
 				'indexer.blockchain.apps',
 				'app-registry.blockchain.apps.meta.list',
@@ -130,6 +139,7 @@ const expectedResponseForRegisterRpcApi = {
 				'app-registry.blockchain.apps.meta.tokens',
 				'app-registry.blockchain.apps.meta.tokens.supported',
 				'indexer.blocks',
+				'indexer.collections',
 				'indexer.events',
 				'fees.estimates',
 				'indexer.generators',
@@ -140,7 +150,9 @@ const expectedResponseForRegisterRpcApi = {
 				'indexer.network.statistics',
 				'indexer.network.status',
 				'indexer.transactions.post',
+				'indexer.profiles',
 				'indexer.schemas',
+				'indexer.subscriptions',
 				'indexer.transactions',
 				'indexer.transactions.dryrun',
 				'indexer.transactions.estimate-fees',
@@ -165,6 +177,8 @@ const expectedResponseForRegisterRpcApi = {
 			],
 			aliases: {
 				'get.blocks.assets': 'indexer.blocks.assets',
+				'get.collections': 'indexer.collections',
+				'get.audios': 'indexer.audios',
 				'get.blockchain.apps': 'indexer.blockchain.apps',
 				'get.blockchain.apps.meta.list': 'app-registry.blockchain.apps.meta.list',
 				'get.blockchain.apps.meta': 'app-registry.blockchain.apps.meta',
@@ -181,8 +195,10 @@ const expectedResponseForRegisterRpcApi = {
 				'get.network.peers': 'indexer.network.peers',
 				'get.network.statistics': 'indexer.network.statistics',
 				'get.network.status': 'indexer.network.status',
+				'get.profiles': 'indexer.profiles',
 				'post.transactions': 'indexer.transactions.post',
 				'get.schemas': 'indexer.schemas',
+				'get.subscriptions': 'indexer.subscriptions',
 				'get.transactions': 'indexer.transactions',
 				'post.transactions.estimate-fees': 'indexer.transactions.estimate-fees',
 				'post.transactions.dryrun': 'indexer.transactions.dryrun',

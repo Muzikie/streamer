@@ -102,6 +102,12 @@ const { invokeEndpoint } = require('./invoke');
 
 const { setFeeEstimates, getFeeEstimates } = require('./feeEstimates');
 
+// Muzikie Dedicated Modules
+const { getSubscriptions } = require('./subscriptions');
+const { getCollections } = require('./collections');
+const { getAudios } = require('./audios');
+const { getProfiles } = require('./profiles');
+
 module.exports = {
 	// Generators
 	getGenerators,
@@ -194,4 +200,15 @@ module.exports = {
 	resolveMainchainServiceURL,
 
 	invokeEndpoint,
+	// subscriptions
+	getSubscriptions,
+
+	// collections
+	getCollections,
+
+	// audios
+	getAudios,
+
+	// profiles
+	getProfiles,
 };

@@ -100,6 +100,10 @@ const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
 const { invokeEndpoint } = require('./invoke');
+const { getSubscriptions } = require('./subscriptions');
+const { getCollections } = require('./collections');
+const { getAudios } = require('./audios');
+const { getProfiles } = require('./profiles');
 
 module.exports = {
 	// Blocks
@@ -196,4 +200,15 @@ module.exports = {
 	resolveMainchainServiceURL,
 
 	invokeEndpoint,
+	// Subscriptions
+	getSubscriptions,
+
+	// Collections
+	getCollections,
+
+	// Audios
+	getAudios,
+
+	// Profiles
+	getProfiles,
 };

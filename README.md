@@ -1,14 +1,14 @@
-![Logo](./docs/assets/banner_service.png)
-
-# Lisk Service
+# Muzikie Streamer
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/liskHQ/lisk-service)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/muzikie/streamer)
 ![GitHub repo size](https://img.shields.io/github/repo-size/liskhq/lisk-service)
 [![DeepScan grade](https://deepscan.io/api/teams/6759/projects/8870/branches/113510/badge/grade.svg)](https://deepscan.io/dashboard/#view=project&tid=6759&pid=14719&bid=279961)
-![GitHub issues](https://img.shields.io/github/issues-raw/liskhq/lisk-service)
-![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/liskhq/lisk-service)
+![GitHub issues](https://img.shields.io/github/issues-raw/muzikie/streamer)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/muzikie/streamer)
 [![Code coverage](https://codecov.io/gh/LiskHQ/lisk-service/branch/development/graph/badge.svg?token=987H7T2C3K)](https://codecov.io/gh/LiskHQ/lisk-service)
+
+Muzikie Streamer is created based on Lisk Service and adapted to the Muzikie Blockchain.
 
 Lisk Service is a web application middleware that allows interaction with various blockchain networks based on the Lisk protocol.
 
@@ -159,7 +159,7 @@ The possibility to customize and build Lisk Service from a local source is descr
 
 ## Contributors
 
-https://github.com/LiskHQ/lisk-service/graphs/contributors
+https://github.com/muzikie/streamer/graphs/contributors
 
 ## License
 
