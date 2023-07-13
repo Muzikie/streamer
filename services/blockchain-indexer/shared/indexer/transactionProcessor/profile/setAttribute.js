@@ -61,8 +61,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		async (socialAccount) => {
 			const socialInfo = {
 				profileID: existingProfile.profileID,
-				username: socialAccount.username,
-				platform: socialAccount.platform,
+				...socialAccount,
 			};
 			logger.trace(`Updating social accounts for the profile with ID ${existingProfile.profileID}.`);
 			await socialAccountsTable.upsert(socialInfo, dbTrx);
