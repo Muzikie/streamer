@@ -1,22 +1,22 @@
 {
-  "name": "lisk-service",
-  "version": "0.7.0-beta.0",
-  "description": "Lisk Service",
+  "name": "muzikie-streamer",
+  "version": "0.3.0",
+  "description": "Muzikie Streamer",
   "keywords": [
-    "lisk",
+    "muzikie",
     "service",
     "blockchain"
   ],
-  "homepage": "https://github.com/LiskHQ/lisk-service",
+  "homepage": "https://github.com/Muzikie/muzikie",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LiskHQ/lisk-service.git"
+    "url": "git+https://github.com/Muzikie/muzikie.git"
   },
   "bugs": {
-    "url": "https://github.com/LiskHQ/lisk-service/issues"
+    "url": "https://github.com/Muzikie/muzikie/issues"
   },
   "private": true,
-  "author": "Lisk Foundation <admin@lisk.com>, lightcurve GmbH <admin@lightcurve.io>",
+  "author": "Muzikie <dev@muzikie.com>, Lisk Foundation <admin@lisk.com>, lightcurve GmbH <admin@lightcurve.io>",
   "license": "Apache-2.0",
   "main": "app.js",
   "engines": {
