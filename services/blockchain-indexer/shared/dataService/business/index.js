@@ -95,6 +95,12 @@ const {
 	getNetworkPeersStatistics,
 } = require('./network');
 
+// Muzikie Dedicated Modules
+const { getSubscriptions } = require('./subscriptions');
+const { getCollections } = require('./collections');
+const { getAudios } = require('./audios');
+const { getProfiles } = require('./profiles');
+
 module.exports = {
 	// Generators
 	getGenerators,
@@ -175,4 +181,16 @@ module.exports = {
 	getNetworkConnectedPeers,
 	getNetworkDisconnectedPeers,
 	getNetworkPeersStatistics,
+
+	// subscriptions
+	getSubscriptions,
+
+	// collections
+	getCollections,
+
+	// audios
+	getAudios,
+
+	// profiles
+	getProfiles,
 };
