@@ -17,6 +17,7 @@ module.exports = {
 		bannerHash: '=,string',
 		bannerSignature: '=,string',
 		creatorAddress: '=,string',
+		search: '=,string',
 	},
 	definition: {
 		data: ['data', profile],

@@ -13,6 +13,7 @@ module.exports = {
 		// 	audioID: '=,string',
 		// 	name: '=,number',
 		// }],
+		search: '=,string',
 		limit: '=,number',
 		offset: '=,number',
 		sort: '=,string',

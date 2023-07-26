@@ -41,6 +41,16 @@ const getAudios = async (params = {}) => {
 	const ownersTable = await getOwnersIndex();
 	const featsTable = await getFeatsIndex();
 
+	if (params.search) {
+		const { search, ...remParams } = params;
+		params = remParams;
+
+		params.search = {
+			property: 'name',
+			pattern: search,
+		};
+	}
+
 	let audioData = [];
 
 	if (params.ownerAddress) {
