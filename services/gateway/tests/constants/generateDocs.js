@@ -19,9 +19,6 @@ const createApiDocsExpectedResponse = {
 			description: 'Returns audios data\n RPC => get.audios',
 			parameters: [
 				{
-					$ref: '#/parameters/name',
-				},
-				{
 					$ref: '#/parameters/creatorAddress',
 				},
 				{
@@ -32,6 +29,9 @@ const createApiDocsExpectedResponse = {
 				},
 				{
 					$ref: '#/parameters/ownerAddress',
+				},
+				{
+					$ref: '#/parameters/search',
 				},
 				{
 					$ref: '#/parameters/limit',
@@ -458,13 +458,13 @@ const createApiDocsExpectedResponse = {
 			description: 'Returns collections data\n RPC => get.collections',
 			parameters: [
 				{
-					$ref: '#/parameters/name',
-				},
-				{
 					$ref: '#/parameters/creatorAddress',
 				},
 				{
 					$ref: '#/parameters/collectionID',
+				},
+				{
+					$ref: '#/parameters/search',
 				},
 			],
 			responses: {
@@ -936,10 +936,7 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/profileID',
 				},
 				{
-					$ref: '#/parameters/name',
-				},
-				{
-					$ref: '#/parameters/nickName',
+					$ref: '#/parameters/search',
 				},
 			],
 			responses: {

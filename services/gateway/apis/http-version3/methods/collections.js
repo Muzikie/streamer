@@ -9,7 +9,6 @@ module.exports = {
 	rpcMethod: 'get.collections',
 	tags: ['Collections'],
 	params: {
-		name: { optional: true, type: 'string', min: 3, max: 50, pattern: /^[A-Za-z0-9\s]{3,50}$/ },
 		creatorAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
 		collectionID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
 		search: { optional: true, type: 'string' },

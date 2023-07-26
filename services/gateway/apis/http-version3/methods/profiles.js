@@ -11,8 +11,6 @@ module.exports = {
 	params: {
 		creatorAddress: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
 		profileID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
-		name: { optional: true, type: 'string', min: 3, max: 50, pattern: /^[A-Za-z0-9\s]{3,50}$/ },
-		nickName: { optional: true, type: 'string', pattern: /^[\w\s!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{3,20}$/ },
 		search: { optional: true, type: 'string' },
 	},
 	get schema() {
