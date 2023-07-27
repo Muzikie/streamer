@@ -31,6 +31,9 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/ownerAddress',
 				},
 				{
+					$ref: '#/parameters/search',
+				},
+				{
 					$ref: '#/parameters/limit',
 				},
 				{
@@ -459,6 +462,9 @@ const createApiDocsExpectedResponse = {
 				},
 				{
 					$ref: '#/parameters/collectionID',
+				},
+				{
+					$ref: '#/parameters/search',
 				},
 			],
 			responses: {
@@ -928,6 +934,9 @@ const createApiDocsExpectedResponse = {
 				},
 				{
 					$ref: '#/parameters/profileID',
+				},
+				{
+					$ref: '#/parameters/search',
 				},
 			],
 			responses: {

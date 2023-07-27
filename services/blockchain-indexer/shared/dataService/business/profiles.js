@@ -22,6 +22,17 @@ const getSocialAccountsIndex = () => getTableInstance(
 
 const getProfiles = async (params = {}) => {
 	const profilesTable = await getProfilesIndex();
+
+	if (params.search) {
+		const { search, ...remParams } = params;
+		params = remParams;
+
+		params.search = {
+			property: 'name',
+			pattern: search,
+		};
+	}
+
 	const total = await profilesTable.count(params);
 	const profilesData = await profilesTable.find(
 		{ ...params, limit: params.limit || 10 },

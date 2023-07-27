@@ -24,6 +24,7 @@ module.exports = {
 			name: '=,string',
 			role: '=,string',
 		}],
+		search: '=,string',
 		limit: '=,number',
 		offset: '=,number',
 		sort: '=,string',

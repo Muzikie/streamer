@@ -15,6 +15,16 @@ const getCollectionsIndex = () => getTableInstance(
 const getCollections = async (params = {}) => {
 	const collectionsTable = await getCollectionsIndex();
 
+	if (params.search) {
+		const { search, ...remParams } = params;
+		params = remParams;
+
+		params.search = {
+			property: 'name',
+			pattern: search,
+		};
+	}
+
 	const total = await collectionsTable.count(params);
 	const resultSet = await collectionsTable.find(
 		{ ...params, limit: params.limit || 10 },
