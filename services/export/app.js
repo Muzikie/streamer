@@ -25,7 +25,7 @@ const config = require('./config');
 LoggerConfig(config.log);
 
 const packageJson = require('./package.json');
-const { setAppContext } = require('./shared/csvExport');
+const { setAppContext } = require('./shared/helpers');
 
 const logger = Logger();
 
@@ -46,9 +46,9 @@ app.addJobs(path.join(__dirname, 'jobs'));
 
 // Run the application
 app.run().then(() => {
-	logger.info(`Service started ${packageJson.name}`);
+	logger.info(`Service started ${packageJson.name}.`);
 }).catch(err => {
-	logger.fatal(`Could not start the service ${packageJson.name} + ${err.message}`);
+	logger.fatal(`Failed to start service ${packageJson.name} due to: ${err.message}.`);
 	logger.fatal(err.stack);
 	process.exit(1);
 });

@@ -24,6 +24,7 @@ const { getNodeInfo } = require('./endpoints_1');
 const logger = Logger();
 
 let mainchainID;
+let registrationFee;
 
 const getChainAccount = async (chainID) => {
 	try {
@@ -40,15 +41,14 @@ const getChainAccount = async (chainID) => {
 
 const getMainchainID = async () => {
 	try {
+		const { chainID } = await getNodeInfo();
+
 		if (!mainchainID) {
-			// const mainchainID = await invokeEndpoint('interoperability_getMainchainID');
-
-			// TODO: Remove this and use SDK endpoint once following issue is closed: https://github.com/LiskHQ/lisk-sdk/issues/8309
-			const { chainID } = await getNodeInfo();
-			const LENGTH_CHAIN_ID = 4 * 2; // Each byte is represented with 2 nibbles
-			mainchainID = chainID.substring(0, 2).padEnd(LENGTH_CHAIN_ID, '0');
+			const response = await invokeEndpoint('interoperability_getMainchainID', { chainID });
+			mainchainID = response.error && response.error.message.includes('not registered to bus')
+				? chainID
+				: response.mainchainID;
 		}
-
 		return mainchainID;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
@@ -59,7 +59,37 @@ const getMainchainID = async () => {
 	}
 };
 
+const getChannel = async (chainID) => {
+	try {
+		const channelInfo = await invokeEndpoint('interoperability_getChannel', { chainID });
+		return channelInfo;
+	} catch (err) {
+		if (err.message.includes(timeoutMessage)) {
+			throw new TimeoutException('Request timed out when calling \'getChannel\'.');
+		}
+		logger.warn(`Error returned when invoking 'interoperability_getChannel' with chainID: ${chainID}.\n${err.stack}`);
+		throw err;
+	}
+};
+
+const getRegistrationFee = async () => {
+	try {
+		if (!registrationFee) {
+			registrationFee = await invokeEndpoint('interoperability_getRegistrationFee');
+		}
+		return registrationFee;
+	} catch (err) {
+		if (err.message.includes(timeoutMessage)) {
+			throw new TimeoutException('Request timed out when calling \'getRegistrationFee\'.');
+		}
+		logger.warn(`Error returned when invoking 'interoperability_getRegistrationFee'.\n${err.stack}`);
+		throw err;
+	}
+};
+
 module.exports = {
 	getChainAccount,
 	getMainchainID,
+	getChannel,
+	getRegistrationFee,
 };

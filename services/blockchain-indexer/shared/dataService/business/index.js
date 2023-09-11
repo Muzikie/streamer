@@ -52,9 +52,11 @@ const {
 
 const {
 	tokenHasUserAccount,
+	getAvailableTokenIDs,
 	getTokenBalances,
 	getTokenSummary,
 	getTokenConstants,
+	getTokenTopBalances,
 } = require('./token');
 
 const {
@@ -83,6 +85,8 @@ const { postTransactions } = require('./postTransactions');
 const {
 	getEvents,
 	getEventsByHeight,
+	cacheEventsByBlockID,
+	getEventsByBlockID,
 	deleteEventsFromCache,
 } = require('./events');
 const { dryRunTransactions } = require('./transactionsDryRun');
@@ -94,6 +98,11 @@ const {
 	getNetworkDisconnectedPeers,
 	getNetworkPeersStatistics,
 } = require('./network');
+const { estimateTransactionFees } = require('./transactionsEstimateFees');
+const { isMainchain, resolveMainchainServiceURL } = require('./mainchain');
+const { invokeEndpoint } = require('./invoke');
+
+const { setFeeEstimates, getFeeEstimates } = require('./feeEstimates');
 
 // Muzikie Dedicated Modules
 const { getSubscriptions } = require('./subscriptions');
@@ -126,10 +135,13 @@ module.exports = {
 	loadAllPendingTransactions,
 	postTransactions,
 	dryRunTransactions,
+	estimateTransactionFees,
 
 	// Events
 	getEvents,
 	getEventsByHeight,
+	cacheEventsByBlockID,
+	getEventsByBlockID,
 	deleteEventsFromCache,
 
 	// Interoperability
@@ -141,9 +153,11 @@ module.exports = {
 
 	// Token
 	tokenHasUserAccount,
+	getAvailableTokenIDs,
 	getTokenBalances,
 	getTokenSummary,
 	getTokenConstants,
+	getTokenTopBalances,
 
 	// PoS
 	getPosValidators,
@@ -175,6 +189,10 @@ module.exports = {
 	getDefaultRewardAtHeight,
 	getRewardConstants,
 
+	// Fee estimates
+	setFeeEstimates,
+	getFeeEstimates,
+
 	// Network
 	getNetworkStatus,
 	getNetworkPeers,
@@ -193,4 +211,8 @@ module.exports = {
 
 	// profiles
 	getProfiles,
+	isMainchain,
+	resolveMainchainServiceURL,
+
+	invokeEndpoint,
 };

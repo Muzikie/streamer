@@ -39,18 +39,27 @@ const { getMinFeePerByte } = require('./fee');
 
 const logger = Logger();
 
-const formatTransaction = (transaction) => {
+const formatTransaction = (transaction, additionalFee = 0) => {
 	// Calculate transaction size
 	const txSchema = getTransactionSchema();
+
+	// Decode transaction in case of binary payload
+	if (typeof transaction === 'string') {
+		transaction = codec.decode(txSchema, Buffer.from(transaction, 'hex'));
+	}
+	const txParamsSchema = getTransactionParamsSchema(transaction);
+
+	// Encode transaction params to calculate transaction size
+	if (typeof transaction.params === 'object' && !Buffer.isBuffer(transaction.params)) {
+		transaction.params = codec.encode(
+			txParamsSchema,
+			parseInputBySchema(transaction.params, txParamsSchema),
+		);
+	}
 	const schemaCompliantTransaction = parseInputBySchema(transaction, txSchema);
-	const transactionBuffer = codec.encode(txSchema, schemaCompliantTransaction);
-	const transactionSize = transactionBuffer.length;
 
 	// Calculate transaction min fee
-	const txParamsSchema = getTransactionParamsSchema(transaction);
 	const transactionParams = codec.decodeJSON(txParamsSchema, Buffer.from(transaction.params, 'hex'));
-
-	// TODO: Verify transaction minFee
 	const schemaCompliantTransactionParams = codec.decode(txParamsSchema, Buffer.from(transaction.params, 'hex'));
 	const nonEmptySignatureCount = transaction.signatures.filter(s => s).length;
 	const transactionMinFee = computeMinFee(
@@ -60,8 +69,19 @@ const formatTransaction = (transaction) => {
 			minFeePerByte: getMinFeePerByte() || null,
 			numberOfSignatures: nonEmptySignatureCount,
 			numberOfEmptySignatures: transaction.signatures.length - nonEmptySignatureCount,
+			additionalFee: BigInt(additionalFee),
 		},
 	);
+
+	// Calculate transaction size
+	const transactionBuffer = codec.encode(
+		txSchema,
+		{
+			...schemaCompliantTransaction,
+			fee: schemaCompliantTransaction.fee || transactionMinFee,
+		},
+	);
+	const transactionSize = transactionBuffer.length;
 
 	const formattedTransaction = {
 		...transaction,
@@ -106,29 +126,39 @@ const formatBlock = (block) => {
 	return parseToJSONCompatObj(formattedBlock);
 };
 
-const formatEvent = (event) => {
+const formatEvent = (event, skipDecode) => {
 	// Calculate event ID
 	const eventSchema = getEventSchema();
 	const schemaCompliantEvent = parseInputBySchema(event, eventSchema);
 	const eventBuffer = codec.encode(eventSchema, schemaCompliantEvent);
 	const eventID = hash(eventBuffer);
 
-	const eventDataSchema = getDataSchemaByEventName(event.name);
-	const eventData = eventDataSchema
-		? codec.decodeJSON(eventDataSchema, Buffer.from(event.data, 'hex'))
-		: { data: event.data };
-
-	if (!eventDataSchema) {
-		// TODO: Remove this after SDK exposes all event schemas (before tagging rc.0)
-		console.error(`Event data schema missing for ${event.module}:${event.name}.`);
-		logger.error(`Unable to decode event data. Event data schema missing for ${event.module}:${event.name}.`);
+	let eventData;
+	if (skipDecode) {
+		eventData = event.data;
 	} else {
-		// TODO: Remove after SDK fixes the address format (before tagging rc.0)
-		Object.keys(eventDataSchema.properties).forEach((prop) => {
-			if (prop.endsWith('Address')) {
-				eventData[prop] = getLisk32Address(eventData[prop].toString('hex'));
-			}
-		});
+		const eventDataSchema = getDataSchemaByEventName(event.name);
+		try {
+			eventData = eventDataSchema
+				? codec.decodeJSON(eventDataSchema, Buffer.from(event.data, 'hex'))
+				: { data: event.data };
+		} catch (err) {
+			logger.warn(`Unable to decode data for ${event.name} (${event.module}) event:\n${err.stack}`);
+			return { data: event.data };
+		}
+
+		if (!eventDataSchema) {
+			// TODO: Remove this after SDK exposes all event schemas (before tagging rc.0)
+			console.error(`Event data schema missing for ${event.module}:${event.name}.`);
+			logger.error(`Unable to decode event data. Event data schema missing for ${event.module}:${event.name}.`);
+		} else {
+			// TODO: Remove after SDK fixes the address format (before tagging rc.0)
+			Object.keys(eventDataSchema.properties).forEach((prop) => {
+				if (prop.endsWith('Address')) {
+					eventData[prop] = getLisk32Address(eventData[prop].toString('hex'));
+				}
+			});
+		}
 	}
 
 	const eventTopicMappings = EVENT_TOPIC_MAPPINGS_BY_MODULE[event.module] || {};

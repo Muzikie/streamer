@@ -129,13 +129,13 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/chainIDCSV',
 				},
 				{
-					$ref: '#/parameters/name',
+					$ref: '#/parameters/chainName',
 				},
 				{
 					$ref: '#/parameters/blockchainAppStatus',
 				},
 				{
-					$ref: '#/parameters/blockchainAppSearch',
+					$ref: '#/parameters/searchByChainName',
 				},
 				{
 					$ref: '#/parameters/limit',
@@ -175,7 +175,7 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/network',
 				},
 				{
-					$ref: '#/parameters/search',
+					$ref: '#/parameters/searchByChainName',
 				},
 				{
 					$ref: '#/parameters/limit',
@@ -224,6 +224,9 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/chainName',
 				},
 				{
+					$ref: '#/parameters/displayName',
+				},
+				{
 					$ref: '#/parameters/chainIDCSV',
 				},
 				{
@@ -233,7 +236,7 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/network',
 				},
 				{
-					$ref: '#/parameters/search',
+					$ref: '#/parameters/searchByChainAndDisplayName',
 				},
 				{
 					$ref: '#/parameters/limit',
@@ -313,7 +316,7 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/network',
 				},
 				{
-					$ref: '#/parameters/search',
+					$ref: '#/parameters/searchByChainName',
 				},
 				{
 					$ref: '#/parameters/limit',
@@ -505,6 +508,12 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/topic',
 				},
 				{
+					$ref: '#/parameters/module',
+				},
+				{
+					$ref: '#/parameters/eventName',
+				},
+				{
 					$ref: '#/parameters/blockID',
 				},
 				{
@@ -587,6 +596,9 @@ const createApiDocsExpectedResponse = {
 			summary: 'Requests generators list',
 			description: 'Returns generators list\n RPC => get.generators',
 			parameters: [
+				{
+					$ref: '#/parameters/searchByNameAddressPubKey',
+				},
 				{
 					$ref: '#/parameters/limit',
 				},
@@ -678,38 +690,10 @@ const createApiDocsExpectedResponse = {
 						$ref: '#/definitions/badRequest',
 					},
 				},
-			},
-		},
-	},
-	'/network/statistics': {
-		get: {
-			tags: [
-				'Network',
-			],
-			summary: 'Requests network statistics',
-			description: 'Returns network statistics data\n RPC => get.network.statistics',
-			responses: {
-				200: {
-					description: 'Returns the network statistics information',
+				503: {
+					description: 'Service Unavailable',
 					schema: {
-						$ref: '#/definitions/NetworkStatistics',
-					},
-				},
-			},
-		},
-	},
-	'/network/status': {
-		get: {
-			tags: [
-				'Network',
-			],
-			summary: 'Requests network status',
-			description: 'Returns network status\n RPC => get.network.status',
-			responses: {
-				200: {
-					description: 'Returns the network status information',
-					schema: {
-						$ref: '#/definitions/NetworkStatus',
+						$ref: '#/definitions/serviceUnavailable',
 					},
 				},
 			},
@@ -772,6 +756,46 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
+	'/network/statistics': {
+		get: {
+			tags: [
+				'Network',
+			],
+			summary: 'Requests network statistics',
+			description: 'Returns network statistics data\n RPC => get.network.statistics',
+			responses: {
+				200: {
+					description: 'Returns the network statistics information',
+					schema: {
+						$ref: '#/definitions/NetworkStatistics',
+					},
+				},
+				503: {
+					description: 'Service Unavailable',
+					schema: {
+						$ref: '#/definitions/serviceUnavailable',
+					},
+				},
+			},
+		},
+	},
+	'/network/status': {
+		get: {
+			tags: [
+				'Network',
+			],
+			summary: 'Requests network status',
+			description: 'Returns network status\n RPC => get.network.status',
+			responses: {
+				200: {
+					description: 'Returns the network status information',
+					schema: {
+						$ref: '#/definitions/NetworkStatus',
+					},
+				},
+			},
+		},
+	},
 	'/subscriptions': {
 		get: {
 			description: 'Returns subscriptions data\n RPC => get.subscriptions',
@@ -824,7 +848,7 @@ const createApiDocsExpectedResponse = {
 					$ref: '#/parameters/senderAddress',
 				},
 				{
-					$ref: '#/parameters/address',
+					$ref: '#/parameters/senderAndRecipientAddress',
 				},
 				{
 					$ref: '#/parameters/recipientAddress',
@@ -959,6 +983,40 @@ const createApiDocsExpectedResponse = {
 			],
 		},
 	},
+	'/transactions/estimate-fees': {
+		post: {
+			description: 'Returns estimated fees for the transaction.\n RPC => post.transactions.estimate-fees',
+			parameters: [
+				{
+					$ref: '#/parameters/transactionEstimateFees',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns estimated fees for the given transaction.',
+					schema: {
+						$ref: '#/definitions/txEstimateFeesWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+				500: {
+					description: 'Internal server error',
+					schema: {
+						$ref: '#/definitions/serverErrorEnvelope',
+					},
+				},
+			},
+			summary: 'Requests estimated fees for the transaction.',
+			tags: [
+				'Transactions',
+			],
+		},
+	},
 	'/schemas': {
 		get: {
 			tags: [
@@ -1073,7 +1131,7 @@ const createApiDocsExpectedResponse = {
 			description: 'Returns auth details by address\n RPC => get.auth',
 			parameters: [
 				{
-					$ref: '#/parameters/address',
+					$ref: '#/parameters/addressRequired',
 				},
 			],
 			responses: {
@@ -1101,7 +1159,7 @@ const createApiDocsExpectedResponse = {
 			description: 'Returns validator information\n RPC => get.validator',
 			parameters: [
 				{
-					$ref: '#/parameters/address',
+					$ref: '#/parameters/addressRequired',
 				},
 			],
 			responses: {
@@ -1143,6 +1201,215 @@ const createApiDocsExpectedResponse = {
 					description: 'Bad request',
 					schema: {
 						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/account/exists': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests to check existence of an account for the specified token.',
+			description: 'Returns existence of an account for the specified token.\n RPC => get.token.account.exists',
+			parameters: [
+				{
+					$ref: '#/parameters/address',
+				},
+				{
+					$ref: '#/parameters/publicKey',
+				},
+				{
+					$ref: '#/parameters/accountName',
+				},
+				{
+					$ref: '#/parameters/tokenIDRequired',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns existence of an account for the specified token.',
+					schema: {
+						$ref: '#/definitions/tokenAccountExistsWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/available-ids': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests the list of available tokens identifiers.',
+			description: 'Returns all the available token identifiers.\n RPC => get.token.available-ids',
+			parameters: [
+				{
+					name: 'sort',
+					in: 'query',
+					description: 'Fields to sort results by.',
+					required: false,
+					type: 'string',
+					enum: [
+						'tokenID:desc',
+						'tokenID:asc',
+					],
+					default: 'tokenID:asc',
+				},
+				{
+					$ref: '#/parameters/limit',
+				},
+				{
+					$ref: '#/parameters/offset',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns all the available token identifiers.',
+					schema: {
+						$ref: '#/definitions/tokenAvailableIDsWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/balances': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests tokens information',
+			description: 'Returns tokens information\n RPC => get.token.balances',
+			parameters: [
+				{
+					$ref: '#/parameters/address',
+				},
+				{
+					$ref: '#/parameters/tokenID',
+				},
+				{
+					$ref: '#/parameters/limit',
+				},
+				{
+					$ref: '#/parameters/offset',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns a list of supported tokens by the blockchain application',
+					schema: {
+						$ref: '#/definitions/tokenWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/constants': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests Token module constants.',
+			description: 'Requests all the configured constants for the Token module.\n RPC => get.token.constants',
+			responses: {
+				200: {
+					description: 'Returns all the configured constants for the Token module.',
+					schema: {
+						$ref: '#/definitions/tokenConstantsWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/summary': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests the tokens summary for the current blockchain application.',
+			description: "Returns the token summary. The 'supportedTokens' is an empty list when all the tokens are supported on the blockchain application.\n RPC => get.token.summary",
+			parameters: [
+
+			],
+			responses: {
+				200: {
+					description: "Returns the token summary. The 'supportedTokens' is an empty list when all the tokens are supported on the blockchain application.",
+					schema: {
+						$ref: '#/definitions/tokenSummaryWithEnvelope',
+					},
+				},
+				400: {
+					description: 'Bad request',
+					schema: {
+						$ref: '#/definitions/badRequest',
+					},
+				},
+			},
+		},
+	},
+	'/token/balances/top': {
+		get: {
+			tags: [
+				'Token',
+			],
+			summary: 'Requests the list of top accounts for the specified tokenID.',
+			description: 'Returns the list of top accounts for the specified tokenID.\n RPC => get.token.balances.top',
+			parameters: [
+				{
+					$ref: '#/parameters/tokenIDRequired',
+				},
+				{
+					$ref: '#/parameters/searchByNameAddressPubKey',
+				},
+				{
+					$ref: '#/parameters/limit',
+				},
+				{
+					$ref: '#/parameters/offset',
+				},
+				{
+					name: 'sort',
+					in: 'query',
+					description: 'Fields to sort results by.',
+					required: false,
+					type: 'string',
+					enum: [
+						'balance:desc',
+						'balance:asc',
+					],
+					default: 'balance:desc',
+				},
+			],
+			responses: {
+				200: {
+					description: 'Returns the list of top accounts for the specified tokenID.',
+					schema: {
+						$ref: '#/definitions/tokenTopBalancesWithEnvelope',
 					},
 				},
 			},

@@ -17,4 +17,12 @@ jobs:
       - name: Install dependencies
         run: make build-local
       - name: Check test coverage
-        run: npm run test:coverage
+        run: yarn run test:coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          files: coverage-final.json
+          name: codecov-umbrella
+          verbose: true
