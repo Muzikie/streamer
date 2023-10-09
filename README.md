@@ -41,7 +41,7 @@ Every microservice is independently managed and placed in a separate directory u
 - The default installation method is based on Docker.
 - Some token conversion rates in the Market service require their API keys.
 - For the events information to be always available in the API, please set `system.keepEventsForHeights: -1` in the Lisk application node config.
-- It is highly recommended to *NOT* enable any plugins on the Lisk application node when running Lisk Service against it.
+- It is highly recommended to *NOT* enable any plugins on the Lisk application node when running Lisk Service against it. Enabling them can cause performance issues in Lisk Service.
 
 ## Architecture Diagram
 
@@ -178,7 +178,7 @@ https://github.com/muzikie/streamer/graphs/contributors
 
 ## License
 
-Copyright 2016-2023 Lisk Foundation
+Copyright 2016-2024 Lisk Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

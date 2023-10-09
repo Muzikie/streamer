@@ -18,7 +18,7 @@ const { resolve } = require('path');
 
 const { inputTransaction, inputMultisigTransaction } = require('../../../../constants/transactions');
 
-const mockedMainchainFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/mainchain`);
+const mockedChannelFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/interoperability/channel`);
 const mockedTransactionFeeEstimatesFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/transactionsEstimateFees`);
 const mockedAuthFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/auth`);
 const mockedAccountFilePath = resolve(`${__dirname}/../../../../../shared/utils/account`);
@@ -26,6 +26,7 @@ const mockedRequestFilePath = resolve(`${__dirname}/../../../../../shared/utils/
 const mockedPOSConstantsFilePath = resolve(`${__dirname}/../../../../../shared/dataService/pos/constants`);
 const mockedFeeEstimateFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/feeEstimates`);
 const mockedRTransactionsDryRunFilePath = resolve(`${__dirname}../../../../../../shared/dataService/business/transactionsDryRun`);
+const mockedNetworkFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/network`);
 
 const {
 	mockTxRequest,
@@ -109,9 +110,162 @@ jest.mock('lisk-service-framework', () => {
 	};
 });
 
+jest.mock('../../../../../shared/dataService/business/schemas', () => {
+	const { schemas } = require('../../../../constants/schemas');
+	return {
+		getSchemas() { return schemas; },
+	};
+});
+
+describe('validateTransactionParams', () => {
+	it('should validate a valid token and register validator transaction', () => {
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams(mockTransferCrossChainTxRequest.transaction),
+		).not.toThrow();
+
+		expect(() => validateTransactionParams(mockRegisterValidatorTxrequestConnector.transaction),
+		).not.toThrow();
+	});
+
+	it('should validate a valid token cross chain transfer transaction if passed without optional params', () => {
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		const {
+			messageFee,
+			messageFeeTokenID,
+			...remParams
+		} = mockTransferCrossChainTxRequest.transaction.params;
+
+		expect(() => validateTransactionParams({
+			...mockTransferCrossChainTxRequest.transaction,
+			params: {
+				...remParams,
+			},
+		})).not.toThrow();
+	});
+
+	it('should throw an error for incorrect tokenID in token transaction', () => {
+		const {
+			tokenID,
+			recipientAddress,
+			...remParams
+		} = mockTransferCrossChainTxRequest.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockTransferCrossChainTxRequest.transaction,
+			params: {
+				...remParams,
+				tokenID: 'invalidTokenID',
+				recipientAddress,
+			},
+		})).rejects.toThrow();
+	});
+
+	it('should throw an error for incorrect recipientAddress in token transaction', () => {
+		const {
+			tokenID,
+			recipientAddress,
+			...remParams
+		} = mockTransferCrossChainTxRequest.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockTransferCrossChainTxRequest.transaction,
+			params: {
+				...remParams,
+				tokenID,
+				recipientAddress: 'invalidRecipientAddress',
+			},
+		})).rejects.toThrow();
+	});
+
+	it('should throw an error for incorrect blsKey in register validator transaction', () => {
+		const {
+			blsKey,
+			proofOfPossession,
+			generatorKey,
+			...remParams
+		} = mockRegisterValidatorTxrequestConnector.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockRegisterValidatorTxrequestConnector.transaction,
+			params: {
+				...remParams,
+				blsKey: 'invalidBLSKey',
+				proofOfPossession,
+				generatorKey,
+			},
+		})).rejects.toThrow();
+	});
+
+	it('should throw an error for incorrect proofOfPossession in register validator transaction', () => {
+		const { blsKey,
+			proofOfPossession,
+			generatorKey,
+			...remParams
+		} = mockRegisterValidatorTxrequestConnector.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockRegisterValidatorTxrequestConnector.transaction,
+			params: {
+				...remParams,
+				blsKey,
+				proofOfPossession: 'invalidProofOfPossession',
+				generatorKey,
+			},
+		})).rejects.toThrow();
+	});
+
+	it('should throw an error for incorrect generatorKey in register validator transaction', () => {
+		const {
+			blsKey,
+			proofOfPossession,
+			generatorKey,
+			...remParams
+		} = mockRegisterValidatorTxrequestConnector.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockRegisterValidatorTxrequestConnector.transaction,
+			params: {
+				...remParams,
+				blsKey,
+				proofOfPossession,
+				generatorKey: 'invalidGeneratorKey',
+			},
+		})).rejects.toThrow();
+	});
+
+	it('should throw an error for incorrect sendingChainID in cross chain update transaction', () => {
+		const {
+			sendingChainID,
+			...remParams
+		} = mockInteroperabilitySubmitMainchainCrossChainUpdateTxRequest.transaction.params;
+
+		const { validateTransactionParams } = require(mockedTransactionFeeEstimatesFilePath);
+
+		expect(() => validateTransactionParams({
+			...mockInteroperabilitySubmitMainchainCrossChainUpdateTxRequest.transaction,
+			params: {
+				...remParams,
+				sendingChainID: 'invalidSendingChainID',
+			},
+		})).rejects.toThrow();
+	});
+});
+
 describe('Test transaction fees estimates', () => {
-	jest.mock(mockedMainchainFilePath, () => {
-		const actual = jest.requireActual(mockedMainchainFilePath);
+	jest.mock(mockedChannelFilePath, () => {
+		const actual = jest.requireActual(mockedChannelFilePath);
 		return {
 			...actual,
 			resolveChannelInfo() {
@@ -375,6 +529,7 @@ describe('Test transaction fees estimates', () => {
 		const { getPosConstants } = require(mockedPOSConstantsFilePath);
 		const { getFeeEstimates } = require(mockedFeeEstimateFilePath);
 		const { dryRunTransactions } = require(mockedRTransactionsDryRunFilePath);
+		const { getNetworkStatus } = require(mockedNetworkFilePath);
 
 		jest.mock(mockedRTransactionsDryRunFilePath, () => ({
 			dryRunTransactions: jest.fn(),
@@ -415,6 +570,10 @@ describe('Test transaction fees estimates', () => {
 			getPosConstants: jest.fn(),
 		}));
 
+		jest.mock(mockedNetworkFilePath, () => ({
+			getNetworkStatus: jest.fn(),
+		}));
+
 		it('should calculate transaction fees correctly', async () => {
 			// Mock the return values of the functions
 			getLisk32AddressFromPublicKey.mockReturnValue(mockTxsenderAddress);
@@ -443,11 +602,13 @@ describe('Test transaction fees estimates', () => {
 				.mockReturnValueOnce(mockAuthAccountInfo)
 				.mockReturnValueOnce(mockEscrowAccountExistsRequestConnector)
 				.mockReturnValueOnce(mockTransferCrossChainTxrequestConnector)
-				.mockReturnValueOnce('encoded CCM Object');
+				.mockReturnValueOnce('encoded CCM Object')
+				.mockReturnValueOnce(mockTransferCrossChainTxrequestConnector);
 			getFeeEstimates.mockReturnValue(mockTxFeeEstimate);
 			calcAdditionalFees.mockResolvedValue({});
 			calcMessageFee.mockResolvedValue({});
 			getPosConstants.mockResolvedValue(posConstants);
+			getNetworkStatus.mockResolvedValue({ data: { chainID: '02000000' } });
 
 			const { estimateTransactionFees } = require(mockedTransactionFeeEstimatesFilePath);
 
@@ -461,12 +622,13 @@ describe('Test transaction fees estimates', () => {
 			getLisk32AddressFromPublicKey.mockReturnValue(mockTxsenderAddress);
 			getAuthAccountInfo.mockResolvedValue(mockTxAuthAccountInfo);
 			requestConnector
-				.mockReturnValueOnce(mockTxrequestConnector)
+				.mockReturnValueOnce(mockAuthAccountInfo)
 				.mockReturnValue({ validatorRegistrationFee: '1', minFee: '130000', size: 160 });
 			getFeeEstimates.mockReturnValue(mockTxFeeEstimate);
 			calcAdditionalFees.mockResolvedValue({});
 			calcMessageFee.mockResolvedValue({});
 			getPosConstants.mockResolvedValue(posConstants);
+			getNetworkStatus.mockResolvedValue({ data: { chainID: '04000000' } });
 
 			const { estimateTransactionFees } = require(mockedTransactionFeeEstimatesFilePath);
 

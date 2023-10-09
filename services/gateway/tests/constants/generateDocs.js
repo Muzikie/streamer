@@ -585,6 +585,12 @@ const createApiDocsExpectedResponse = {
 						$ref: '#/definitions/FeeEstimateEnvelope',
 					},
 				},
+				503: {
+					description: 'Service Unavailable',
+					schema: {
+						$ref: '#/definitions/serviceUnavailable',
+					},
+				},
 			},
 		},
 	},
@@ -662,6 +668,12 @@ const createApiDocsExpectedResponse = {
 					description: 'Bad request',
 					schema: {
 						$ref: '#/definitions/badRequest',
+					},
+				},
+				503: {
+					description: 'Service Unavailable',
+					schema: {
+						$ref: '#/definitions/serviceUnavailable',
 					},
 				},
 			},
@@ -828,6 +840,46 @@ const createApiDocsExpectedResponse = {
 			tags: [
 				'Subscriptions',
 			],
+		},
+	},
+	'/network/statistics': {
+		get: {
+			tags: [
+				'Network',
+			],
+			summary: 'Requests network statistics',
+			description: 'Returns network statistics data\n RPC => get.network.statistics',
+			responses: {
+				200: {
+					description: 'Returns the network statistics information',
+					schema: {
+						$ref: '#/definitions/NetworkStatistics',
+					},
+				},
+				503: {
+					description: 'Service Unavailable',
+					schema: {
+						$ref: '#/definitions/serviceUnavailable',
+					},
+				},
+			},
+		},
+	},
+	'/network/status': {
+		get: {
+			tags: [
+				'Network',
+			],
+			summary: 'Requests network status',
+			description: 'Returns network status\n RPC => get.network.status',
+			responses: {
+				200: {
+					description: 'Returns the network status information',
+					schema: {
+						$ref: '#/definitions/NetworkStatus',
+					},
+				},
+			},
 		},
 	},
 	'/transactions': {

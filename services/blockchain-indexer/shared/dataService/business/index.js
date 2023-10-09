@@ -48,6 +48,10 @@ const {
 	getChainAccount,
 	getMainchainID,
 	reloadBlockchainAppsStats,
+	isMainchain,
+	resolveMainchainServiceURL,
+	resolveChannelInfo,
+	getCurrentChainID,
 } = require('./interoperability');
 
 const {
@@ -99,10 +103,9 @@ const {
 	getNetworkPeersStatistics,
 } = require('./network');
 const { estimateTransactionFees } = require('./transactionsEstimateFees');
-const { isMainchain, resolveMainchainServiceURL } = require('./mainchain');
 const { invokeEndpoint } = require('./invoke');
 
-const { setFeeEstimates, getFeeEstimates } = require('./feeEstimates');
+const { setFeeEstimates, getFeeEstimates, initFeeEstimates } = require('./feeEstimates');
 
 // Muzikie Dedicated Modules
 const { getSubscriptions } = require('./subscriptions');
@@ -150,6 +153,10 @@ module.exports = {
 	getMainchainID,
 	getBlockchainAppsStatistics,
 	reloadBlockchainAppsStats,
+	isMainchain,
+	resolveMainchainServiceURL,
+	resolveChannelInfo,
+	getCurrentChainID,
 
 	// Token
 	tokenHasUserAccount,
@@ -190,6 +197,7 @@ module.exports = {
 	getRewardConstants,
 
 	// Fee estimates
+	initFeeEstimates,
 	setFeeEstimates,
 	getFeeEstimates,
 
@@ -211,8 +219,5 @@ module.exports = {
 
 	// profiles
 	getProfiles,
-	isMainchain,
-	resolveMainchainServiceURL,
-
 	invokeEndpoint,
 };
