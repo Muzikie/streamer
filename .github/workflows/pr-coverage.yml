@@ -1,5 +1,8 @@
 name: Code Coverage
-on: [pull_request]
+on:
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ feature/*, hotfix/*, release/* ]
 jobs:
   run:
     runs-on: ubuntu-latest
