@@ -1,16 +1,16 @@
 {
-	"creatorAddress": {
-			"name": "creatorAddress",
+	"submitter": {
+			"name": "submitter",
 			"in": "query",
 			"description": "Lisk account address",
 			"type": "string",
 			"minLength": 3,
 			"maxLength": 41
 	},
-	"audioID": {
-			"name": "audioID",
+	"anchorID": {
+			"name": "anchorID",
 			"in": "query",
-			"description": "audio ID to query",
+			"description": "anchor ID to query",
 			"type": "string",
 			"format": "id",
 			"minLength": 1,

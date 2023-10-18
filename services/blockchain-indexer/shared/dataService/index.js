@@ -106,7 +106,7 @@ const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
 const { getSubscriptions } = require('./subscriptions');
 const { getCollections } = require('./collections');
-const { getAudios } = require('./audios');
+const { getAnchors } = require('./anchors');
 const { getProfiles } = require('./profiles');
 const { invokeEndpoint } = require('./invoke');
 
@@ -215,8 +215,8 @@ module.exports = {
 	// Collections
 	getCollections,
 
-	// Audios
-	getAudios,
+	// Anchors
+	getAnchors,
 
 	// Profiles
 	getProfiles,

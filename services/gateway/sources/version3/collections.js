@@ -9,8 +9,8 @@ module.exports = {
 		creatorAddress: '=,string',
 		releaseYear: '=,string',
 		collectionType: '=,number',
-		// audios: ['audios', {
-		// 	audioID: '=,string',
+		// anchors: ['anchors', {
+		// 	anchorID: '=,string',
 		// 	name: '=,number',
 		// }],
 		search: '=,string',

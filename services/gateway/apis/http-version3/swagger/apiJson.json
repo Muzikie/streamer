@@ -96,8 +96,8 @@
                 "description": "Collection module related API calls."
             },
             {
-                "name": "Audio",
-                "description": "Audio module related API calls."
+                "name": "Anchor",
+                "description": "Anchor module related API calls."
             },
             {
                 "name": "Profile",

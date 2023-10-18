@@ -110,7 +110,7 @@ const { setFeeEstimates, getFeeEstimates, initFeeEstimates } = require('./feeEst
 // Muzikie Dedicated Modules
 const { getSubscriptions } = require('./subscriptions');
 const { getCollections } = require('./collections');
-const { getAudios } = require('./audios');
+const { getAnchors } = require('./anchors');
 const { getProfiles } = require('./profiles');
 
 module.exports = {
@@ -214,8 +214,8 @@ module.exports = {
 	// collections
 	getCollections,
 
-	// audios
-	getAudios,
+	// anchors
+	getAnchors,
 
 	// profiles
 	getProfiles,

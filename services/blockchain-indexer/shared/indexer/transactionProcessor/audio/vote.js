@@ -9,56 +9,56 @@ const config = require('../../../../config');
 const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
-const ownersTableSchema = require('../../../database/schema/owners');
+const imagesTableSchema = require('../../../database/schema/images');
 
 const {
-	MODULE_NAME_AUDIO,
-	EVENT_NAME_AUDIO_STREAMED,
+	MODULE_NAME_ANCHOR,
+	EVENT_NAME_ANCHOR_VOTED,
 	EVENT_NAME_COMMAND_EXECUTION_RESULT,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
-const getOwnersTable = () => getTableInstance(
-	ownersTableSchema.tableName,
-	ownersTableSchema,
+const getImagesTable = () => getTableInstance(
+	imagesTableSchema.tableName,
+	imagesTableSchema,
 	MYSQL_ENDPOINT,
 );
 
 // Command specific constants
-const COMMAND_NAME = 'stream';
+const COMMAND_NAME = 'vote';
 
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const { data: commandExecutedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
+		({ module, name }) => module === MODULE_NAME_ANCHOR
 			&& name === EVENT_NAME_COMMAND_EXECUTION_RESULT,
 	);
 	if (!commandExecutedData.success) {
 		return false;
 	}
 
-	const ownersTable = await getOwnersTable();
+	const imagesTable = await getImagesTable();
 
-	const { audioID } = tx.params;
+	const { anchorID } = tx.params;
 
-	// Use event data to get audioID
-	const { data: audioStreamedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
-			&& name === EVENT_NAME_AUDIO_STREAMED,
+	// Use event data to get anchorID
+	const { data: anchorVotedData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_ANCHOR
+			&& name === EVENT_NAME_ANCHOR_VOTED,
 	);
 
 	await BluebirdPromise.map(
-		audioStreamedData.owners,
-		async owner => {
+		anchorVotedData.images,
+		async image => {
 			const info = {
-				...owner,
-				audioID,
+				...image,
+				anchorID,
 			};
-			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
-			await ownersTable.upsert(info, dbTrx);
-			logger.debug(`Updated owner index for the account with address ${owner.address}.`);
+			logger.trace(`Updating image index for the account with address ${image.address}.`);
+			await imagesTable.upsert(info, dbTrx);
+			logger.debug(`Updated image index for the account with address ${image.address}.`);
 			return true;
 		},
-		{ concurrency: audioStreamedData.owners.length },
+		{ concurrency: anchorVotedData.images.length },
 	);
 
 	return true;

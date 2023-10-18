@@ -12,12 +12,11 @@ const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
-const audiosTableSchema = require('../../../database/schema/audios');
-const ownersTableSchema = require('../../../database/schema/owners');
-const featsTableSchema = require('../../../database/schema/feats');
+const anchorsTableSchema = require('../../../database/schema/anchors');
+const imagesTableSchema = require('../../../database/schema/images');
 const {
-	MODULE_NAME_AUDIO,
-	EVENT_NAME_AUDIO_CREATED,
+	MODULE_NAME_ANCHOR,
+	EVENT_NAME_ANCHOR_CREATED,
 	EVENT_NAME_COMMAND_EXECUTION_RESULT,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
@@ -27,21 +26,15 @@ const getAccountsTable = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
-const getAudiosTable = () => getTableInstance(
-	audiosTableSchema.tableName,
-	audiosTableSchema,
+const getAnchorsTable = () => getTableInstance(
+	anchorsTableSchema.tableName,
+	anchorsTableSchema,
 	MYSQL_ENDPOINT,
 );
 
-const getOwnersTable = () => getTableInstance(
-	ownersTableSchema.tableName,
-	ownersTableSchema,
-	MYSQL_ENDPOINT,
-);
-
-const getFeatsTable = () => getTableInstance(
-	featsTableSchema.tableName,
-	featsTableSchema,
+const getImagesTable = () => getTableInstance(
+	imagesTableSchema.tableName,
+	imagesTableSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -52,7 +45,7 @@ const COMMAND_NAME = 'create';
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	// Do not process failed transactions
 	const { data: commandExecutedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
+		({ module, name }) => module === MODULE_NAME_ANCHOR
 			&& name === EVENT_NAME_COMMAND_EXECUTION_RESULT,
 	);
 	if (!commandExecutedData.success) {
@@ -60,16 +53,15 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	}
 
 	const accountsTable = await getAccountsTable();
-	const audiosTable = await getAudiosTable();
-	const ownersTable = await getOwnersTable();
-	const featsTable = await getFeatsTable();
+	const anchorsTable = await getAnchorsTable();
+	const imagesTable = await getImagesTable();
 
-	// Use event data to get audioID
+	// Use event data to get anchorID
 	const eventData = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
-			&& name === EVENT_NAME_AUDIO_CREATED,
+		({ module, name }) => module === MODULE_NAME_ANCHOR
+			&& name === EVENT_NAME_ANCHOR_CREATED,
 	);
-	const { data: audioCreatedData } = eventData || { data: {} };
+	const { data: anchorCreatedData } = eventData || { data: {} };
 
 	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
 
@@ -82,78 +74,56 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	await accountsTable.upsert(account, dbTrx);
 	logger.debug(`Updated account index for the account with address ${account.address}.`);
 
-	// Store owners
+	// Store images
 	await BluebirdPromise.map(
-		tx.params.owners,
-		async owner => {
-			const ownerInfo = {
-				...owner,
-				audioID: audioCreatedData.audioID,
+		tx.params.images,
+		async image => {
+			const imageInfo = {
+				...image,
+				anchorID: anchorCreatedData.anchorID,
 			};
-			logger.trace(`Updating owner index for the account with address ${owner.address}.`);
-			await ownersTable.upsert(ownerInfo, dbTrx);
-			logger.debug(`Updated owner index for the account with address ${owner.address}.`);
+			logger.trace(`Updating image index for the account with address ${image.address}.`);
+			await imagesTable.upsert(imageInfo, dbTrx);
+			logger.debug(`Updated image index for the account with address ${image.address}.`);
 			return true;
 		},
-		{ concurrency: tx.params.owners.length },
+		{ concurrency: tx.params.images.length },
 	);
 
-	// Store feats
-	await BluebirdPromise.map(
-		tx.params.feat,
-		async feat => {
-			const featInfo = {
-				address: feat,
-				role: 'co-artist',
-				audioID: audioCreatedData.audioID,
-			};
-			logger.trace(`Updating feats index for the account with address ${feat}.`);
-			await featsTable.upsert(featInfo, dbTrx);
-			logger.debug(`Updated feats index for the account with address ${feat}.`);
-			return true;
-		},
-		{ concurrency: tx.params.feat.length },
-	);
-
-	logger.trace(`Updating owners index for the audio with audioID ${account.address}.`);
+	logger.trace(`Updating images index for the anchor with anchorID ${account.address}.`);
 	await accountsTable.upsert(account, dbTrx);
 	logger.debug(`Updated account index for the account with address ${account.address}.`);
 
-	logger.trace(`Indexing audios with address ${account.address}.`);
+	logger.trace(`Indexing anchors with address ${account.address}.`);
 
-	// And finally, store the audio
-	const audiosNFT = {
-		...audioCreatedData,
+	// And finally, store the anchor
+	const anchorsNFT = {
+		...anchorCreatedData,
 		...tx.params,
 	};
 
-	await audiosTable.upsert(audiosNFT, dbTrx);
-	logger.debug(`Indexed audio with ID ${audioCreatedData.audioID}.`);
+	await anchorsTable.upsert(anchorsNFT, dbTrx);
+	logger.debug(`Indexed anchor with ID ${anchorCreatedData.anchorID}.`);
 	return true;
 };
 
 // eslint-disable-next-line no-unused-vars
 const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
-	const audiosTable = await getAudiosTable();
-	const ownersTable = await getOwnersTable();
-	const featsTable = await getFeatsTable();
+	const anchorsTable = await getAnchorsTable();
+	const imagesTable = await getImagesTable();
 
-	const { data: audioCreatedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
-			&& name === EVENT_NAME_AUDIO_CREATED,
+	const { data: anchorCreatedData = {} } = events.find(
+		({ module, name }) => module === MODULE_NAME_ANCHOR
+			&& name === EVENT_NAME_ANCHOR_CREATED,
 	);
 
-	logger.trace(`Deleting owners corresponding the audio ID ${audioCreatedData.audioID}.`);
-	await ownersTable.delete({ audioID: audioCreatedData.audioID }, dbTrx);
-	logger.trace(`Deleted owners corresponding the audio ID ${audioCreatedData.audioID}.`);
+	logger.trace(`Deleting images corresponding the anchor ID ${anchorCreatedData.anchorID}.`);
+	await imagesTable.delete({ anchorID: anchorCreatedData.anchorID }, dbTrx);
+	logger.trace(`Deleted images corresponding the anchor ID ${anchorCreatedData.anchorID}.`);
 
-	logger.trace(`Deleting feats corresponding the audio ID ${audioCreatedData.audioID}.`);
-	await featsTable.delete({ audioID: audioCreatedData.audioID }, dbTrx);
-	logger.trace(`Deleted feats corresponding the audio ID ${audioCreatedData.audioID}.`);
-
-	logger.trace(`Removing audio entry for ID ${audioCreatedData.audioID}.`);
-	await audiosTable.deleteByPrimaryKey(audioCreatedData.audioID, dbTrx);
-	logger.debug(`Removed audio entry for ID ${audioCreatedData.audioID}.`);
+	logger.trace(`Removing anchor entry for ID ${anchorCreatedData.anchorID}.`);
+	await anchorsTable.deleteByPrimaryKey(anchorCreatedData.anchorID, dbTrx);
+	logger.debug(`Removed anchor entry for ID ${anchorCreatedData.anchorID}.`);
 };
 
 module.exports = {

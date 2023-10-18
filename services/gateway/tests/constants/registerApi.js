@@ -17,7 +17,7 @@
 const expectedResponseForRegisterHttpApi = [
 	{
 		whitelist: [
-			'indexer.audios',
+			'indexer.anchors',
 			'indexer.blocks.assets',
 			'indexer.blockchain.apps',
 			'app-registry.blockchain.apps.meta.list',
@@ -67,7 +67,7 @@ const expectedResponseForRegisterHttpApi = [
 			'GET blocks/assets': 'indexer.blocks.assets',
 			'GET collections': 'indexer.collections',
 			'GET profiles': 'indexer.profiles',
-			'GET audios': 'indexer.audios',
+			'GET anchors': 'indexer.anchors',
 			'GET blockchain/apps': 'indexer.blockchain.apps',
 			'GET blockchain/apps/meta/list': 'app-registry.blockchain.apps.meta.list',
 			'GET blockchain/apps/meta': 'app-registry.blockchain.apps.meta',
@@ -130,7 +130,7 @@ const expectedResponseForRegisterRpcApi = {
 	events: {
 		request: {
 			whitelist: [
-				'indexer.audios',
+				'indexer.anchors',
 				'indexer.blocks.assets',
 				'indexer.blockchain.apps',
 				'app-registry.blockchain.apps.meta.list',
@@ -178,7 +178,7 @@ const expectedResponseForRegisterRpcApi = {
 			aliases: {
 				'get.blocks.assets': 'indexer.blocks.assets',
 				'get.collections': 'indexer.collections',
-				'get.audios': 'indexer.audios',
+				'get.anchors': 'indexer.anchors',
 				'get.blockchain.apps': 'indexer.blockchain.apps',
 				'get.blockchain.apps.meta.list': 'app-registry.blockchain.apps.meta.list',
 				'get.blockchain.apps.meta': 'app-registry.blockchain.apps.meta',

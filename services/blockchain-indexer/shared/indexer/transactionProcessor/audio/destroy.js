@@ -8,30 +8,23 @@ const config = require('../../../../config');
 const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
-const audiosTableSchema = require('../../../database/schema/audios');
-const ownersTableSchema = require('../../../database/schema/owners');
-const featsTableSchema = require('../../../database/schema/feats');
+const anchorsTableSchema = require('../../../database/schema/anchors');
+const imagesTableSchema = require('../../../database/schema/images');
 
 const {
-	MODULE_NAME_AUDIO,
+	MODULE_NAME_ANCHOR,
 	EVENT_NAME_COMMAND_EXECUTION_RESULT,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
-const getAudiosTable = () => getTableInstance(
-	audiosTableSchema.tableName,
-	audiosTableSchema,
+const getAnchorsTable = () => getTableInstance(
+	anchorsTableSchema.tableName,
+	anchorsTableSchema,
 	MYSQL_ENDPOINT,
 );
 
-const getOwnersTable = () => getTableInstance(
-	ownersTableSchema.tableName,
-	ownersTableSchema,
-	MYSQL_ENDPOINT,
-);
-
-const getFeatsTable = () => getTableInstance(
-	featsTableSchema.tableName,
-	featsTableSchema,
+const getImagesTable = () => getTableInstance(
+	imagesTableSchema.tableName,
+	imagesTableSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -41,30 +34,25 @@ const COMMAND_NAME = 'destroy';
 // eslint-disable-next-line no-unused-vars
 const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const { data: commandExecutedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_AUDIO
+		({ module, name }) => module === MODULE_NAME_ANCHOR
 			&& name === EVENT_NAME_COMMAND_EXECUTION_RESULT,
 	);
 	if (!commandExecutedData.success) {
 		return false;
 	}
 
-	const { audioID } = tx.params;
+	const { anchorID } = tx.params;
 
-	const audiosTable = await getAudiosTable();
-	const ownersTable = await getOwnersTable();
-	const featsTable = await getFeatsTable();
+	const anchorsTable = await getAnchorsTable();
+	const imagesTable = await getImagesTable();
 
-	logger.trace(`Removing audio index for the audio with ID ${audioID}.`);
-	await audiosTable.delete({ audioID }, dbTrx);
-	logger.trace(`Removed audio index for the audio with ID ${audioID}.`);
+	logger.trace(`Removing anchor index for the anchor with ID ${anchorID}.`);
+	await anchorsTable.delete({ anchorID }, dbTrx);
+	logger.trace(`Removed anchor index for the anchor with ID ${anchorID}.`);
 
-	logger.trace(`Removing owners index for the audio with ID ${audioID}.`);
-	await ownersTable.delete({ audioID }, dbTrx);
-	logger.trace(`Removed owners index for the audio with ID ${audioID}.`);
-
-	logger.trace(`Removing feats index for the audio with ID ${audioID}.`);
-	await featsTable.delete({ audioID }, dbTrx);
-	logger.trace(`Removed feats index for the audio with ID ${audioID}.`);
+	logger.trace(`Removing images index for the anchor with ID ${anchorID}.`);
+	await imagesTable.delete({ anchorID }, dbTrx);
+	logger.trace(`Removed images index for the anchor with ID ${anchorID}.`);
 
 	return true;
 };

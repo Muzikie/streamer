@@ -1,8 +1,8 @@
 {
-	"audio": {
+	"anchor": {
 		"type": "object",
 		"required": [
-			"audioID",
+			"anchorID",
 			"name",
 			"releaseYear",
 			"collectionID",
@@ -10,17 +10,17 @@
 			"feat"
 		],
 		"properties": {
-			"audioID": {
+			"anchorID": {
 				"type": "string",
 				"format": "id",
 				"example": "f9593f101c4acafc3ede650ab4c10fa2ecb59b225813eddbbb17b47e96932e9b",
 				"minLength": 1,
 				"maxLength": 64,
-				"description": "Unique identifier of the audio.\nDerived from the audio hash."
+				"description": "Unique identifier of the anchor.\nDerived from the anchor hash."
 			},
 			"name": {
 				"type": "string",
-				"description": "name of the audio"
+				"description": "name of the anchor"
 			},
 			"releaseYear": {
 				"type": "string",
@@ -32,7 +32,7 @@
 				"example": "f9593f101c4acafc3ede650ab4c10fa2ecb59b225813eddbbb17b47e96932e9b",
 				"minLength": 1,
 				"maxLength": 64,
-				"description": "Unique identifier of the collection to which the current audio belongs."
+				"description": "Unique identifier of the collection to which the current anchor belongs."
 			},
 			"creatorAddress": {
 				"type": "object",
@@ -77,13 +77,13 @@
 						"role": {
 							"type": "string",
 							"example": "guitarist",
-							"description": "Role of the artist in creation of the audio."
+							"description": "Role of the artist in creation of the anchor."
 						}
 				}
 			}
 		}
 	},
-	"AudiosWithEnvelope": {
+	"AnchorsWithEnvelope": {
 		"type": "object",
 		"required": [
 			"data",
@@ -91,10 +91,10 @@
 		],
 		"properties": {
 			"data": {
-				"description": "List of audios",
+				"description": "List of anchors",
 				"type": "array",
 				"items": {
-					"$ref": "#/definitions/Audios"
+					"$ref": "#/definitions/Anchors"
 				}
 			},
 			"meta": {

@@ -14,21 +14,15 @@
  *
  */
 const createApiDocsExpectedResponse = {
-	'/audios': {
+	'/anchors': {
 		get: {
-			description: 'Returns audios data\n RPC => get.audios',
+			description: 'Returns anchors data\n RPC => get.anchors',
 			parameters: [
 				{
-					$ref: '#/parameters/creatorAddress',
+					$ref: '#/parameters/submitter',
 				},
 				{
-					$ref: '#/parameters/audioID',
-				},
-				{
-					$ref: '#/parameters/collectionID',
-				},
-				{
-					$ref: '#/parameters/ownerAddress',
+					$ref: '#/parameters/anchorID',
 				},
 				{
 					$ref: '#/parameters/search',
@@ -42,9 +36,9 @@ const createApiDocsExpectedResponse = {
 			],
 			responses: {
 				200: {
-					description: 'Returns a list of audios',
+					description: 'Returns a list of anchors',
 					schema: {
-						$ref: '#/definitions/audiosWithEnvelope',
+						$ref: '#/definitions/anchorsWithEnvelope',
 					},
 				},
 				400: {
@@ -54,9 +48,9 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-			summary: 'Requests audios data',
+			summary: 'Requests anchors data',
 			tags: [
-				'Audios',
+				'Anchors',
 			],
 		},
 	},
