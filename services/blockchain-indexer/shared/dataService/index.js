@@ -105,9 +105,7 @@ const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
 const { getSubscriptions } = require('./subscriptions');
-const { getCollections } = require('./collections');
 const { getAnchors } = require('./anchors');
-const { getProfiles } = require('./profiles');
 const { invokeEndpoint } = require('./invoke');
 
 module.exports = {
@@ -212,14 +210,8 @@ module.exports = {
 	// Subscriptions
 	getSubscriptions,
 
-	// Collections
-	getCollections,
-
 	// Anchors
 	getAnchors,
-
-	// Profiles
-	getProfiles,
 
 	isMainchain,
 	resolveMainchainServiceURL,

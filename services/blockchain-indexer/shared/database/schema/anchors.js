@@ -8,9 +8,12 @@ module.exports = {
 		artists: { type: 'string' },
 		spotifyId: { type: 'string' },
 		appleMusicId: { type: 'string' },
+		submitter: { type: 'string' },
+		createdAt: { type: 'string' },
 	},
 	indexes: {
-		creatorAddress: { type: 'string' },
+		submitter: { type: 'string' },
+		anchorID: { type: 'string' },
 	},
 	purge: {},
 };

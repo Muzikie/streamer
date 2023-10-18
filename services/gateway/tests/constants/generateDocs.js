@@ -450,40 +450,6 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
-	'/collections': {
-		get: {
-			description: 'Returns collections data\n RPC => get.collections',
-			parameters: [
-				{
-					$ref: '#/parameters/creatorAddress',
-				},
-				{
-					$ref: '#/parameters/collectionID',
-				},
-				{
-					$ref: '#/parameters/search',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of collections',
-					schema: {
-						$ref: '#/definitions/collectionsWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-			summary: 'Requests collections data',
-			tags: [
-				'Collections',
-			],
-		},
-	},
 	'/events': {
 		get: {
 			tags: [
@@ -993,40 +959,6 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-		},
-	},
-	'/profiles': {
-		get: {
-			description: 'Returns profiles data\n RPC => get.profiles',
-			parameters: [
-				{
-					$ref: '#/parameters/creatorAddress',
-				},
-				{
-					$ref: '#/parameters/profileID',
-				},
-				{
-					$ref: '#/parameters/search',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of profiles',
-					schema: {
-						$ref: '#/definitions/profilesWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-			summary: 'Requests profiles data',
-			tags: [
-				'Profiles',
-			],
 		},
 	},
 	'/transactions/estimate-fees': {

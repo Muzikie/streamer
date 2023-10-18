@@ -13,6 +13,9 @@ module.exports = {
 			width: '=,number',
 			height: '=,number',
 		}],
+		votes: ['votes', {
+			senderAddress: '=,string',
+		}],
 		search: '=,string',
 		limit: '=,number',
 		offset: '=,number',

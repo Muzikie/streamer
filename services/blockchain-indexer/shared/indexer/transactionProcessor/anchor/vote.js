@@ -2,24 +2,23 @@ const {
 	Logger,
 	MySQL: { getTableInstance },
 } = require('lisk-service-framework');
-const BluebirdPromise = require('bluebird');
 
 const config = require('../../../../config');
+const { getLisk32AddressFromPublicKey } = require('../../../utils/account');
 
 const logger = Logger();
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
-const imagesTableSchema = require('../../../database/schema/images');
+const votesTableSchema = require('../../../database/schema/votes');
 
 const {
 	MODULE_NAME_ANCHOR,
-	EVENT_NAME_ANCHOR_VOTED,
 	EVENT_NAME_COMMAND_EXECUTION_RESULT,
 } = require('../../../../../blockchain-connector/shared/sdk/constants/names');
 
-const getImagesTable = () => getTableInstance(
-	imagesTableSchema.tableName,
-	imagesTableSchema,
+const getVotesTable = () => getTableInstance(
+	votesTableSchema.tableName,
+	votesTableSchema,
 	MYSQL_ENDPOINT,
 );
 
@@ -36,30 +35,19 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 		return false;
 	}
 
-	const imagesTable = await getImagesTable();
+	const votesTable = await getVotesTable();
 
 	const { anchorID } = tx.params;
 
-	// Use event data to get anchorID
-	const { data: anchorVotedData = {} } = events.find(
-		({ module, name }) => module === MODULE_NAME_ANCHOR
-			&& name === EVENT_NAME_ANCHOR_VOTED,
-	);
+	const senderAddress = getLisk32AddressFromPublicKey(tx.senderPublicKey);
+	const vote = {
+		senderAddress,
+		anchorID,
+	};
 
-	await BluebirdPromise.map(
-		anchorVotedData.images,
-		async image => {
-			const info = {
-				...image,
-				anchorID,
-			};
-			logger.trace(`Updating image index for the account with address ${image.address}.`);
-			await imagesTable.upsert(info, dbTrx);
-			logger.debug(`Updated image index for the account with address ${image.address}.`);
-			return true;
-		},
-		{ concurrency: anchorVotedData.images.length },
-	);
+	logger.trace(`Indexing vote with anchor ID ${anchorID} and sender address ${senderAddress}.`);
+	await votesTable.upsert(vote, dbTrx);
+	logger.debug(`Indexed vote with transaction ID ${dbTrx.id}.`);
 
 	return true;
 };

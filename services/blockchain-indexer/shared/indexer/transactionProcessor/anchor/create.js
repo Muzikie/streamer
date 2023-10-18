@@ -100,6 +100,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const anchorsNFT = {
 		...anchorCreatedData,
 		...tx.params,
+		votes: [],
 	};
 
 	await anchorsTable.upsert(anchorsNFT, dbTrx);
