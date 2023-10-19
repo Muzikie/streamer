@@ -88,8 +88,8 @@
                 "description": "Market prices related API calls."
             },
             {
-                "name": "Subscription",
-                "description": "Subscription module related API calls."
+                "name": "Badge",
+                "description": "Badge module related API calls."
             },
             {
                 "name": "Anchor",

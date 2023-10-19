@@ -108,7 +108,7 @@ const { invokeEndpoint } = require('./invoke');
 const { setFeeEstimates, getFeeEstimates, initFeeEstimates } = require('./feeEstimates');
 
 // Muzikie Dedicated Modules
-const { getSubscriptions } = require('./subscriptions');
+const { getBadges } = require('./badges');
 const { getAnchors } = require('./anchors');
 
 module.exports = {
@@ -206,8 +206,8 @@ module.exports = {
 	getNetworkDisconnectedPeers,
 	getNetworkPeersStatistics,
 
-	// subscriptions
-	getSubscriptions,
+	// badges
+	getBadges,
 
 	// anchors
 	getAnchors,

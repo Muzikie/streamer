@@ -13,30 +13,27 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const subscription = require('./mappings/subscription');
+const badge = require('./mappings/badge');
 
 module.exports = {
 	type: 'moleculer',
-	method: 'indexer.subscriptions',
+	method: 'indexer.badges',
 	params: {
-		subscriptionID: '=,string',
-		creatorAddress: '=,string',
-		price: '=,string',
-		consumed: '=,string',
-		members: ['members', {
-			address: '=,string',
-			name: '=,string',
-			publicKey: '=,string',
-		}],
-		streams: '=,string',
-		maxMembers: '=,number',
+		badgeID: '=,string',
+		anchorID: '=,string',
+		awardedTo: '=,string',
+		type: '=,string',
+		awardDate: '=,string',
+		rank: '=,number',
+		prize: '=,string',
+		claimed: '=,boolean',
 		limit: '=,number',
 		offset: '=,number',
 		sort: '=,string',
 		order: '=,string',
 	},
 	definition: {
-		data: ['data', subscription],
+		data: ['data', badge],
 		meta: {
 			count: '=,number',
 			offset: '=,number',

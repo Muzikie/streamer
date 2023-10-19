@@ -14,15 +14,12 @@
  *
  */
 module.exports = {
-	subscriptionID: '=,string',
-	creatorAddress: '=,string',
-	maxMembers: '=,number',
-	streams: '=,string',
-	price: '=,string',
-	consumable: '=,string',
-	members: ['members', {
-		address: '=,string',
-		name: '=,string',
-		publicKey: '=,string',
-	}],
+	badgeID: '=,string',
+	anchorID: '=,string',
+	awardedTo: '=,string',
+	type: '=,string',
+	awardDate: '=,string',
+	rank: '=,number',
+	prize: '=,string',
+	claimed: '=,boolean',
 };

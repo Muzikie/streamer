@@ -5,18 +5,18 @@ const {
 
 const dataService = require('../../../shared/dataService');
 
-const getSubscriptions = async params => {
-	const subscriptions = {
+const getBadges = async params => {
+	const badges = {
 		data: [],
 		meta: {},
 	};
 
 	try {
-		const response = await dataService.getSubscriptions(params);
-		if (response.data) subscriptions.data = response.data;
-		if (response.meta) subscriptions.meta = response.meta;
+		const response = await dataService.getBadges(params);
+		if (response.data) badges.data = response.data;
+		if (response.meta) badges.meta = response.meta;
 
-		return subscriptions;
+		return badges;
 	} catch (err) {
 		let status;
 		if (err instanceof InvalidParamsException) status = 'INVALID_PARAMS';
@@ -27,5 +27,5 @@ const getSubscriptions = async params => {
 };
 
 module.exports = {
-	getSubscriptions,
+	getBadges,
 };

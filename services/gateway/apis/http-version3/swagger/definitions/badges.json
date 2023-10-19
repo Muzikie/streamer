@@ -1,37 +1,34 @@
 {
-	"Subscription": {
+	"Badge": {
 		"type": "object",
 		"required": [
-			"creatorAddress",
-			"subscriptionID",
-			"members",
-			"price",
-			"consumable",
-			"maxMembers",
-			"streams"
+			"badgeID",
+			"anchorID",
+			"awardedTo",
+			"type",
+			"awardDate",
+			"rank",
+			"prize",
+			"claimed"
 		],
 		"properties": {
-			"subscriptionID": {
+			"badgeID": {
 				"type": "string",
 				"format": "id",
 				"example": "f9593f101c4acafc3ede650ab4c10fa2ecb59b225813eddbbb17b47e96932e9b",
 				"minLength": 1,
 				"maxLength": 64,
-				"description": "Unique identifier of the subscription.\nDerived from the subscription hash."
+				"description": "Unique identifier of the badge.\nDerived from the badge hash."
 			},
-			"price": {
+			"anchorID": {
 				"type": "string",
-				"example": "0"
+				"format": "id",
+				"example": "f9593f101c4acafc3ede650ab4c10fa2ecb59b225813eddbbb17b47e96932e9b",
+				"minLength": 1,
+				"maxLength": 64,
+				"description": "Unique identifier of the anchor.\nDerived from the badge hash."
 			},
-			"consumable": {
-				"type": "string",
-				"description": "Consumable value."
-			},
-			"MaxMembers": {
-				"type": "integer",
-				"example": "1"
-			},
-			"creatorAddress": {
+			"awardedTo": {
 				"type": "object",
 				"properties": {
 					"address": {
@@ -53,18 +50,29 @@
 					}
 				}
 			},
-			"members": {
-				"type": "array",
-				"items": {
-					"address": {
-						"type": "string",
-						"description": "Member address."
-					}
-				}
+			"type": {
+				"type": "string",
+				"example": "0"
+			},
+			"awardDate": {
+				"type": "string",
+				"description": "Consumable value."
+			},
+			"rank": {
+				"type": "integer",
+				"example": "1"
+			},
+			"prize": {
+				"type": "string",
+				"example": "10000000000"
+			},
+			"claimed": {
+				"type": "boolean",
+				"example": "true"
 			}
 		}
 	},
-	"SubscriptionsWithEnvelope": {
+	"BadgesWithEnvelope": {
 		"type": "object",
 		"required": [
 			"data",
@@ -72,10 +80,10 @@
 		],
 		"properties": {
 			"data": {
-				"description": "List of subscriptions",
+				"description": "List of badges",
 				"type": "array",
 				"items": {
-					"$ref": "#/definitions/Subscriptions"
+					"$ref": "#/definitions/Badges"
 				}
 			},
 			"meta": {

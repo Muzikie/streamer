@@ -1,0 +1,28 @@
+{
+	"awardedTo": {
+			"name": "awardedTo",
+			"in": "query",
+			"description": "Lisk account address",
+			"type": "string",
+			"minLength": 3,
+			"maxLength": 41
+	},
+	"badgeID": {
+			"name": "badgeID",
+			"in": "query",
+			"description": "badge ID to query",
+			"type": "string",
+			"format": "id",
+			"minLength": 1,
+			"maxLength": 64
+	},
+	"anchorID": {
+			"name": "anchorID",
+			"in": "query",
+			"description": "anchor ID to query",
+			"type": "string",
+			"format": "id",
+			"minLength": 1,
+			"maxLength": 64
+	}
+}

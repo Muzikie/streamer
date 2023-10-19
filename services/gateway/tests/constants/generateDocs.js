@@ -768,25 +768,28 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
-	'/subscriptions': {
+	'/badges': {
 		get: {
-			description: 'Returns subscriptions data\n RPC => get.subscriptions',
+			description: 'Returns badges data\n RPC => get.badges',
 			parameters: [
 				{
-					$ref: '#/parameters/creatorAddress',
+					$ref: '#/parameters/awardedTo',
 				},
 				{
-					$ref: '#/parameters/subscriptionID',
+					$ref: '#/parameters/badgeID',
 				},
 				{
-					$ref: '#/parameters/memberAddress',
+					$ref: '#/parameters/badgeID',
+				},
+				{
+					$ref: '#/parameters/type',
 				},
 			],
 			responses: {
 				200: {
-					description: 'Returns a list of subscriptions',
+					description: 'Returns a list of badges',
 					schema: {
-						$ref: '#/definitions/subscriptionsWithEnvelope',
+						$ref: '#/definitions/badgesWithEnvelope',
 					},
 				},
 				400: {
@@ -796,9 +799,9 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-			summary: 'Requests subscriptions data',
+			summary: 'Requests badges data',
 			tags: [
-				'Subscriptions',
+				'Badges',
 			],
 		},
 	},

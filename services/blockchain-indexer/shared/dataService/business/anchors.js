@@ -44,7 +44,7 @@ const getAnchors = async (params = {}) => {
 	}
 
 	const anchorData = await anchorsTable.find(
-		{ ...params, limit: params.limit },
+		{ ...params, limit: params.limit || 10 },
 		['anchorID', 'name', 'album', 'artists', 'spotifyId', 'appleMusicId', 'createdAt', 'submitter'],
 	);
 	const total = anchorData.length;

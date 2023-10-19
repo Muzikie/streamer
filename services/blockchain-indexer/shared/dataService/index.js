@@ -104,7 +104,7 @@ const { getIndexStatus, isBlockchainFullyIndexed } = require('./indexStatus');
 const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
-const { getSubscriptions } = require('./subscriptions');
+const { getBadges } = require('./badges');
 const { getAnchors } = require('./anchors');
 const { invokeEndpoint } = require('./invoke');
 
@@ -207,8 +207,8 @@ module.exports = {
 	getDefaultRewardAtHeight,
 	getRewardConstants,
 
-	// Subscriptions
-	getSubscriptions,
+	// Badges
+	getBadges,
 
 	// Anchors
 	getAnchors,
