@@ -25,7 +25,7 @@ const getBadgesTable = () => getTableInstance(
 const COMMAND_NAME = 'create';
 
 // eslint-disable-next-line no-unused-vars
-const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
+const applyTransaction = async (_blockHeader, tx, events, dbTrx) => {
 	const badgesTable = await getBadgesTable();
 
 	// @todo make sure the process won't break if the event doesn't exist. e.g. do not index.
@@ -45,7 +45,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 };
 
 // eslint-disable-next-line no-unused-vars
-const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
+const revertTransaction = async (_blockHeader, _tx, events, dbTrx) => {
 	const badgesTable = await getBadgesTable();
 
 	const { data: eventData } = events.find(

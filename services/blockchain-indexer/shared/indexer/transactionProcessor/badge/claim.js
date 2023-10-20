@@ -29,7 +29,7 @@ const getBadgesTable = () => getTableInstance(
 const COMMAND_NAME = 'claim';
 
 // eslint-disable-next-line no-unused-vars
-const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
+const applyTransaction = async (_blockHeader, tx, _events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const badgesTable = await getBadgesTable();
 
@@ -37,7 +37,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const { badgeID } = tx.params;
 
 	logger.trace(`Indexing badge with address ${badgeID} updated by transaction with ID ${dbTrx.id}.`);
-	const badgeNFT = await badgesTable.find(
+	const [badgeNFT] = await badgesTable.find(
 		{ badgeID },
 		['badgeID', 'anchorID', 'awardedTo', 'type', 'awardDate', 'rank', 'prize', 'claimed'],
 		dbTrx,
@@ -53,7 +53,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 };
 
 // eslint-disable-next-line no-unused-vars
-const revertTransaction = async (blockHeader, tx, events, dbTrx) => {
+const revertTransaction = async (_blockHeader, tx, _events, dbTrx) => {
 	const badgesTable = await getBadgesTable();
 
 	const { badgeID } = tx.params;

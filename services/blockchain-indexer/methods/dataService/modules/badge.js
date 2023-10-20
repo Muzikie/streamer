@@ -13,7 +13,6 @@ module.exports = [
 			type: { optional: true, type: 'string' },
 			limit: { optional: true, type: 'number' },
 			offset: { optional: true, type: 'number' },
-			memberAddress: { optional: true, type: 'string' },
 		},
 	},
 ];

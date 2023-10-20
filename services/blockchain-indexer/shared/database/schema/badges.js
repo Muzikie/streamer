@@ -12,7 +12,7 @@ module.exports = {
 		claimed: { type: 'boolean', null: true, defaultValue: null },
 	},
 	indexes: {
-		creatorAddress: { type: 'string' },
+		badgeID: { type: 'string' },
 	},
 	purge: {},
 };
