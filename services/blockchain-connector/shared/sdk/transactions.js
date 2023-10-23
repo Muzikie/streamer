@@ -42,16 +42,13 @@ const getTransactionsFromPoolFormatted = async () => {
 };
 
 const dryRunTransactionWrapper = async (params) => {
-	const { transaction, skipVerify, skipDecode } = params;
+	const { transaction, skipVerify, skipDecode, strict } = params;
 	const encodedTransaction = typeof transaction === 'object'
 		? encodeTransaction(transaction)
 		: transaction;
 
-	const response = await dryRunTransaction({ transaction: encodedTransaction, skipVerify });
-
-	if (skipDecode) return response;
-
-	response.events = response.events.map(event => formatEvent(event));
+	const response = await dryRunTransaction({ transaction: encodedTransaction, skipVerify, strict });
+	response.events = response.events.map(event => formatEvent(event, skipDecode));
 	return response;
 };
 

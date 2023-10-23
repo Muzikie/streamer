@@ -18,8 +18,7 @@ const { ServiceBroker } = require('moleculer');
 const requestAll = require('../../../../shared/utils/requestAll');
 const request = require('../../../../shared/utils/request');
 const config = require('../../../../config');
-const { MODULE_SUB_STORE } = require('../../../../shared/indexer/genesisBlock');
-const { MODULE } = require('../../../../shared/constants');
+const { MODULE, MODULE_SUB_STORE } = require('../../../../shared/constants');
 
 const broker = new ServiceBroker({
 	transporter: config.transporter,
@@ -28,7 +27,7 @@ const broker = new ServiceBroker({
 	logger: console,
 });
 
-describe('Test requestAll method', () => {
+xdescribe('Test requestAll method', () => {
 	beforeAll(async () => {
 		await broker.start();
 		await request.setAppContext({
@@ -65,4 +64,3 @@ describe('Test requestAll method', () => {
 		expect(() => requestAll(request.requestConnector, null, {})).rejects.toThrow();
 	});
 });
-

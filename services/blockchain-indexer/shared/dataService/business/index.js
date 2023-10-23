@@ -48,13 +48,19 @@ const {
 	getChainAccount,
 	getMainchainID,
 	reloadBlockchainAppsStats,
+	isMainchain,
+	resolveMainchainServiceURL,
+	resolveChannelInfo,
+	getCurrentChainID,
 } = require('./interoperability');
 
 const {
 	tokenHasUserAccount,
+	getAvailableTokenIDs,
 	getTokenBalances,
 	getTokenSummary,
 	getTokenConstants,
+	getTokenTopBalances,
 } = require('./token');
 
 const {
@@ -83,6 +89,8 @@ const { postTransactions } = require('./postTransactions');
 const {
 	getEvents,
 	getEventsByHeight,
+	cacheEventsByBlockID,
+	getEventsByBlockID,
 	deleteEventsFromCache,
 } = require('./events');
 const { dryRunTransactions } = require('./transactionsDryRun');
@@ -94,6 +102,10 @@ const {
 	getNetworkDisconnectedPeers,
 	getNetworkPeersStatistics,
 } = require('./network');
+const { estimateTransactionFees } = require('./transactionsEstimateFees');
+const { invokeEndpoint } = require('./invoke');
+
+const { setFeeEstimates, getFeeEstimates, initFeeEstimates } = require('./feeEstimates');
 
 // Muzikie Dedicated Modules
 const { getSubscriptions } = require('./subscriptions');
@@ -126,10 +138,13 @@ module.exports = {
 	loadAllPendingTransactions,
 	postTransactions,
 	dryRunTransactions,
+	estimateTransactionFees,
 
 	// Events
 	getEvents,
 	getEventsByHeight,
+	cacheEventsByBlockID,
+	getEventsByBlockID,
 	deleteEventsFromCache,
 
 	// Interoperability
@@ -138,12 +153,18 @@ module.exports = {
 	getMainchainID,
 	getBlockchainAppsStatistics,
 	reloadBlockchainAppsStats,
+	isMainchain,
+	resolveMainchainServiceURL,
+	resolveChannelInfo,
+	getCurrentChainID,
 
 	// Token
 	tokenHasUserAccount,
+	getAvailableTokenIDs,
 	getTokenBalances,
 	getTokenSummary,
 	getTokenConstants,
+	getTokenTopBalances,
 
 	// PoS
 	getPosValidators,
@@ -175,6 +196,11 @@ module.exports = {
 	getDefaultRewardAtHeight,
 	getRewardConstants,
 
+	// Fee estimates
+	initFeeEstimates,
+	setFeeEstimates,
+	getFeeEstimates,
+
 	// Network
 	getNetworkStatus,
 	getNetworkPeers,
@@ -193,4 +219,5 @@ module.exports = {
 
 	// profiles
 	getProfiles,
+	invokeEndpoint,
 };

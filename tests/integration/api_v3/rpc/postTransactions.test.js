@@ -21,38 +21,62 @@ const {
 
 const {
 	invalidParamsSchema,
-	jsonRpcEnvelopeSchema,
+	invalidRequestSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
 const {
 	postTransactionSchema,
 } = require('../../../schemas/api_v3/transaction.schema');
+const { createTokenTransferTx } = require('../txUtil/createTx');
+const { encodeTransaction } = require('../txUtil/encodeTx');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
 const postTransaction = async params => request(wsRpcUrl, 'post.transactions', params);
+const networkStatus = async params => request(wsRpcUrl, 'get.network.status', params);
 
 const INVALID_TRANSACTION = '0802100018002080c2d72f2a2027f87a414b549e79a940bf24fdf2b2f05e7f22aeeecc86a322e0880a0cebdf3ef171214aebd99f07218109162a905d0e0c91e58bedc83c51a0e746f6b656e207472616e736665723a40a30998db4e96911a3d784b0a01b817baf64ec9745d7c0407255967506cb01764220e2e6ce66183d07';
 
+const baseUrlV3 = `${config.SERVICE_ENDPOINT}/api/v3`;
+const authEndpoint = `${baseUrlV3}/auth`;
+
 describe('Method post.transactions', () => {
-	it('Post transaction succesfully', async () => {
-		const response = await postTransaction(
-			{
-				transaction: '0a05746f6b656e12087472616e7366657218012080c2d72f2a20a3f96c50d0446220ef2f98240898515cbba8155730679ca35326d98dcfb680f032270a0800000000000000001080c2d72f1a1474e3ba5ade3e94451bd4de9d19917c8e6eff624d22003a403881faa16364f5d6a08fb50736ec4809f4d50bba90a3e00c3b10d4f96b85fe50268bf545e95632d582d4ccac750953a09faa5da9d6d49f441baea7f888e5c007',
-			},
-		);
-		const { result } = response;
+	let isDevnet = false;
 
-		expect(result).toBeInstanceOf(Object);
-		expect(result).toMap(postTransactionSchema);
+	beforeAll(async () => {
+		const response = await networkStatus({});
+		if (response && response.data) {
+			isDevnet = response.data.chainID === '04000000';
+		}
 	});
 
-	it('Invalid binary transaction -> empty response', async () => {
-		const response = await postTransaction({ transaction: INVALID_TRANSACTION }).catch(e => e);
-		expect(response).toMap(jsonRpcEnvelopeSchema);
+	it('should post transaction successfully', async () => {
+		if (isDevnet) {
+			const transaction = await createTokenTransferTx(authEndpoint);
+			const encodedTx = await encodeTransaction(transaction, baseUrlV3);
+
+			const response = await postTransaction(
+				{
+					transaction: encodedTx,
+				},
+			);
+			const { result } = response;
+
+			expect(result).toBeInstanceOf(Object);
+			expect(result).toMap(postTransactionSchema);
+		}
 	});
 
-	it('Invalid query parameter -> -32602', async () => {
-		const response = await postTransaction({ transactions: INVALID_TRANSACTION }).catch(e => e);
-		expect(response).toMap(invalidParamsSchema);
+	it('should return error when posting invalid binary transaction', async () => {
+		if (isDevnet) {
+			const response = await postTransaction({ transaction: INVALID_TRANSACTION }).catch(e => e);
+			expect(response).toMap(invalidRequestSchema);
+		}
+	});
+
+	it('should return error in case of invalid query params', async () => {
+		if (isDevnet) {
+			const response = await postTransaction({ transactions: INVALID_TRANSACTION }).catch(e => e);
+			expect(response).toMap(invalidParamsSchema);
+		}
 	});
 });

@@ -27,11 +27,12 @@ const {
 	getGeneratorStatus,
 	updateGeneratorStatus,
 	getSchemas,
-	getRegisteredActions,
+	getRegisteredEndpoints,
 	getRegisteredEvents,
 	getRegisteredModules,
 	getNodeInfo,
 	getSystemMetadata,
+	getEngineEndpoints,
 } = require('./endpoints');
 
 const {
@@ -52,13 +53,15 @@ const {
 
 const {
 	tokenHasUserAccount,
+	tokenHasEscrowAccount,
 	getTokenBalance,
 	getTokenBalances,
 	getEscrowedAmounts,
 	getSupportedTokens,
 	getTotalSupply,
 	getTokenInitializationFees,
-} = require('./tokens');
+	updateTokenInfo,
+} = require('./token');
 
 const {
 	getAllPosValidators,
@@ -94,6 +97,8 @@ const {
 const {
 	getChainAccount,
 	getMainchainID,
+	getChannel,
+	getRegistrationFee,
 } = require('./interoperability');
 
 const { getLegacyAccount } = require('./legacy');
@@ -109,11 +114,16 @@ const {
 	getNetworkPeersStatistics,
 } = require('./network');
 
+const { cacheCleanup } = require('./cache');
+const { formatTransaction } = require('./formatter');
+const { encodeCCM } = require('./encoder');
+
 const init = async () => {
 	// Initialize the local cache
 	await getNodeInfo(true);
 	await cacheRegisteredRewardModule();
 	await cacheFeeConstants();
+	await updateTokenInfo();
 
 	// Cache all the schemas
 	setSchemas(await getSchemas());
@@ -139,11 +149,12 @@ module.exports = {
 	getGeneratorStatus,
 	updateGeneratorStatus,
 	getSchemas,
-	getRegisteredActions,
+	getRegisteredEndpoints,
 	getRegisteredEvents,
 	getRegisteredModules,
 	getNodeInfo,
 	getSystemMetadata,
+	getEngineEndpoints,
 
 	// Blocks
 	getLastBlock,
@@ -158,9 +169,11 @@ module.exports = {
 	getTransactionsFromPool,
 	postTransaction,
 	dryRunTransaction,
+	formatTransaction,
 
 	// Tokens
 	tokenHasUserAccount,
+	tokenHasEscrowAccount,
 	getTokenBalance,
 	getTokenBalances,
 	getEscrowedAmounts,
@@ -197,6 +210,8 @@ module.exports = {
 	// Interoperability
 	getChainAccount,
 	getMainchainID,
+	getChannel,
+	getChainRegistrationFee: getRegistrationFee,
 
 	// Legacy
 	getLegacyAccount,
@@ -221,4 +236,10 @@ module.exports = {
 	getNetworkConnectedPeers,
 	getNetworkDisconnectedPeers,
 	getNetworkPeersStatistics,
+
+	// CCM
+	encodeCCM,
+
+	// Cache
+	cacheCleanup,
 };

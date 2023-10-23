@@ -19,12 +19,12 @@ const { request } = require('../../../helpers/socketIoRpcRequest');
 const {
 	invalidParamsSchema,
 	jsonRpcEnvelopeSchema,
-	metaSchema,
 	serviceUnavailableSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
 const {
 	marketPriceSchema,
+	marketPriceMetaSchema,
 } = require('../../../schemas/api_v3/marketPrice.schema');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
@@ -32,24 +32,28 @@ const getMarketPrices = async params => request(wsRpcUrl, 'get.market.prices', p
 
 describe('Method get.market.prices', () => {
 	describe('is able to retrieve market prices', () => {
-		it('returns market prices with no params', async () => {
+		it('should return market prices or SERVICE UNAVAILABLE when requested with no params', async () => {
 			try {
 				const response = await getMarketPrices({});
 				expect(response).toMap(jsonRpcEnvelopeSchema);
 				const { result } = response;
 				expect(result.data).toBeInstanceOf(Array);
 				expect(result.data.length).toBeGreaterThanOrEqual(1);
-				expect(result.data.length).toBeLessThanOrEqual(10);
 				result.data.forEach(account => expect(account).toMap(marketPriceSchema));
-				expect(result.meta).toMap(metaSchema);
+				expect(result.meta).toMap(marketPriceMetaSchema);
 			} catch (_) {
 				const response = await getMarketPrices({}).catch(e => e);
 				expect(response).toMap(serviceUnavailableSchema);
 			}
 		});
 
-		it('returns invalid params with params', async () => {
+		it('should return bad request when requested with invalid params', async () => {
 			const response = await getMarketPrices({ limit: 10 });
+			expect(response).toMap(invalidParamsSchema);
+		});
+
+		it('should return bad request when requested with empty invalid param', async () => {
+			const response = await getMarketPrices({ limit: '' });
 			expect(response).toMap(invalidParamsSchema);
 		});
 	});

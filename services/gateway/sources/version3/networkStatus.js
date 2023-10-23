@@ -28,6 +28,7 @@ module.exports = {
 			syncing: '=,boolean',
 			unconfirmedTransactions: '=,number',
 			genesis: '=',
+			genesisHeight: '=',
 			registeredModules: '=',
 			moduleCommands: '=',
 			network: '=',
@@ -37,6 +38,5 @@ module.exports = {
 			lastBlockHeight: '=,number',
 			lastBlockID: '=,string',
 		},
-		links: {},
 	},
 };

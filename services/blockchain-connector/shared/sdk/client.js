@@ -13,7 +13,7 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const { Logger, Exceptions: { TimeoutException }, Signals } = require('lisk-service-framework');
+const { Logger, Signals } = require('lisk-service-framework');
 const {
 	createWSClient,
 	createIPCClient,
@@ -40,20 +40,19 @@ let isInstantiating = false;
 const checkIsClientAlive = () => clientCache && clientCache._channel.isAlive;
 
 // eslint-disable-next-line consistent-return
-const instantiateClient = async () => {
+const instantiateClient = async (isForceUpdate = false) => {
 	try {
-		if (!isInstantiating) {
-			// TODO: Verify and enable the code
-			if (!checkIsClientAlive()) {
+		if (!isInstantiating || isForceUpdate) {
+			if (!checkIsClientAlive() || isForceUpdate) {
 				isInstantiating = true;
 				instantiationBeginTime = Date.now();
-				// if (clientCache) await clientCache.disconnect();
+				if (clientCache) await clientCache.disconnect();
 
-				if (config.isUseLiskIPCClient) {
-					clientCache = await createIPCClient(config.liskAppDataPath);
-				} else {
-					clientCache = await createWSClient(`${liskAddress}/rpc-ws`);
-				}
+				clientCache = config.isUseLiskIPCClient
+					? await createIPCClient(config.liskAppDataPath)
+					: await createWSClient(`${liskAddress}/rpc-ws`);
+
+				if (isForceUpdate) logger.info('Re-instantiated the API client forcefully.');
 
 				// Inform listeners about the newly instantiated ApiClient
 				Signals.get('newApiClient').dispatch();
@@ -68,9 +67,12 @@ const instantiateClient = async () => {
 			isInstantiating = false;
 		}
 	} catch (err) {
-		logger.error(`Error instantiating WS client to ${liskAddress}`);
+		// Nullify the apiClient cache, so that it can be re-instantiated properly
+		clientCache = null;
+
+		logger.error(`Error instantiating WS client to ${liskAddress}.`);
 		logger.error(err.message);
-		if (err.code === 'ECONNREFUSED') throw new Error('ECONNREFUSED: Unable to reach a network node');
+		if (err.code === 'ECONNREFUSED') throw new Error('ECONNREFUSED: Unable to reach a network node.');
 
 		return {
 			data: { error: 'Action not supported' },
@@ -94,12 +96,18 @@ const invokeEndpoint = async (endpoint, params = {}, numRetries = NUM_REQUEST_RE
 			const response = await apiClient._channel.invoke(endpoint, params);
 			return response;
 		} catch (err) {
-			if (retries && err instanceof TimeoutException) await delay(10);
-			else throw err;
+			if (retries && err.message.includes(timeoutMessage)) {
+				await delay(10);
+			} else {
+				throw err;
+			}
 		}
 		/* eslint-enable no-await-in-loop */
 	} while (retries--);
 };
+
+const resetApiClientListener = () => instantiateClient(true);
+Signals.get('resetApiClient').add(resetApiClientListener);
 
 module.exports = {
 	timeoutMessage,

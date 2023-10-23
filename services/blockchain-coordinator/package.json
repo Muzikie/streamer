@@ -1,6 +1,6 @@
 {
   "name": "lisk-service-blockchain-coordinator",
-  "version": "0.7.0-beta.0",
+  "version": "0.7.0-rc.1",
   "description": "Lisk Service Blockchain Coordinator",
   "keywords": [
     "lisk",
@@ -19,19 +19,19 @@
   "license": "Apache-2.0",
   "main": "app.js",
   "engines": {
-    "node": ">=16.15.0 <=16",
+    "node": ">=18.16 <=18",
     "npm": ">=8.5.0"
   },
   "scripts": {
     "start": "node app.js",
     "clean": "rm -rf ./node_modules",
-    "test": "npm run test:unit",
-    "test:unit": "echo \"Error: no test specified\""
+    "test": "yarn run test:unit",
+    "test:unit": "jest --config=jest.config.js --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "bull": "^4.8.1",
     "bluebird": "^3.7.2",
-    "lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/30e8e8df1948ccb049e2dd54f779187445aeb7ad/framework/dist/lisk-service-framework-1.4.13.tgz"
+    "bull": "^4.8.1",
+    "lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/bf8048b920f61a2b27d7c28535dfefed5bd679cb/framework/dist/lisk-service-framework-1.5.1.tgz"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.0",

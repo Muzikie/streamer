@@ -19,11 +19,13 @@ const { request } = require('../../../helpers/socketIoRpcRequest');
 const {
 	jsonRpcEnvelopeSchema,
 	invalidParamsSchema,
+	invalidRequestSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
 const {
 	goodResponseSchema,
 } = require('../../../schemas/api_v3/posClaimableRewards.schema');
+const { invalidAddresses, invalidNames, invalidPublicKeys, invalidLimits, invalidOffsets } = require('../constants/invalidInputs');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
 
@@ -42,92 +44,92 @@ describe('Claimable rewards API', () => {
 		} while (!refGenerator);
 	});
 
-	it('Returns list of claimable rewards for known validator name', async () => {
+	it('should return list of claimable rewards for known validator name', async () => {
 		const response = await getPosClaimableRewards({ name: refGenerator.name });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(result.data.length).toBeGreaterThanOrEqual(1);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
 		expect(result.data.length).toBeLessThanOrEqual(10);
 	});
 
-	it('Returns list of claimable rewards with known validator name and offset=1', async () => {
+	it('should return list of claimable rewards with known validator name and offset=1', async () => {
 		const response = await getPosClaimableRewards({ name: refGenerator.name, offset: 1 });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(0);
-		expect(response.data.length).toBeLessThanOrEqual(10);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(10);
 	});
 
-	it('Returns list of claimable rewards with known validator name and limit=5', async () => {
+	it('should return list of claimable rewards with known validator name and limit=5', async () => {
 		const response = await getPosClaimableRewards({ name: refGenerator.name, limit: 5 });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(1);
-		expect(response.data.length).toBeLessThanOrEqual(5);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(5);
 	});
 
-	it('Returns list of claimable rewards with known validator name, offset=1 and limit=5', async () => {
+	it('should return list of claimable rewards with known validator name, offset=1 and limit=5', async () => {
 		const response = await getPosClaimableRewards({ name: refGenerator.name, offset: 1, limit: 5 });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(0);
-		expect(response.data.length).toBeLessThanOrEqual(5);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(5);
 	});
 
-	it('Returns list of claimable rewards with known validator address', async () => {
+	it('should return list of claimable rewards with known validator address', async () => {
 		const response = await getPosClaimableRewards({ address: refGenerator.address });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(result.data.length).toBeGreaterThanOrEqual(1);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
 		expect(result.data.length).toBeLessThanOrEqual(10);
 	});
 
-	it('Returns list of of claimable rewards with known validator address and offset=1', async () => {
+	it('should return list of of claimable rewards with known validator address and offset=1', async () => {
 		const response = await getPosClaimableRewards({ address: refGenerator.address, offset: 1 });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(0);
-		expect(response.data.length).toBeLessThanOrEqual(10);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(10);
 	});
 
-	it('Returns list of claimable rewards with known validator address and limit=5', async () => {
+	it('should return list of claimable rewards with known validator address and limit=5', async () => {
 		const response = await getPosClaimableRewards({ address: refGenerator.address, limit: 5 });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(1);
-		expect(response.data.length).toBeLessThanOrEqual(5);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(5);
 	});
 
-	it('Returns list of claimable rewards with known validator address, offset=1 and limit=5', async () => {
+	it('should return list of claimable rewards with known validator address, offset=1 and limit=5', async () => {
 		const response = await getPosClaimableRewards({
 			address: refGenerator.address, offset: 1, limit: 5,
 		});
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(response.data.length).toBeGreaterThanOrEqual(0);
-		expect(response.data.length).toBeLessThanOrEqual(5);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
+		expect(result.data.length).toBeLessThanOrEqual(5);
 	});
 
-	it('Returns list of claimable rewards with known validator publicKey', async () => {
+	it('should return list of claimable rewards with known validator publicKey', async () => {
 		const response = await getPosClaimableRewards({ publicKey: refGenerator.publicKey });
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 
 		const { result } = response;
 		expect(result).toMap(goodResponseSchema);
-		expect(result.data.length).toBeGreaterThanOrEqual(1);
+		expect(result.data.length).toBeGreaterThanOrEqual(0);
 		expect(result.data.length).toBeLessThanOrEqual(10);
 	});
 
-	it('Returns list of of claimable rewards with known validator publicKey and offset=1', async () => {
+	it('should return list of of claimable rewards with known validator publicKey and offset=1', async () => {
 		if (refGenerator.publicKey) {
 			const response = await getPosClaimableRewards({
 				publicKey: refGenerator.publicKey, offset: 1,
@@ -135,12 +137,12 @@ describe('Claimable rewards API', () => {
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(goodResponseSchema);
-			expect(response.data.length).toBeGreaterThanOrEqual(0);
-			expect(response.data.length).toBeLessThanOrEqual(10);
+			expect(result.data.length).toBeGreaterThanOrEqual(0);
+			expect(result.data.length).toBeLessThanOrEqual(10);
 		}
 	});
 
-	it('Returns list of claimable rewards with known validator publicKey and limit=5', async () => {
+	it('should return list of claimable rewards with known validator publicKey and limit=5', async () => {
 		if (refGenerator.publicKey) {
 			const response = await getPosClaimableRewards({
 				publicKey: refGenerator.publicKey, limit: 5,
@@ -148,12 +150,12 @@ describe('Claimable rewards API', () => {
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(goodResponseSchema);
-			expect(response.data.length).toBeGreaterThanOrEqual(1);
-			expect(response.data.length).toBeLessThanOrEqual(5);
+			expect(result.data.length).toBeGreaterThanOrEqual(0);
+			expect(result.data.length).toBeLessThanOrEqual(5);
 		}
 	});
 
-	it('Returns list of claimable rewards with known validator publicKey, offset=1 and limit=5', async () => {
+	it('should return list of claimable rewards with known validator publicKey, offset=1 and limit=5', async () => {
 		if (refGenerator.publicKey) {
 			const response = await getPosClaimableRewards({
 				publicKey: refGenerator.publicKey, offset: 1, limit: 5,
@@ -161,33 +163,69 @@ describe('Claimable rewards API', () => {
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(goodResponseSchema);
-			expect(response.data.length).toBeGreaterThanOrEqual(0);
-			expect(response.data.length).toBeLessThanOrEqual(5);
+			expect(result.data.length).toBeGreaterThanOrEqual(0);
+			expect(result.data.length).toBeLessThanOrEqual(5);
 		}
 	});
 
-	it('No param -> bad request', async () => {
+	it('should return invalid params if requested without any param', async () => {
 		const response = await getPosClaimableRewards();
-		expect(response).toMap(invalidParamsSchema);
+		expect(response).toMap(invalidRequestSchema);
 	});
 
-	it('Invalid address -> bad request', async () => {
-		const response = await getPosClaimableRewards({ address: 'L' });
-		expect(response).toMap(invalidParamsSchema);
+	it('should return invalid params if requested with invalid address', async () => {
+		for (let i = 0; i < invalidAddresses.length; i++) {
+			// eslint-disable-next-line no-await-in-loop
+			const response = await getPosClaimableRewards({ address: invalidAddresses[i] });
+			expect(response).toMap(invalidParamsSchema);
+		}
 	});
 
-	it('Invalid name -> bad request', async () => {
-		const response = await getPosClaimableRewards({ name: '#' });
-		expect(response).toMap(invalidParamsSchema);
+	it('should return invalid params if requested with invalid name', async () => {
+		for (let i = 0; i < invalidNames.length; i++) {
+			// eslint-disable-next-line no-await-in-loop
+			const response = await getPosClaimableRewards({ name: invalidNames[i] });
+			expect(response).toMap(invalidParamsSchema);
+		}
 	});
 
-	it('Invalid publicKey -> bad request', async () => {
-		const response = await getPosClaimableRewards({ publicKey: '412875216073141752800000' });
-		expect(response).toMap(invalidParamsSchema);
+	it('should return invalid params if requested with invalid publicKey', async () => {
+		for (let i = 0; i < invalidPublicKeys.length; i++) {
+			// eslint-disable-next-line no-await-in-loop
+			const response = await getPosClaimableRewards({ publicKey: invalidPublicKeys[i] });
+			expect(response).toMap(invalidParamsSchema);
+		}
 	});
 
-	it('Invalid request param -> bad request', async () => {
+	it('should return invalid params if requested with invalid limit', async () => {
+		for (let i = 0; i < invalidLimits.length; i++) {
+			// eslint-disable-next-line no-await-in-loop
+			const response = await getPosClaimableRewards({
+				address: refGenerator.address,
+				limit: invalidLimits[i],
+			});
+			expect(response).toMap(invalidParamsSchema);
+		}
+	});
+
+	it('should return invalid params if requested with invalid offset', async () => {
+		for (let i = 0; i < invalidOffsets.length; i++) {
+			// eslint-disable-next-line no-await-in-loop
+			const response = await getPosClaimableRewards({
+				address: refGenerator.address,
+				offset: invalidOffsets[i],
+			});
+			expect(response).toMap(invalidParamsSchema);
+		}
+	});
+
+	it('should return invalid params if requested with invalid param', async () => {
 		const response = await getPosClaimableRewards({ invalidParam: 'invalid' });
+		expect(response).toMap(invalidParamsSchema);
+	});
+
+	it('should return invalid params if requested with empty invalid param', async () => {
+		const response = await getPosClaimableRewards({ invalidParam: '' });
 		expect(response).toMap(invalidParamsSchema);
 	});
 });

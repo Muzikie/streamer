@@ -22,13 +22,13 @@ const {
 } = require('lisk-service-framework');
 
 const config = require('./config');
+const packageJson = require('./package.json');
+
+const { init } = require('./shared/scheduler');
+const { setAppContext } = require('./shared/utils/request');
+const { waitForNodeToFinishSync } = require('./shared/init');
 
 LoggerConfig(config.log);
-
-const packageJson = require('./package.json');
-const { setAppContext } = require('./shared/utils/request');
-const { init } = require('./shared/scheduler');
-
 const logger = Logger();
 
 const app = Microservice({
@@ -62,10 +62,15 @@ app.addJobs(path.join(__dirname, 'jobs'));
 
 // Run the application
 app.run().then(async () => {
-	logger.info(`Service started ${packageJson.name}`);
-	await init();
+	logger.info(`Service started ${packageJson.name}.`);
+	logger.info('Checking for node sync status.');
+
+	waitForNodeToFinishSync().then(async () => {
+		logger.info('Initializing coordinator activities.');
+		await init();
+	});
 }).catch(err => {
-	logger.fatal(`Could not start the service ${packageJson.name} + ${err.message}`);
+	logger.fatal(`Failed to start service ${packageJson.name} due to: ${err.message}.`);
 	logger.fatal(err.stack);
 	process.exit(1);
 });

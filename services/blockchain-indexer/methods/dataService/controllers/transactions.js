@@ -21,7 +21,7 @@ const {
 	HTTP: { StatusCodes: { NOT_FOUND, BAD_REQUEST } },
 } = require('lisk-service-framework');
 
-const { confirmAddress } = require('../../../shared/accountUtils');
+const { confirmAddress } = require('../../../shared/dataService/utils/account');
 
 const dataService = require('../../../shared/dataService');
 
@@ -86,10 +86,31 @@ const getSchemas = async () => dataService.getSchemas();
 
 const dryRunTransactions = async (params) => dataService.dryRunTransactions(params);
 
+const estimateTransactionFees = async (params) => {
+	const estimateTransactionFeesRes = {
+		data: {},
+		meta: {},
+	};
+
+	try {
+		const response = await dataService.estimateTransactionFees(params);
+		if (response.data) estimateTransactionFeesRes.data = response.data;
+		if (response.meta) estimateTransactionFeesRes.meta = response.meta;
+
+		return estimateTransactionFeesRes;
+	} catch (error) {
+		let status;
+		if (error instanceof ValidationException) status = BAD_REQUEST;
+		if (status) return { status, data: { error: error.message } };
+		throw error;
+	}
+};
+
 module.exports = {
 	getTransactions,
 	getPendingTransactions,
 	postTransactions,
 	getSchemas,
 	dryRunTransactions,
+	estimateTransactionFees,
 };
