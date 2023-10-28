@@ -14,6 +14,7 @@ const MYSQL_ENDPOINT = config.endpoints.mysql;
 const accountsTableSchema = require('../../../database/schema/accounts');
 const anchorsTableSchema = require('../../../database/schema/anchors');
 const imagesTableSchema = require('../../../database/schema/images');
+const badgesTableSchema = require('../../../database/schema/badges');
 const {
 	MODULE_NAME_ANCHOR,
 	EVENT_NAME_ANCHOR_CREATED,
@@ -38,6 +39,12 @@ const getImagesTable = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
+const getBadgesTable = () => getTableInstance(
+	badgesTableSchema.tableName,
+	badgesTableSchema,
+	MYSQL_ENDPOINT,
+);
+
 // Command specific constants
 const COMMAND_NAME = 'create';
 
@@ -55,6 +62,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	const accountsTable = await getAccountsTable();
 	const anchorsTable = await getAnchorsTable();
 	const imagesTable = await getImagesTable();
+	const badgesTable = await getBadgesTable();
 
 	// Use event data to get anchorID
 	const eventData = events.find(
@@ -105,6 +113,30 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 	await anchorsTable.upsert(anchorsNFT, dbTrx);
 	logger.debug(`Indexed anchor with ID ${anchorCreatedData.anchorID}.`);
+
+	const badge = await badgesTable.find({ badgeID: anchorCreatedData.badgeIDs[0] });
+	if (!badge.length) {
+		await BluebirdPromise.map(
+			anchorCreatedData.badgeIDs,
+			async (badgeID, index) => {
+				const badgeInfo = {
+					badgeID,
+					anchorID: '',
+					awardedTo: '',
+					type: 'anchor_of_the_day',
+					awardDate: anchorCreatedData.createdAt,
+					rank: BigInt(index + 1),
+					prize: BigInt(0),
+					claimed: false,
+				};
+				logger.trace(`Updating badge index for the badgeID ${badgeID}.`);
+				await badgesTable.upsert(badgeInfo, dbTrx);
+				logger.debug(`Updated badge index for the badgeID ${badgeID}.`);
+				return true;
+			},
+			{ concurrency: anchorCreatedData.badgeIDs.length },
+		);
+	}
 	return true;
 };
 
