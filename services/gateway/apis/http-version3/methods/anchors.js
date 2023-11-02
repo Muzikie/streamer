@@ -10,7 +10,7 @@ module.exports = {
 	tags: ['Anchors'],
 	params: {
 		submitter: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
-		anchorID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+		anchorID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.MD5 },
 		search: { optional: true, type: 'string' },
 		limit: { optional: true, type: 'number', min: 1, max: 100, default: 10 },
 		offset: { optional: true, type: 'number', min: 0, default: 0 },

@@ -26,9 +26,11 @@ module.exports = {
 	tags: ['Badges'],
 	params: {
 		awardedTo: { optional: true, type: 'string', min: 3, max: 41, pattern: regex.ADDRESS_LISK32 },
-		badgeID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
-		anchorID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.HASH_SHA256 },
+		badgeID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.MD5 },
+		anchorID: { optional: true, type: 'string', min: 1, max: 64, pattern: regex.MD5 },
 		type: { optional: true, type: 'string' },
+		limit: { optional: true, type: 'number', min: 1, max: 100, default: 10 },
+		offset: { optional: true, type: 'number', min: 0, default: 0 },
 	},
 	get schema() {
 		const badgeSchema = {};
