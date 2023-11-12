@@ -6,6 +6,7 @@ const BluebirdPromise = require('bluebird');
 const transactionsIndexSchema = require('../../database/schema/anchors');
 const imagesIndexSchema = require('../../database/schema/images');
 const votesIndexSchema = require('../../database/schema/votes');
+const badgesIndexSchema = require('../../database/schema/badges');
 const config = require('../../../config');
 
 const MYSQL_ENDPOINT = config.endpoints.mysql;
@@ -28,25 +29,59 @@ const getVotesIndex = () => getTableInstance(
 	MYSQL_ENDPOINT,
 );
 
+const getBadgesIndex = () => getTableInstance(
+	badgesIndexSchema.tableName,
+	badgesIndexSchema,
+	MYSQL_ENDPOINT,
+);
+
 const getAnchors = async (params = {}) => {
 	const anchorsTable = await getAnchorsIndex();
 	const imagesTable = await getImagesIndex();
 	const votesTable = await getVotesIndex();
+	const badgesTable = await getBadgesIndex();
 
-	if (params.search) {
-		const { search, ...remParams } = params;
-		params = remParams;
+	let anchorData = [];
 
-		params.search = {
-			property: 'name',
-			pattern: search,
-		};
+	const { winner, ...restParams } = params;
+
+	if (winner !== undefined) {
+		const response = await badgesTable.find(
+			{ ...restParams, limit: restParams.limit || 10 },
+			['anchorID'],
+		);
+
+		const anchorIDs = response.map((badge) => badge.anchorID).filter(badgeID => badgeID);
+
+		const res = await BluebirdPromise.map(
+			anchorIDs,
+			async (anchorID) => {
+				const anchorsData = await anchorsTable.find(
+					{ anchorID },
+					['anchorID', 'name', 'album', 'artists', 'spotifyId', 'appleMusicId', 'createdAt', 'submitter'],
+				);
+				return anchorsData.length ? anchorsData[0] : null;
+			},
+			{ concurrency: anchorIDs.length },
+		);
+		anchorData = res.filter(anchor => anchor);
+	} else {
+		if (restParams.search) {
+			const { search, ...remParams } = restParams;
+			params = remParams;
+
+			params.search = {
+				property: 'name',
+				pattern: search,
+			};
+		}
+
+		anchorData = await anchorsTable.find(
+			{ ...params, limit: params.limit || 10 },
+			['anchorID', 'name', 'album', 'artists', 'spotifyId', 'appleMusicId', 'createdAt', 'submitter'],
+		);
 	}
 
-	const anchorData = await anchorsTable.find(
-		{ ...params, limit: params.limit || 10 },
-		['anchorID', 'name', 'album', 'artists', 'spotifyId', 'appleMusicId', 'createdAt', 'submitter'],
-	);
 	const total = anchorData.length;
 
 	const data = await BluebirdPromise.map(

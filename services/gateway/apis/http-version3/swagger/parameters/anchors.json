@@ -15,5 +15,15 @@
 			"format": "id",
 			"minLength": 1,
 			"maxLength": 64
+	},
+	"winner": {
+		"name": "winner",
+		"in": "query",
+		"description": "Filter anchors by winning status.",
+		"type": "integer",
+		"format": "int32",
+		"minimum": 0,
+		"maximum": 1,
+		"default": 0
 	}
 }

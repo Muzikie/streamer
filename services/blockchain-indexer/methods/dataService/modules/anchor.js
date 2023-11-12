@@ -11,6 +11,7 @@ module.exports = [
 			anchorID: { optional: true, type: 'string' },
 			limit: { optional: true, type: 'number' },
 			offset: { optional: true, type: 'number' },
+			winner: { optional: true, type: 'number' },
 		},
 	},
 ];

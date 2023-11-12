@@ -14,6 +14,7 @@ module.exports = {
 		search: { optional: true, type: 'string' },
 		limit: { optional: true, type: 'number', min: 1, max: 100, default: 10 },
 		offset: { optional: true, type: 'number', min: 0, default: 0 },
+		winner: { optional: true, type: 'number', min: 0, max: 1, default: 0 },
 	},
 	get schema() {
 		const anchorSchema = {};
