@@ -17,6 +17,7 @@ module.exports = {
 			senderAddress: '=,string',
 		}],
 		search: '=,string',
+		winner: '=,number',
 		limit: '=,number',
 		offset: '=,number',
 		sort: '=,string',

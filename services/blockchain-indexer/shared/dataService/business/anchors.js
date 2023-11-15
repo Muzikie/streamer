@@ -43,9 +43,9 @@ const getAnchors = async (params = {}) => {
 
 	let anchorData = [];
 
-	const { winner, ...restParams } = params;
+	const { winner, search, ...restParams } = params;
 
-	if (winner !== undefined) {
+	if (winner === 1) {
 		const response = await badgesTable.find(
 			{ ...restParams, limit: restParams.limit || 10 },
 			['anchorID'],
@@ -66,18 +66,15 @@ const getAnchors = async (params = {}) => {
 		);
 		anchorData = res.filter(anchor => anchor);
 	} else {
-		if (restParams.search) {
-			const { search, ...remParams } = restParams;
-			params = remParams;
-
-			params.search = {
+		if (search) {
+			restParams.search = {
 				property: 'name',
 				pattern: search,
 			};
 		}
 
 		anchorData = await anchorsTable.find(
-			{ ...params, limit: params.limit || 10 },
+			{ ...restParams, limit: restParams.limit || 10 },
 			['anchorID', 'name', 'album', 'artists', 'spotifyId', 'appleMusicId', 'createdAt', 'submitter'],
 		);
 	}
@@ -110,7 +107,7 @@ const getAnchors = async (params = {}) => {
 		data,
 		meta: {
 			count: data.length,
-			offset: parseInt(params.offset, 10) || 0,
+			offset: parseInt(restParams.offset, 10) || 0,
 			total,
 		},
 	};
