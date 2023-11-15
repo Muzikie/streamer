@@ -81,7 +81,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 	await BluebirdPromise.map(
 		anchorVotedData.updatedWinners,
 		async (winner, index) => {
-			const { anchorID: winningAnchorID, awardedTo } = winner;
+			const { anchorID: winningAnchorID, awardedTo, prize } = winner;
 			const [badge] = await badgesTable.find(
 				{ awardDate: anchor.createdAt, rank: index + 1 },
 				['badgeID', 'anchorID', 'awardedTo', 'type', 'awardDate', 'rank', 'prize', 'claimed'],
@@ -90,6 +90,7 @@ const applyTransaction = async (blockHeader, tx, events, dbTrx) => {
 
 			badge.anchorID = winningAnchorID;
 			badge.awardedTo = awardedTo;
+			badge.prize = prize;
 
 			await badgesTable.upsert(badge, dbTrx);
 		},
