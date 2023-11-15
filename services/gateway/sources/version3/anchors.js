@@ -8,6 +8,8 @@ module.exports = {
 		name: '=,string',
 		album: '=,string',
 		artists: '=,string',
+		spotifyId: '=,string',
+		appleMusicId: '=,string',
 		images: ['images', {
 			url: '=,string',
 			width: '=,number',
