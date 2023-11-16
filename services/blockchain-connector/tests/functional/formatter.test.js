@@ -84,7 +84,7 @@ xdescribe('Functional tests for formatter', () => {
 		expect(result).toMatchObject(decodedBlockWithoutTransaction);
 	});
 
-	it('format subscription event payload', async () => {
+	it('format badge event payload', async () => {
 		const result = await broker.call('connector.formatAPIClientEventPayload', {
 			eventName: 'app_newBlock',
 			payload: { block: blockWithTransaction },

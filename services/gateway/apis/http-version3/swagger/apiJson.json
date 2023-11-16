@@ -88,20 +88,12 @@
                 "description": "Market prices related API calls."
             },
             {
-                "name": "Subscription",
-                "description": "Subscription module related API calls."
+                "name": "Badge",
+                "description": "Badge module related API calls."
             },
             {
-                "name": "Collection",
-                "description": "Collection module related API calls."
-            },
-            {
-                "name": "Audio",
-                "description": "Audio module related API calls."
-            },
-            {
-                "name": "Profile",
-                "description": "Profile module related API calls."
+                "name": "Anchor",
+                "description": "Anchor module related API calls."
             }
         ],
         "schemes": [

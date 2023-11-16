@@ -1,0 +1,29 @@
+{
+	"submitter": {
+			"name": "submitter",
+			"in": "query",
+			"description": "Lisk account address",
+			"type": "string",
+			"minLength": 3,
+			"maxLength": 41
+	},
+	"anchorID": {
+			"name": "anchorID",
+			"in": "query",
+			"description": "anchor ID to query",
+			"type": "string",
+			"format": "id",
+			"minLength": 1,
+			"maxLength": 64
+	},
+	"winner": {
+		"name": "winner",
+		"in": "query",
+		"description": "Filter anchors by winning status.",
+		"type": "integer",
+		"format": "int32",
+		"minimum": 0,
+		"maximum": 1,
+		"default": 0
+	}
+}

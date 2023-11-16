@@ -104,10 +104,8 @@ const { getIndexStatus, isBlockchainFullyIndexed } = require('./indexStatus');
 const { getLegacyAccountInfo } = require('./legacy');
 const { getValidator, validateBLSKey } = require('./validator');
 const { getGenerators } = require('./generators');
-const { getSubscriptions } = require('./subscriptions');
-const { getCollections } = require('./collections');
-const { getAudios } = require('./audios');
-const { getProfiles } = require('./profiles');
+const { getBadges } = require('./badges');
+const { getAnchors } = require('./anchors');
 const { invokeEndpoint } = require('./invoke');
 
 module.exports = {
@@ -209,17 +207,11 @@ module.exports = {
 	getDefaultRewardAtHeight,
 	getRewardConstants,
 
-	// Subscriptions
-	getSubscriptions,
+	// Badges
+	getBadges,
 
-	// Collections
-	getCollections,
-
-	// Audios
-	getAudios,
-
-	// Profiles
-	getProfiles,
+	// Anchors
+	getAnchors,
 
 	isMainchain,
 	resolveMainchainServiceURL,

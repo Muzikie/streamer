@@ -14,21 +14,15 @@
  *
  */
 const createApiDocsExpectedResponse = {
-	'/audios': {
+	'/anchors': {
 		get: {
-			description: 'Returns audios data\n RPC => get.audios',
+			description: 'Returns anchors data\n RPC => get.anchors',
 			parameters: [
 				{
-					$ref: '#/parameters/creatorAddress',
+					$ref: '#/parameters/submitter',
 				},
 				{
-					$ref: '#/parameters/audioID',
-				},
-				{
-					$ref: '#/parameters/collectionID',
-				},
-				{
-					$ref: '#/parameters/ownerAddress',
+					$ref: '#/parameters/anchorID',
 				},
 				{
 					$ref: '#/parameters/search',
@@ -42,9 +36,9 @@ const createApiDocsExpectedResponse = {
 			],
 			responses: {
 				200: {
-					description: 'Returns a list of audios',
+					description: 'Returns a list of anchors',
 					schema: {
-						$ref: '#/definitions/audiosWithEnvelope',
+						$ref: '#/definitions/anchorsWithEnvelope',
 					},
 				},
 				400: {
@@ -54,9 +48,9 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-			summary: 'Requests audios data',
+			summary: 'Requests anchors data',
 			tags: [
-				'Audios',
+				'Anchors',
 			],
 		},
 	},
@@ -456,40 +450,6 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
-	'/collections': {
-		get: {
-			description: 'Returns collections data\n RPC => get.collections',
-			parameters: [
-				{
-					$ref: '#/parameters/creatorAddress',
-				},
-				{
-					$ref: '#/parameters/collectionID',
-				},
-				{
-					$ref: '#/parameters/search',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of collections',
-					schema: {
-						$ref: '#/definitions/collectionsWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-			summary: 'Requests collections data',
-			tags: [
-				'Collections',
-			],
-		},
-	},
 	'/events': {
 		get: {
 			tags: [
@@ -808,25 +768,28 @@ const createApiDocsExpectedResponse = {
 			},
 		},
 	},
-	'/subscriptions': {
+	'/badges': {
 		get: {
-			description: 'Returns subscriptions data\n RPC => get.subscriptions',
+			description: 'Returns badges data\n RPC => get.badges',
 			parameters: [
 				{
-					$ref: '#/parameters/creatorAddress',
+					$ref: '#/parameters/awardedTo',
 				},
 				{
-					$ref: '#/parameters/subscriptionID',
+					$ref: '#/parameters/badgeID',
 				},
 				{
-					$ref: '#/parameters/memberAddress',
+					$ref: '#/parameters/badgeID',
+				},
+				{
+					$ref: '#/parameters/type',
 				},
 			],
 			responses: {
 				200: {
-					description: 'Returns a list of subscriptions',
+					description: 'Returns a list of badges',
 					schema: {
-						$ref: '#/definitions/subscriptionsWithEnvelope',
+						$ref: '#/definitions/badgesWithEnvelope',
 					},
 				},
 				400: {
@@ -836,9 +799,9 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-			summary: 'Requests subscriptions data',
+			summary: 'Requests badges data',
 			tags: [
-				'Subscriptions',
+				'Badges',
 			],
 		},
 	},
@@ -999,40 +962,6 @@ const createApiDocsExpectedResponse = {
 					},
 				},
 			},
-		},
-	},
-	'/profiles': {
-		get: {
-			description: 'Returns profiles data\n RPC => get.profiles',
-			parameters: [
-				{
-					$ref: '#/parameters/creatorAddress',
-				},
-				{
-					$ref: '#/parameters/profileID',
-				},
-				{
-					$ref: '#/parameters/search',
-				},
-			],
-			responses: {
-				200: {
-					description: 'Returns a list of profiles',
-					schema: {
-						$ref: '#/definitions/profilesWithEnvelope',
-					},
-				},
-				400: {
-					description: 'Bad request',
-					schema: {
-						$ref: '#/definitions/badRequest',
-					},
-				},
-			},
-			summary: 'Requests profiles data',
-			tags: [
-				'Profiles',
-			],
 		},
 	},
 	'/transactions/estimate-fees': {
