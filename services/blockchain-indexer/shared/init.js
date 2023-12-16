@@ -13,9 +13,7 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const {
-	Logger,
-} = require('lisk-service-framework');
+const { Logger } = require('lisk-service-framework');
 
 const config = require('../config');
 
@@ -26,8 +24,9 @@ const {
 	initFeeEstimates,
 } = require('./dataService');
 const { getFeeEstimatesFromFeeEstimator } = require('./dataService/business/feeEstimates');
+const { initBlockProcessingQueues } = require('./indexer/blockchainIndex');
 const indexStatus = require('./indexer/indexStatus');
-const processor = require('./processor');
+const messageProcessor = require('./messageProcessor');
 
 const logger = Logger();
 const snapshotUtils = require('./utils/snapshot');
@@ -48,7 +47,7 @@ const init = async () => {
 				await snapshotUtils.initSnapshot();
 				logger.info('Successfully downloaded and applied the snapshot.');
 			} catch (err) {
-				logger.warn(`Unable to apply snapshot:\n${err.message}.`);
+				logger.warn(`Unable to apply snapshot:\n${err.message}`);
 			}
 		}
 
@@ -59,11 +58,13 @@ const init = async () => {
 		await getFeeEstimatesFromFeeEstimator();
 
 		if (config.operations.isIndexingModeEnabled) {
-			await processor.init();
+			await initBlockProcessingQueues();
+			await messageProcessor.init();
 		}
-	} catch (error) {
-		logger.error(`Unable to initialize due to: ${error.message}. Try restarting the application.`);
-		logger.trace(error.stack);
+	} catch (err) {
+		logger.error(`Unable to initialize due to: ${err.message}. Try restarting the application.`);
+		logger.trace(err.stack);
+		throw err;
 	}
 };
 

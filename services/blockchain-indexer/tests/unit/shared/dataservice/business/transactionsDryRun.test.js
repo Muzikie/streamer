@@ -17,9 +17,11 @@
 /* eslint-disable import/no-dynamic-require */
 const { resolve } = require('path');
 
-const mockTransactionsDryRunFilePath = resolve(`${__dirname}/../../../../../shared/dataService/business/transactionsDryRun`);
+const mockTransactionsDryRunFilePath = resolve(
+	`${__dirname}/../../../../../shared/dataService/business/transactionsDryRun`,
+);
 const { requestConnector } = require('../../../../../shared/utils/request');
-const { mockTxrequestConnector } = require('../../constants/transactionEstimateFees');
+const { mockTxRequestConnector } = require('../../constants/transactionEstimateFees');
 const {
 	mockTransactionsDryRunResultFromNode,
 	mockTransactionsDryRunResult,
@@ -64,7 +66,7 @@ describe('Transactions DryRun', () => {
 		const { dryRunTransactions } = require(mockTransactionsDryRunFilePath);
 
 		const response = await dryRunTransactions({
-			transaction: mockTxrequestConnector,
+			transaction: mockTxRequestConnector,
 		});
 
 		expect(requestConnector).toHaveBeenCalledTimes(1);

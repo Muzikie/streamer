@@ -14,7 +14,7 @@
  *
  */
 const { parseToJSONCompatObj } = require('./parser');
-const { TRANSACTION_STATUS, EVENT } = require('../constants');
+const { TRANSACTION_STATUS, EVENT, EVENT_TOPIC_PREFIX } = require('../constants');
 
 const normalizeTransaction = async tx => {
 	tx.moduleCommand = `${tx.module}:${tx.command}`;
@@ -24,12 +24,13 @@ const normalizeTransaction = async tx => {
 const getTransactionExecutionStatus = (tx, events) => {
 	const expectedEventName = `${tx.module}:${EVENT.COMMAND_EXECUTION_RESULT}`;
 	const commandExecResultEvents = events.filter(e => `${e.module}:${e.name}` === expectedEventName);
-	const txExecResultEvent = commandExecResultEvents.find(e => e.topics.includes(tx.id));
-	if (!txExecResultEvent) throw Error(`Event unavailable to determine execution status for transaction: ${tx.id}.`);
+	const txExecResultEvent = commandExecResultEvents.find(
+		e => e.topics.includes(EVENT_TOPIC_PREFIX.TX_ID.concat(tx.id)) || e.topics.includes(tx.id),
+	);
+	if (!txExecResultEvent)
+		throw Error(`Event unavailable to determine execution status for transaction: ${tx.id}.`);
 
-	return txExecResultEvent.data.success
-		? TRANSACTION_STATUS.SUCCESSFUL
-		: TRANSACTION_STATUS.FAILED;
+	return txExecResultEvent.data.success ? TRANSACTION_STATUS.SUCCESSFUL : TRANSACTION_STATUS.FAILED;
 };
 
 module.exports = {

@@ -1,16 +1,16 @@
 {
-    "responses": {
-        "badParameter": {
-            "description": "Bad request",
-            "schema": {
-                "$ref": "#/definitions/badRequest"
-            }
-        },
-        "notFound": {
-            "description": "Not found",
-            "schema": {
-                "$ref": "#/definitions/notFound"
-            }
-        }
-    }
+	"responses": {
+		"400": {
+			"description": "Bad request",
+			"schema": {
+				"$ref": "#/definitions/badRequest"
+			}
+		},
+		"404": {
+			"description": "Not found",
+			"schema": {
+				"$ref": "#/definitions/notFound"
+			}
+		}
+	}
 }

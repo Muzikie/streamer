@@ -14,7 +14,7 @@ const proxy = httpProxy.createProxyServer({});
 const mockserverName = 'Lisk Core Mock';
 const liskCoreServerUrl = process.env.LISK_CORE_HTTP || 'http://127.0.0.1:4000';
 const eventFreqMultiplier = 1000;
-const port = process.env.PORT || 9007;
+const port = Number(process.env.PORT) || 9007;
 
 const server = http.createServer((req, res) => {
 	if (req.url.includes('/api/peers')) {
@@ -36,11 +36,11 @@ const emitData = [
 	[() => io.sockets.emit('rounds/change', rounds), 101 * 10],
 ];
 
-emitData.forEach((emitItem) => {
+emitData.forEach(emitItem => {
 	setInterval(emitItem[0], Math.ceil(emitItem[1] * eventFreqMultiplier));
 });
 
-server.listen(port, undefined, (err) => {
+server.listen(port, undefined, err => {
 	if (err) logger.error(err);
 	else logger.info(`Mockserver for ${mockserverName} is listening on port ${port}`);
 });

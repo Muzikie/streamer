@@ -52,7 +52,7 @@ const {
 	EVENT_NAME_INVALID_CERTIFICATE_SIGNATURE,
 	EVENT_NAME_INVALID_REGISTRATION_SIGNATURE,
 	EVENT_NAME_CHAIN_ACCOUNT_UPDATED,
-	EVENT_NAME_CCM_SENT_SUCCESS,
+	EVENT_NAME_CCM_SEND_SUCCESS,
 	EVENT_NAME_CCM_SENT_FAILED,
 	EVENT_NAME_CCM_PROCESSED,
 	EVENT_NAME_TERMINATED_STATE_CREATED,
@@ -87,7 +87,6 @@ const {
 
 const COMMAND_EXECUTION_RESULT_TOPICS = ['transactionID'];
 
-// TODO: Remove when SDK exposes topics information in metadata
 const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	[MODULE_NAME_AUTH]: {
 		[EVENT_NAME_MULTISIGNATURE_REGISTERED]: ['transactionID', 'senderAddress'],
@@ -99,7 +98,12 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	},
 	[MODULE_NAME_TOKEN]: {
 		[EVENT_NAME_TRANSFER]: ['defaultTopic', 'senderAddress', 'recipientAddress'],
-		[EVENT_NAME_TRANSFER_CROSS_CHAIN]: ['defaultTopic', 'senderAddress', 'recipientAddress', 'receivingChainID'],
+		[EVENT_NAME_TRANSFER_CROSS_CHAIN]: [
+			'defaultTopic',
+			'senderAddress',
+			'recipientAddress',
+			'receivingChainID',
+		],
 		[EVENT_NAME_CCM_TRANSFER]: ['transactionID', 'senderAddress', 'recipientAddress'],
 		[EVENT_NAME_MINT]: ['defaultTopic', 'address'],
 		[EVENT_NAME_BURN]: ['defaultTopic', 'address'],
@@ -121,15 +125,20 @@ const EVENT_TOPIC_MAPPINGS_BY_MODULE = {
 	[MODULE_NAME_FEE]: {
 		[EVENT_NAME_FEE_PROCESSED]: ['transactionID', 'senderAddress', 'generatorAddress'],
 		[EVENT_NAME_INSUFFICIENT_FEE]: ['transactionID'],
-		[EVENT_NAME_RELAYER_FEE_PROCESSED]: ['transactionID', 'ccmID', 'relayerAddress'],
+		[EVENT_NAME_RELAYER_FEE_PROCESSED]: ['ccmID', 'relayerAddress'],
 	},
 	[MODULE_NAME_INTEROPERABILITY]: {
 		[EVENT_NAME_INVALID_CERTIFICATE_SIGNATURE]: ['transactionID', 'chainID'],
 		[EVENT_NAME_INVALID_REGISTRATION_SIGNATURE]: ['transactionID', 'chainID'],
 		[EVENT_NAME_CHAIN_ACCOUNT_UPDATED]: ['transactionID', 'sendingChainID'],
-		[EVENT_NAME_CCM_SENT_SUCCESS]: ['transactionID', 'sendingChainID', 'receivingChainID', 'sentCCMID'],
+		[EVENT_NAME_CCM_SEND_SUCCESS]: [
+			'transactionID',
+			'sendingChainID',
+			'receivingChainID',
+			'sentCCMID',
+		],
 		[EVENT_NAME_CCM_SENT_FAILED]: ['transactionID'],
-		[EVENT_NAME_CCM_PROCESSED]: ['transactionID', 'sendingChainID', 'receivingChainID', 'ccmID'],
+		[EVENT_NAME_CCM_PROCESSED]: ['transactionID', 'sendingChainID', 'receivingChainID'],
 		[EVENT_NAME_TERMINATED_STATE_CREATED]: ['transactionID', 'chainID'],
 		[EVENT_NAME_TERMINATED_OUTBOX_CREATED]: ['transactionID', 'chainID'],
 	},

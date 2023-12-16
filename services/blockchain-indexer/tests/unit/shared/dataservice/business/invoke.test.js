@@ -15,22 +15,39 @@
  */
 const { resolve } = require('path');
 
-const mockedFilePath = resolve(`${__dirname}/../../../../../shared/constants`);
+const mockedConstantsFilePath = resolve(`${__dirname}/../../../../../shared/constants`);
+const mockedConfigFilePath = resolve(`${__dirname}/../../../../../config`);
+const mockedRequestFilePath = resolve(`${__dirname}/../../../../../shared/utils/request`);
 
 jest.mock('../../../../../shared/constants', () => {
-	const { registeredEndpoints, engineEndpoints, allRegisteredEndpoints } = require('../../../../constants/endpoints');
+	const {
+		registeredEndpoints,
+		engineEndpoints,
+		allRegisteredEndpoints,
+	} = require('../../../../constants/endpoints');
 	const { metadata } = require('../../../../constants/metadata');
-	const actual = jest.requireActual(mockedFilePath);
+	const actual = jest.requireActual(mockedConstantsFilePath);
 	return {
 		...actual,
-		getAllRegisteredEndpoints() { return allRegisteredEndpoints; },
-		getRegisteredEndpoints() { return registeredEndpoints; },
-		getEngineEndpoints() { return engineEndpoints; },
-		getSystemMetadata() { return metadata; },
+		getAllRegisteredEndpoints() {
+			return allRegisteredEndpoints;
+		},
+		getRegisteredEndpoints() {
+			return registeredEndpoints;
+		},
+		getEngineEndpoints() {
+			return engineEndpoints;
+		},
+		getSystemMetadata() {
+			return metadata;
+		},
 	};
 });
 
-const { checkIfEndpointRegistered, validateEndpointParams } = require('../../../../../shared/dataService/business/invoke');
+const {
+	checkIfEndpointRegistered,
+	validateEndpointParams,
+} = require('../../../../../shared/dataService/business/invoke');
 
 describe('Test checkIfEndpointRegistered method', () => {
 	it('should return true when called with valid registered endpoint', async () => {
@@ -140,9 +157,17 @@ describe('invokeEndpoint', () => {
 	};
 
 	it('should invoke the endpoint and return data and meta', async () => {
-		jest.mock('../../../../../shared/utils/request', () => ({
+		jest.mock(mockedRequestFilePath, () => ({
 			requestConnector: jest.fn(() => mockBlockByHeightRes),
 		}));
+
+		jest.mock(mockedConfigFilePath, () => {
+			const actual = jest.requireActual(mockedConfigFilePath);
+			return {
+				...actual,
+				invokeAllowedMethods: ['*'],
+			};
+		});
 
 		const params = {
 			endpoint: 'chain_getBlockByHeight',
@@ -159,8 +184,32 @@ describe('invokeEndpoint', () => {
 		});
 	});
 
+	it('should throw error if module or endpoint is not allowed', async () => {
+		jest.mock(mockedRequestFilePath, () => ({
+			requestConnector: jest.fn(() => mockBlockByHeightRes),
+		}));
+
+		jest.mock(mockedConfigFilePath, () => {
+			const actual = jest.requireActual(mockedConfigFilePath);
+			return {
+				...actual,
+				invokeAllowedMethods: ['legacy'],
+			};
+		});
+
+		const params = {
+			endpoint: 'chain_getBlockByHeight',
+			params: {
+				height: 10,
+			},
+		};
+
+		const { invokeEndpoint } = require('../../../../../shared/dataService/business/invoke');
+		expect(() => invokeEndpoint(params)).rejects.toThrow();
+	});
+
 	it('should throw error when node is not reachable', async () => {
-		jest.mock('../../../../../shared/utils/request', () => ({
+		jest.mock(mockedRequestFilePath, () => ({
 			requestConnector: jest.fn(() => {
 				throw new Error('Timeout error.');
 			}),
@@ -178,7 +227,7 @@ describe('invokeEndpoint', () => {
 	});
 
 	it('should throw error when invalid endpoint is supplied', async () => {
-		jest.mock('../../../../../shared/utils/request', () => ({
+		jest.mock(mockedRequestFilePath, () => ({
 			requestConnector: jest.fn(() => mockBlockByHeightRes),
 		}));
 

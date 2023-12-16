@@ -15,13 +15,7 @@
  */
 const { resolve, dirname } = require('path');
 
-const {
-	exists,
-	extractTarBall,
-	mkdir,
-	read,
-	rm,
-} = require('../../shared/utils/fs');
+const { exists, extractTarBall, mkdir, read, rm } = require('../../shared/utils/fs');
 
 const { genesisBlock } = require('../constants/blocks');
 
@@ -50,7 +44,7 @@ describe('Tests filesystem utilities', () => {
 	});
 
 	describe('Test extractTarBall method', () => {
-		xit('should extract tar file', async () => {
+		it('should extract tar file', async () => {
 			const outputPath = `${testDir}/genesis_block.json`;
 			expect(exists(outputPath)).resolves.toBe(false);
 
@@ -90,7 +84,7 @@ describe('Tests filesystem utilities', () => {
 	});
 
 	describe('Test read method', () => {
-		xit('should read data from file', async () => {
+		it('should read data from file', async () => {
 			expect(exists(JsonfilePath)).resolves.toBe(true);
 			// Read data from file
 			const result = await read(JsonfilePath);

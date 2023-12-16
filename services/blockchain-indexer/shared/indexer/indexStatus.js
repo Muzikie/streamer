@@ -15,20 +15,13 @@
  */
 const {
 	Logger,
-	DB: { MySQL: { getTableInstance } },
+	DB: {
+		MySQL: { getTableInstance },
+	},
 	Signals,
 } = require('lisk-service-framework');
 
-const {
-	indexValidatorCommissionInfo,
-	indexStakersInfo,
-} = require('./validatorIndex');
-
-const {
-	getCurrentHeight,
-	getGenesisHeight,
-	updateFinalizedHeight,
-} = require('../constants');
+const { getCurrentHeight, getGenesisHeight } = require('../constants');
 
 const logger = Logger();
 
@@ -41,7 +34,7 @@ const MYSQL_ENDPOINT = config.endpoints.mysqlReplica;
 const getBlocksTable = () => getTableInstance(blocksTableSchema, MYSQL_ENDPOINT);
 
 let isIndexReady = false;
-const setIndexReadyStatus = isReady => isIndexReady = isReady;
+const setIndexReadyStatus = isReady => (isIndexReady = isReady);
 const getIndexReadyStatus = () => isIndexReady;
 
 const getIndexStats = async () => {
@@ -50,9 +43,11 @@ const getIndexStats = async () => {
 		const currentChainHeight = await getCurrentHeight();
 		const genesisHeight = await getGenesisHeight();
 		const numBlocksIndexed = await blocksTable.count();
-		const [lastIndexedBlock = {}] = await blocksTable.find({ sort: 'height:desc', limit: 1 }, ['height']);
+		const [lastIndexedBlock = {}] = await blocksTable.find({ sort: 'height:desc', limit: 1 }, [
+			'height',
+		]);
 		const chainLength = currentChainHeight - genesisHeight + 1;
-		const percentage = (Math.floor(((numBlocksIndexed) / chainLength) * 10000) / 100).toFixed(2);
+		const percentage = (Math.floor((numBlocksIndexed / chainLength) * 10000) / 100).toFixed(2);
 
 		return {
 			currentChainHeight,
@@ -75,8 +70,11 @@ const validateIndexReadiness = async ({ strict } = {}) => {
 };
 
 const checkIndexReadiness = async () => {
-	if (!getIndexReadyStatus() // status is set only once
-		&& await validateIndexReadiness()) { // last block is being indexed atm
+	if (
+		!getIndexReadyStatus() && // status is set only once
+		(await validateIndexReadiness())
+	) {
+		// last block is being indexed atm
 		setIndexReadyStatus(true);
 		logger.info('The blockchain index is complete.');
 		logger.debug(`'blockIndexReady' signal: ${Signals.get('blockIndexReady')}`);
@@ -96,12 +94,16 @@ const reportIndexStatus = async () => {
 
 	Signals.get('indexStatUpdate').dispatch(indexStats);
 
-	logger.info([
-		`currentChainHeight: ${currentChainHeight}`,
-		`lastIndexedBlockHeight: ${lastIndexedBlock.height}`,
-	].join(', '));
+	logger.info(
+		[
+			`currentChainHeight: ${currentChainHeight}`,
+			`lastIndexedBlockHeight: ${lastIndexedBlock.height}`,
+		].join(', '),
+	);
 
-	logger.info(`Block index status: ${numBlocksIndexed}/${chainLength} blocks indexed (${percentage}%).`);
+	logger.info(
+		`Block index status: ${numBlocksIndexed}/${chainLength} blocks indexed (${percentage}%).`,
+	);
 };
 
 const init = async () => {
@@ -111,11 +113,6 @@ const init = async () => {
 
 	// Register event listeners
 	Signals.get('newBlock').add(checkIndexReadiness);
-	Signals.get('chainNewBlock').add(updateFinalizedHeight);
-
-	// Index stakers and commission information available in genesis block
-	await indexValidatorCommissionInfo();
-	await indexStakersInfo();
 };
 
 module.exports = {

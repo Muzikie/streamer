@@ -15,7 +15,9 @@
  */
 const { inspect } = require('util');
 const { codec } = require('@liskhq/lisk-codec');
-const { utils: { hash } } = require('@liskhq/lisk-cryptography');
+const {
+	utils: { hash },
+} = require('@liskhq/lisk-cryptography');
 const { computeMinFee } = require('@liskhq/lisk-transactions');
 const { Logger } = require('lisk-service-framework');
 
@@ -23,7 +25,7 @@ const {
 	getBlockAssetDataSchemaByModule,
 	getTransactionSchema,
 	getTransactionParamsSchema,
-	getDataSchemaByEventName,
+	getDataSchemaByEvent,
 	getEventSchema,
 } = require('./schema');
 
@@ -50,17 +52,20 @@ const formatTransaction = (transaction, additionalFee = 0) => {
 	const txParamsSchema = getTransactionParamsSchema(transaction);
 
 	// Encode transaction params to calculate transaction size
-	if (typeof transaction.params === 'object' && !Buffer.isBuffer(transaction.params)) {
-		transaction.params = codec.encode(
-			txParamsSchema,
-			parseInputBySchema(transaction.params, txParamsSchema),
-		);
+	if (typeof transaction.params === 'object') {
+		transaction.params = Buffer.isBuffer(transaction.params)
+			? transaction.params.toString('hex')
+			: codec
+					.encode(txParamsSchema, parseInputBySchema(transaction.params, txParamsSchema))
+					.toString('hex');
 	}
 	const schemaCompliantTransaction = parseInputBySchema(transaction, txSchema);
 
 	// Calculate transaction min fee
-	const transactionParams = codec.decodeJSON(txParamsSchema, Buffer.from(transaction.params, 'hex'));
-	const schemaCompliantTransactionParams = codec.decode(txParamsSchema, Buffer.from(transaction.params, 'hex'));
+	const schemaCompliantTransactionParams = codec.decode(
+		txParamsSchema,
+		Buffer.from(transaction.params, 'hex'),
+	);
 	const nonEmptySignatureCount = transaction.signatures.filter(s => s).length;
 	const transactionMinFee = computeMinFee(
 		{ ...schemaCompliantTransaction, params: schemaCompliantTransactionParams },
@@ -75,18 +80,15 @@ const formatTransaction = (transaction, additionalFee = 0) => {
 	);
 
 	// Calculate transaction size
-	const transactionBuffer = codec.encode(
-		txSchema,
-		{
-			...schemaCompliantTransaction,
-			fee: schemaCompliantTransaction.fee || transactionMinFee,
-		},
-	);
+	const transactionBuffer = codec.encode(txSchema, {
+		...schemaCompliantTransaction,
+		fee: schemaCompliantTransaction.fee || transactionMinFee,
+	});
 	const transactionSize = transactionBuffer.length;
 
 	const formattedTransaction = {
 		...transaction,
-		params: transactionParams,
+		params: codec.decodeJSON(txParamsSchema, Buffer.from(transaction.params, 'hex')),
 		size: transactionSize,
 		minFee: transactionMinFee,
 	};
@@ -94,12 +96,12 @@ const formatTransaction = (transaction, additionalFee = 0) => {
 	return parseToJSONCompatObj(formattedTransaction);
 };
 
-const formatBlock = (block) => {
+const formatBlock = block => {
 	const blockHeader = block.header;
 
 	const blockAssets = block.assets.map(asset => {
 		// Decode asset data in case of binary payload
-		if (typeof (asset.data) === 'string') {
+		if (typeof asset.data === 'string') {
 			const assetModule = asset.module;
 			const blockAssetDataSchema = getBlockAssetDataSchemaByModule(assetModule);
 			const formattedAssetData = blockAssetDataSchema
@@ -107,7 +109,9 @@ const formatBlock = (block) => {
 				: asset.data;
 
 			if (!blockAssetDataSchema) {
-				logger.error(`Unable to decode asset data. Block asset schema missing for module ${assetModule}.`);
+				logger.error(
+					`Unable to decode asset data. Block asset schema missing for module ${assetModule}.`,
+				);
 			}
 
 			const formattedBlockAsset = {
@@ -140,7 +144,7 @@ const formatEvent = (event, skipDecode) => {
 	if (skipDecode) {
 		eventData = event.data;
 	} else {
-		const eventDataSchema = getDataSchemaByEventName(event.name);
+		const eventDataSchema = getDataSchemaByEvent(event);
 		try {
 			eventData = eventDataSchema
 				? codec.decodeJSON(eventDataSchema, Buffer.from(event.data, 'hex'))
@@ -151,12 +155,12 @@ const formatEvent = (event, skipDecode) => {
 		}
 
 		if (!eventDataSchema) {
-			// TODO: Remove this after SDK exposes all event schemas (before tagging rc.0)
-			console.error(`Event data schema missing for ${event.module}:${event.name}.`);
-			logger.error(`Unable to decode event data. Event data schema missing for ${event.module}:${event.name}.`);
+			logger.error(
+				`Unable to decode event data. Event data schema missing for ${event.module}:${event.name}.`,
+			);
 		} else {
-			// TODO: Remove after SDK fixes the address format (before tagging rc.0)
-			Object.keys(eventDataSchema.properties).forEach((prop) => {
+			// TODO: Remove after SDK fixes the address format (https://github.com/LiskHQ/lisk-sdk/issues/7629)
+			Object.keys(eventDataSchema.properties).forEach(prop => {
 				if (prop.endsWith('Address')) {
 					eventData[prop] = getLisk32Address(eventData[prop].toString('hex'));
 				}
@@ -165,23 +169,22 @@ const formatEvent = (event, skipDecode) => {
 	}
 
 	const eventTopicMappings = EVENT_TOPIC_MAPPINGS_BY_MODULE[event.module] || {};
-	// TODO: Remove after all transaction types are tested (before tagging rc.0)
 	if (!(event.module in EVENT_TOPIC_MAPPINGS_BY_MODULE)) {
-		console.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE missing for module: ${event.module}.`);
-		console.info(inspect(event));
+		logger.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE missing for module: ${event.module}.`);
+		logger.info(inspect(event));
 	}
 
-	const topics = event.name === EVENT_NAME_COMMAND_EXECUTION_RESULT
-		? COMMAND_EXECUTION_RESULT_TOPICS
-		: eventTopicMappings[event.name];
+	const topics =
+		event.name === EVENT_NAME_COMMAND_EXECUTION_RESULT
+			? COMMAND_EXECUTION_RESULT_TOPICS
+			: eventTopicMappings[event.name];
 
-	// TODO: Remove after all transaction types are tested (before tagging rc.0)
 	if (!topics || topics.length === 0) {
-		console.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE undefined for event: ${event.name}.`);
-		console.info(inspect(event));
+		logger.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE undefined for event: ${event.name}.`);
+		logger.info(inspect(event));
 	} else if (topics.length !== event.topics.length) {
-		console.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE defined incorrectly for event: ${event.name}.`);
-		console.info(inspect(event));
+		logger.error(`EVENT_TOPIC_MAPPINGS_BY_MODULE defined incorrectly for event: ${event.name}.`);
+		logger.info(inspect(event));
 	}
 
 	let eventTopics;

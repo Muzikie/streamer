@@ -1,0 +1,19 @@
+[mysqld]
+
+# Default authentication plugin
+default-authentication-plugin=caching_sha2_password 
+
+# Default character charset
+character-set-server=utf8mb4
+
+# Default collation server
+collation-server=utf8mb4_unicode_ci
+
+# Unique identifying number of the server.
+server-id = 1
+
+# Set binary log file base name.
+log_bin=mysql-bin.log
+
+# Log row changes for replication. Other possible way is to log statements.
+binlog_format = ROW

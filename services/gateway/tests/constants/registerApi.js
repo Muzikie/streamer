@@ -13,7 +13,6 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-// TODO: Expected response for registerApi method should be dynamically constructed
 const expectedResponseForRegisterHttpApi = [
 	{
 		whitelist: [
@@ -69,7 +68,8 @@ const expectedResponseForRegisterHttpApi = [
 			'GET blockchain/apps/meta': 'app-registry.blockchain.apps.meta',
 			'GET blockchain/apps/statistics': 'indexer.blockchain.apps.statistics',
 			'GET blockchain/apps/meta/tokens': 'app-registry.blockchain.apps.meta.tokens',
-			'GET blockchain/apps/meta/tokens/supported': 'app-registry.blockchain.apps.meta.tokens.supported',
+			'GET blockchain/apps/meta/tokens/supported':
+				'app-registry.blockchain.apps.meta.tokens.supported',
 			'GET blocks': 'indexer.blocks',
 			'GET events': 'indexer.events',
 			'GET fees': 'fees.estimates',
@@ -110,9 +110,7 @@ const expectedResponseForRegisterHttpApi = [
 		etag: 'strong',
 	},
 	{
-		whitelist: [
-			'indexer.token.balances',
-		],
+		whitelist: ['indexer.token.balances'],
 		aliases: {
 			'GET /': 'indexer.token.balances',
 		},
@@ -121,7 +119,6 @@ const expectedResponseForRegisterHttpApi = [
 	},
 ];
 
-// TODO: Expected response for registerApi method should be dynamically constructed
 const expectedResponseForRegisterRpcApi = {
 	events: {
 		request: {
@@ -177,7 +174,8 @@ const expectedResponseForRegisterRpcApi = {
 				'get.blockchain.apps.meta': 'app-registry.blockchain.apps.meta',
 				'get.blockchain.apps.statistics': 'indexer.blockchain.apps.statistics',
 				'get.blockchain.apps.meta.tokens': 'app-registry.blockchain.apps.meta.tokens',
-				'get.blockchain.apps.meta.tokens.supported': 'app-registry.blockchain.apps.meta.tokens.supported',
+				'get.blockchain.apps.meta.tokens.supported':
+					'app-registry.blockchain.apps.meta.tokens.supported',
 				'get.blocks': 'indexer.blocks',
 				'get.events': 'indexer.events',
 				'get.fees': 'fees.estimates',
@@ -270,16 +268,12 @@ const dataForTransformResponse = {
 				{
 					denom: 'beddows',
 					decimals: 0,
-					aliases: [
-						'Beddows',
-					],
+					aliases: ['Beddows'],
 				},
 				{
 					denom: 'lsk',
 					decimals: 8,
-					aliases: [
-						'Lisk',
-					],
+					aliases: ['Lisk'],
 				},
 			],
 			baseDenom: 'beddows',
@@ -302,16 +296,12 @@ const dataForTransformResponse = {
 				{
 					denom: 'beddows',
 					decimals: 0,
-					aliases: [
-						'Beddows',
-					],
+					aliases: ['Beddows'],
 				},
 				{
 					denom: 'lsk',
 					decimals: 8,
-					aliases: [
-						'Lisk',
-					],
+					aliases: ['Lisk'],
 				},
 			],
 			baseDenom: 'beddows',
@@ -354,16 +344,12 @@ const expectedResponseForTransformResponse = {
 				{
 					denom: 'beddows',
 					decimals: 0,
-					aliases: [
-						'Beddows',
-					],
+					aliases: ['Beddows'],
 				},
 				{
 					denom: 'lsk',
 					decimals: 8,
-					aliases: [
-						'Lisk',
-					],
+					aliases: ['Lisk'],
 				},
 			],
 			customNumber: 123,
@@ -386,16 +372,12 @@ const expectedResponseForTransformResponse = {
 				{
 					denom: 'beddows',
 					decimals: 0,
-					aliases: [
-						'Beddows',
-					],
+					aliases: ['Beddows'],
 				},
 				{
 					denom: 'lsk',
 					decimals: 8,
-					aliases: [
-						'Lisk',
-					],
+					aliases: ['Lisk'],
 				},
 			],
 			customNumber: 456,
@@ -533,10 +515,7 @@ const buildAPIAliasesResponse = {
 	aliases: {
 		'GET /': 'template.generic.hello',
 	},
-	whitelist: [
-		'template.server.error',
-		'template.generic.hello',
-	],
+	whitelist: ['template.server.error', 'template.generic.hello'],
 	methodPaths: {
 		'GET ': {
 			version: '2.0',
@@ -577,9 +556,7 @@ const buildAPIAliasesMethodsWithFalseEtag = {
 		version: '2.0',
 		swaggerApiPath: '/token/balances',
 		rpcMethod: 'get.token.balances',
-		tags: [
-			'Token',
-		],
+		tags: ['Token'],
 		etag: false,
 		params: {
 			address: {
@@ -609,9 +586,7 @@ const buildAPIAliasesMethodsWithFalseEtag = {
 		schema: {
 			'/token/balances': {
 				get: {
-					tags: [
-						'Token',
-					],
+					tags: ['Token'],
 					summary: 'Requests tokens information',
 					description: 'Returns tokens information\n RPC => get.token.balances',
 					parameters: [
@@ -689,17 +664,13 @@ const buildAPIAliasesWithFalseEtagResponse = {
 	aliases: {
 		'GET /': 'indexer.token.balances',
 	},
-	whitelist: [
-		'indexer.token.balances',
-	],
+	whitelist: ['indexer.token.balances'],
 	methodPaths: {
 		'GET ': {
 			version: '2.0',
 			swaggerApiPath: '/token/balances',
 			rpcMethod: 'get.token.balances',
-			tags: [
-				'Token',
-			],
+			tags: ['Token'],
 			etag: false,
 			params: {
 				address: {
@@ -729,9 +700,7 @@ const buildAPIAliasesWithFalseEtagResponse = {
 			schema: {
 				'/token/balances': {
 					get: {
-						tags: [
-							'Token',
-						],
+						tags: ['Token'],
 						summary: 'Requests tokens information',
 						description: 'Returns tokens information\n RPC => get.token.balances',
 						parameters: [

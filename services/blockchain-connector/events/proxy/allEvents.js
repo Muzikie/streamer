@@ -20,13 +20,12 @@ const { subscribeToAllRegisteredEvents, events } = require('../../shared/sdk/eve
 
 const logger = Logger();
 
-const toCamelCase = (words) => {
+const toCamelCase = words => {
 	let result = '';
 	for (let i = 0; i < words.length; i++) {
 		const word = words[i];
-		const formattedWord = (i !== 0)
-			? word.substr(0, 1).toUpperCase() + word.substr(1)
-			: word.toLowerCase();
+		const formattedWord =
+			i !== 0 ? word.substr(0, 1).toUpperCase() + word.substr(1) : word.toLowerCase();
 		result = result.concat(formattedWord);
 	}
 	return result;
@@ -40,10 +39,15 @@ const exportAllEvents = async () => {
 	const registeredEvents = await getRegisteredEvents();
 	const allEvents = events.concat(registeredEvents);
 	const allMethods = allEvents.map(event => {
-		const genericController = (regEvent) => (cb) => {
-			const eventListener = async (payload) => {
+		const genericController = regEvent => cb => {
+			const eventListener = async payload => {
 				const signalName = toCamelCase(regEvent.split('_'));
-				logger.info(`Received ${regEvent} event, dispatching ${signalName} signal.`);
+
+				const logMessage = regEvent.endsWith('Block')
+					? `Received ${regEvent} event, dispatching ${signalName} signal (id: ${payload.blockHeader.id}, height: ${payload.blockHeader.height}).`
+					: `Received ${regEvent} event, dispatching ${signalName} signal.`;
+
+				logger.info(logMessage);
 				logger.debug(`Payload: ${JSON.stringify(payload)}`);
 
 				Signals.get(signalName).dispatch(payload);

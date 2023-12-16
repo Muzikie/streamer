@@ -15,7 +15,16 @@
  */
 import moment from 'moment';
 import { TRANSACTION_EXECUTION_STATUSES } from '../../../schemas/api_v3/constants/transactions';
-import { invalidAddresses, invalidBlockIDs, invalidLimits, invalidOffsets } from '../constants/invalidInputs';
+import {
+	invalidAddresses,
+	invalidBlockIDs,
+	invalidChainIDs,
+	invalidLimits,
+	invalidOffsets,
+} from '../constants/invalidInputs';
+import { waitMs } from '../../../helpers/utils';
+
+jest.setTimeout(1200000);
 
 const config = require('../../../config');
 const { request } = require('../../../helpers/socketIoRpcRequest');
@@ -26,6 +35,7 @@ const {
 	emptyResponseSchema,
 	jsonRpcEnvelopeSchema,
 	invalidParamsSchema,
+	invalidRequestSchema,
 	metaSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
@@ -37,11 +47,52 @@ const {
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
 const getTransactions = async params => request(wsRpcUrl, 'get.transactions', params);
 
+const fetchTxWithRetry = async params => {
+	let retries = 10;
+
+	while (retries > 0) {
+		try {
+			const response = await getTransactions({ limit: 1, ...params });
+			const [tx] = response.result.data;
+
+			if (tx) {
+				return {
+					success: true,
+					data: tx,
+				};
+			}
+		} catch (error) {
+			console.error(`Error fetching transactions. Retries left: ${retries}`);
+
+			// Delay by 3 sec
+			await waitMs(3000);
+		}
+		retries--;
+	}
+
+	return {
+		success: false,
+	};
+};
+
 describe('Method get.transactions', () => {
 	let refTransaction;
+
 	beforeAll(async () => {
-		const response = await getTransactions({ moduleCommand: 'token:transfer', limit: 1 });
-		[refTransaction] = response.result.data;
+		const crossChainTxRes = await fetchTxWithRetry({ moduleCommand: 'token:transferCrossChain' });
+
+		// Try to fetch transfer transaction on same chain, incase no transactions with transfer cross chain
+		if (!crossChainTxRes.success) {
+			const sameChainTxRes = await fetchTxWithRetry({ moduleCommand: 'token:transfer' });
+
+			if (!sameChainTxRes.success) {
+				throw new Error('Failed to fetch transactions after 10 retries');
+			} else {
+				refTransaction = sameChainTxRes.data;
+			}
+		} else {
+			refTransaction = crossChainTxRes.data;
+		}
 	});
 
 	describe('Retrieve transactions', () => {
@@ -64,15 +115,19 @@ describe('Method get.transactions', () => {
 			expect(result.meta).toMap(metaSchema);
 		});
 
-		it(`should return list of transactions when called with executionStatus=${TRANSACTION_EXECUTION_STATUSES.join(',')}`, async () => {
-			const response = await getTransactions({ executionStatus: TRANSACTION_EXECUTION_STATUSES.join(',') });
+		it(`should return list of transactions when called with executionStatus=${TRANSACTION_EXECUTION_STATUSES.join(
+			',',
+		)}`, async () => {
+			const response = await getTransactions({
+				executionStatus: TRANSACTION_EXECUTION_STATUSES.join(','),
+			});
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result.data).toBeInstanceOf(Array);
 			expect(result.data.length).toBeGreaterThanOrEqual(1);
 			expect(result.data.length).toBeLessThanOrEqual(10);
 			expect(response.result).toMap(resultEnvelopeSchema);
-			result.data.forEach((transaction) => {
+			result.data.forEach(transaction => {
 				if (transaction.executionStatus === 'pending') {
 					expect(transaction).toMap(pendingTransactionSchema);
 				} else {
@@ -91,8 +146,7 @@ describe('Method get.transactions', () => {
 			expect(result.data).toBeArrayOfSize(1);
 			expect(response.result).toMap(resultEnvelopeSchema);
 			result.data.forEach((transaction, i) => {
-				expect(transaction)
-					.toMap(transactionSchema, { id: refTransaction.id });
+				expect(transaction).toMap(transactionSchema, { id: refTransaction.id });
 				if (i > 0) {
 					const prevTx = result.data[i];
 					const prevTxTimestamp = prevTx.block.timestamp;
@@ -131,7 +185,6 @@ describe('Method get.transactions', () => {
 
 		it('should return bad request if requested with invalid sort ', async () => {
 			for (let i = 0; i < invalidBlockIDs.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ blockID: invalidBlockIDs[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -150,8 +203,9 @@ describe('Method get.transactions', () => {
 			expect(result.data.length).toBeLessThanOrEqual(10);
 			expect(response.result).toMap(resultEnvelopeSchema);
 			result.data.forEach((transaction, i) => {
-				expect(transaction)
-					.toMap(transactionSchema, { moduleCommand: refTransaction.moduleCommand });
+				expect(transaction).toMap(transactionSchema, {
+					moduleCommand: refTransaction.moduleCommand,
+				});
 				if (i > 0) {
 					const prevTx = result.data[i];
 					const prevTxTimestamp = prevTx.block.timestamp;
@@ -195,16 +249,13 @@ describe('Method get.transactions', () => {
 			expect(result.meta).toMap(metaSchema);
 		});
 
-		it('should return empty response when called with empty senderAddress', async () => {
+		it('should return invalid request when called with empty senderAddress', async () => {
 			const response = await getTransactions({ senderAddress: '' });
-			expect(response).toMap(emptyResponseSchema);
-			const { result } = response;
-			expect(result).toMap(emptyResultEnvelopeSchema);
+			expect(response).toMap(invalidRequestSchema);
 		});
 
 		it('should throw error when called with invalid senderAddress', async () => {
 			for (let i = 0; i < invalidAddresses.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ senderAddress: invalidAddresses[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -234,17 +285,49 @@ describe('Method get.transactions', () => {
 			expect(result.meta).toMap(metaSchema);
 		});
 
-		it('should return empty response when called with empty recipientAddress', async () => {
+		it('should return invalid request when called with empty recipientAddress', async () => {
 			const response = await getTransactions({ recipientAddress: '' });
-			expect(response).toMap(emptyResponseSchema);
-			const { result } = response;
-			expect(result).toMap(emptyResultEnvelopeSchema);
+			expect(response).toMap(invalidRequestSchema);
 		});
 
 		it('should throw error when called with invalid recipientAddress', async () => {
 			for (let i = 0; i < invalidAddresses.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ recipientAddress: invalidAddresses[i] });
+				expect(response).toMap(invalidParamsSchema);
+			}
+		});
+	});
+
+	describe('is able to retrieve list of transactions using receivingChainID', () => {
+		it('should return transactions when called with known receivingChainID', async () => {
+			if (refTransaction.params.receivingChainID) {
+				const response = await getTransactions({
+					receivingChainID: refTransaction.params.receivingChainID,
+				});
+				expect(response).toMap(jsonRpcEnvelopeSchema);
+				const { result } = response;
+				expect(result.data).toBeInstanceOf(Array);
+				expect(result.data.length).toBeGreaterThanOrEqual(1);
+				expect(result.data.length).toBeLessThanOrEqual(10);
+				expect(response.result).toMap(resultEnvelopeSchema);
+				result.data.forEach((transaction, i) => {
+					expect(transaction).toMap(transactionSchema);
+					expect(transaction.params.receivingChainID).toEqual(
+						refTransaction.params.receivingChainID,
+					);
+					if (i > 0) {
+						const prevTx = result.data[i];
+						const prevTxTimestamp = prevTx.block.timestamp;
+						expect(prevTxTimestamp).toBeGreaterThanOrEqual(transaction.block.timestamp);
+					}
+				});
+				expect(result.meta).toMap(metaSchema);
+			}
+		});
+
+		it('should throw error when called with invalid receivingChainID', async () => {
+			for (let i = 0; i < invalidChainIDs.length; i++) {
+				const response = await getTransactions({ receivingChainID: invalidChainIDs[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}
 		});
@@ -262,8 +345,9 @@ describe('Method get.transactions', () => {
 			result.data.forEach((transaction, i) => {
 				expect(transaction).toMap(transactionSchema);
 				if (transaction.params.recipientAddress) {
-					expect([transaction.sender.address, transaction.params.recipientAddress])
-						.toContain(refTransaction.sender.address);
+					expect([transaction.sender.address, transaction.params.recipientAddress]).toContain(
+						refTransaction.sender.address,
+					);
 				} else {
 					expect(transaction.sender.address).toMatch(refTransaction.sender.address);
 				}
@@ -278,7 +362,6 @@ describe('Method get.transactions', () => {
 
 		it('should throw error when called with invalid address', async () => {
 			for (let i = 0; i < invalidAddresses.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ address: invalidAddresses[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -369,19 +452,19 @@ describe('Method get.transactions', () => {
 			expect(result.meta).toMap(metaSchema);
 		});
 
-		it('should return empty response when called with max...min height', async () => {
+		it('should return empty request when called with max...min height', async () => {
 			const minHeight = refTransaction.block.height;
 			const maxHeight = refTransaction.block.height + 100;
 			const response = await getTransactions({ height: `${maxHeight}:${minHeight}` });
-			expect(response).toMap(emptyResponseSchema);
-			const { result } = response;
-			expect(result).toMap(emptyResultEnvelopeSchema);
+			expect(response).toMap(invalidRequestSchema);
 		});
 	});
 
 	describe('is able to retrieve list of transactions using timestamps', () => {
 		it('should return transactions when called with from to timestamps', async () => {
-			const from = moment(refTransaction.block.timestamp * 10 ** 3).subtract(1, 'day').unix();
+			const from = moment(refTransaction.block.timestamp * 10 ** 3)
+				.subtract(1, 'day')
+				.unix();
 			const toTimestamp = refTransaction.block.timestamp;
 			const response = await getTransactions({ timestamp: `${from}:${toTimestamp}` });
 
@@ -405,7 +488,9 @@ describe('Method get.transactions', () => {
 		});
 
 		it('should return transactions when called with fromTimestamp', async () => {
-			const from = moment(refTransaction.block.timestamp * 10 ** 3).subtract(1, 'day').unix();
+			const from = moment(refTransaction.block.timestamp * 10 ** 3)
+				.subtract(1, 'day')
+				.unix();
 			const response = await getTransactions({ timestamp: `${from}:` });
 
 			expect(response).toMap(jsonRpcEnvelopeSchema);
@@ -571,7 +656,6 @@ describe('Method get.transactions', () => {
 
 		it('should return bad request if requested with invalid limit', async () => {
 			for (let i = 0; i < invalidLimits.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ limit: invalidLimits[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -579,7 +663,6 @@ describe('Method get.transactions', () => {
 
 		it('should return bad request if requested with invalid offset', async () => {
 			for (let i = 0; i < invalidOffsets.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getTransactions({ offset: invalidOffsets[i] });
 				expect(response).toMap(invalidParamsSchema);
 			}

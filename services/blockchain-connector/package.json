@@ -1,6 +1,6 @@
 {
 	"name": "lisk-service-blockchain-connector",
-	"version": "0.7.0-rc.1",
+	"version": "0.7.2",
 	"description": "Lisk Service Blockchain Connector",
 	"keywords": [
 		"lisk",
@@ -30,16 +30,17 @@
 		"test:functional": "jest --config=jest.config.functional.js --detectOpenHandles --forceExit"
 	},
 	"dependencies": {
-		"@liskhq/lisk-api-client": "6.0.0-rc.1",
-		"@liskhq/lisk-codec": "0.4.0-rc.1",
-		"@liskhq/lisk-cryptography": "4.0.0-rc.1",
-		"@liskhq/lisk-transactions": "6.0.0-rc.1",
-		"@liskhq/lisk-validator": "0.8.0-rc.1",
+		"@liskhq/lisk-api-client": "6.0.1",
+		"@liskhq/lisk-codec": "0.4.0",
+		"@liskhq/lisk-cryptography": "4.0.0",
+		"@liskhq/lisk-transactions": "6.0.0",
+		"@liskhq/lisk-validator": "0.8.0",
 		"better-sqlite3": "^7.6.2",
 		"big-json": "^3.1.0",
 		"bluebird": "^3.7.2",
+		"ioredis": "^5.3.2",
 		"knex": "^2.4.0",
-		"lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/bf8048b920f61a2b27d7c28535dfefed5bd679cb/framework/dist/lisk-service-framework-1.5.1.tgz",
+		"lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/5cb6fc8e9b9798595d1a4652b9148afcbfaaed1f/framework/dist/lisk-service-framework-1.6.11.tgz",
 		"moment": "^2.29.4",
 		"signals": "^1.0.0",
 		"tar": "^6.1.11"
@@ -47,7 +48,7 @@
 	"devDependencies": {
 		"@babel/preset-env": "^7.14.0",
 		"babel-jest": "^27.3.0",
-		"jest": "^27.3.0",
+		"jest": "^29.7.0",
 		"jest-when": "^3.5.1",
 		"moleculer": "^0.14.21",
 		"node-gyp": "^9.4.0"

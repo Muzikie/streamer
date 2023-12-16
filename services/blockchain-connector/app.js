@@ -14,11 +14,7 @@
  *
  */
 const path = require('path');
-const {
-	Microservice,
-	Logger,
-	LoggerConfig,
-} = require('lisk-service-framework');
+const { Signals, Microservice, Logger, LoggerConfig } = require('lisk-service-framework');
 
 const config = require('./config');
 
@@ -35,34 +31,43 @@ const app = Microservice({
 	transporter: config.transporter,
 	brokerTimeout: config.brokerTimeout, // in seconds
 	logger: config.log,
+	events: {
+		'update.index.status': async payload => {
+			logger.debug("Received a 'update.index.status' moleculer event from indexer.");
+			Signals.get('updateIndexStatus').dispatch(payload);
+		},
+	},
 });
 
 nodeStatus.waitForNode().then(async () => {
 	logger.info(`Found a node, starting service ${packageJson.name.toUpperCase()}...`);
 
-	// Add routes, events & jobs
-	app.addMethods(path.join(__dirname, 'methods'));
+	nodeStatus.waitForNodeToFinishSync().then(async () => {
+		// Add routes, events & jobs
+		app.addMethods(path.join(__dirname, 'methods'));
 
-	const allBlockchainEndpoints = await require('./methods/proxy/allEndpoints');
-	allBlockchainEndpoints.forEach((method) => app.addMethod(method));
+		const allBlockchainEndpoints = await require('./methods/proxy/allEndpoints');
+		allBlockchainEndpoints.forEach(method => app.addMethod(method));
 
-	app.addEvents(path.join(__dirname, 'events'));
-	const allBlockchainEvents = await require('./events/proxy/allEvents');
-	allBlockchainEvents.forEach((event) => app.addEvent(event));
+		app.addEvents(path.join(__dirname, 'events'));
+		const allBlockchainEvents = await require('./events/proxy/allEvents');
+		allBlockchainEvents.forEach(event => app.addEvent(event));
 
-	app.addJobs(path.join(__dirname, 'jobs'));
+		app.addJobs(path.join(__dirname, 'jobs'));
 
-	if (config.enableTestingMode) {
-		app.addMethods(path.join(__dirname, 'methods', 'tests'));
-	}
+		if (config.enableTestingMode) {
+			app.addMethods(path.join(__dirname, 'methods', 'tests'));
+		}
 
-	app.run()
-		.then(async () => {
-			await init();
-		})
-		.catch(err => {
-			logger.fatal(`Failed to start service ${packageJson.name} due to: ${err.message}.`);
-			logger.fatal(err.stack);
-			process.exit(1);
-		});
+		app
+			.run()
+			.then(async () => {
+				await init();
+			})
+			.catch(err => {
+				logger.fatal(`Failed to start service ${packageJson.name} due to: ${err.message}`);
+				logger.fatal(err.stack);
+				process.exit(1);
+			});
+	});
 });

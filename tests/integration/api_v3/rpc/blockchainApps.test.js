@@ -15,27 +15,28 @@
  */
 const config = require('../../../config');
 
-const {
-	request,
-} = require('../../../helpers/socketIoRpcRequest');
+const { request } = require('../../../helpers/socketIoRpcRequest');
 
 const {
 	invalidParamsSchema,
 	jsonRpcEnvelopeSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
+const { blockchainAppsSchema } = require('../../../schemas/api_v3/blockchainApps.schema');
 const {
-	blockchainAppsSchema,
-} = require('../../../schemas/api_v3/blockchainApps.schema');
-const { invalidPartialSearches, invalidLimits, invalidOffsets, invalidNames, invalidChainIDCSV } = require('../constants/invalidInputs');
+	invalidPartialSearches,
+	invalidLimits,
+	invalidOffsets,
+	invalidNames,
+	invalidChainIDCSV,
+} = require('../constants/invalidInputs');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
-const getBlockchainApps = async (params) => request(wsRpcUrl, 'get.blockchain.apps', params);
+const getBlockchainApps = async params => request(wsRpcUrl, 'get.blockchain.apps', params);
 const getNetworkStatus = async params => request(wsRpcUrl, 'get.network.status', params);
 
 let curChainID;
 
-// TODO: Update test when data is available in blockchain_apps table
 describe('get.blockchain.apps', () => {
 	beforeAll(async () => {
 		const response = await getNetworkStatus();
@@ -131,7 +132,6 @@ describe('get.blockchain.apps', () => {
 
 	it('should return invalid params for an invalid search param', async () => {
 		for (let i = 0; i < invalidPartialSearches.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getBlockchainApps({ search: invalidPartialSearches[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -139,7 +139,6 @@ describe('get.blockchain.apps', () => {
 
 	it('should return invalid params for an invalid chainID param', async () => {
 		for (let i = 0; i < invalidChainIDCSV.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getBlockchainApps({ chainID: invalidChainIDCSV[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -147,7 +146,6 @@ describe('get.blockchain.apps', () => {
 
 	it('should return invalid params for an invalid chain name param', async () => {
 		for (let i = 0; i < invalidNames.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getBlockchainApps({ chainName: invalidNames[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -185,7 +183,6 @@ describe('get.blockchain.apps', () => {
 
 	it('should return invalid params for an invalid limit', async () => {
 		for (let i = 0; i < invalidLimits.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getBlockchainApps({ limit: invalidLimits[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -193,7 +190,6 @@ describe('get.blockchain.apps', () => {
 
 	it('should return invalid params for an invalid offset', async () => {
 		for (let i = 0; i < invalidOffsets.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getBlockchainApps({ offset: invalidOffsets[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}

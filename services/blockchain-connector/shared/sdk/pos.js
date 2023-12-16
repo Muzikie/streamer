@@ -15,6 +15,7 @@
  */
 const {
 	Logger,
+	Signals,
 	Exceptions: { TimeoutException },
 } = require('lisk-service-framework');
 
@@ -26,39 +27,56 @@ const { getGenesisHeight } = require('./genesisBlock');
 
 const logger = Logger();
 
-const getPosValidator = async (address) => {
+let posModuleConstants;
+let allPosValidators;
+
+const getPosValidator = async address => {
 	try {
 		const validator = await invokeEndpoint('pos_getValidator', { address });
 		return validator;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosValidator\'.');
+			throw new TimeoutException("Request timed out when calling 'getPosValidator'.");
 		}
-		logger.warn(`Error returned when invoking 'pos_getValidator' with address: ${address}.\n${err.stack}`);
+		logger.warn(
+			`Error returned when invoking 'pos_getValidator' with address: ${address}.\n${err.stack}`,
+		);
 		throw err;
 	}
 };
 
-const getAllPosValidators = async () => {
+const getAllPosValidators = async isForceReload => {
 	try {
-		const validators = await invokeEndpoint('pos_getAllValidators');
-		return validators;
+		if (!allPosValidators || isForceReload) {
+			const response = await invokeEndpoint('pos_getAllValidators');
+			if (response && Array.isArray(response.validators)) {
+				allPosValidators = response;
+				logger.info(
+					`Reloaded PoS validators list with ${allPosValidators.validators.length} entries.`,
+				);
+			} else {
+				return response;
+			}
+		}
+		return allPosValidators;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getAllPosValidators\'.');
+			throw new TimeoutException("Request timed out when calling 'getAllPosValidators'.");
 		}
 		logger.warn(`Error returned when invoking 'pos_getAllValidators'.\n${err.stack}`);
 		throw err;
 	}
 };
 
-const getPosValidatorsByStake = async (limit) => {
+Signals.get('reloadAllPosValidators').add(() => getAllPosValidators(true));
+
+const getPosValidatorsByStake = async limit => {
 	try {
 		const validators = await invokeEndpoint('pos_getValidatorsByStake', { limit });
 		return validators;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosValidatorsByStake\'.');
+			throw new TimeoutException("Request timed out when calling 'getPosValidatorsByStake'.");
 		}
 		logger.warn(`Error returned when invoking 'pos_getValidatorsByStake'.\n${err.stack}`);
 		throw err;
@@ -66,33 +84,40 @@ const getPosValidatorsByStake = async (limit) => {
 };
 
 const getPosConstants = async () => {
-	try {
-		const response = await invokeEndpoint('pos_getConstants');
-		if (response.error) throw new Error(response.error);
-		return response;
-	} catch (err) {
-		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosConstants\'.');
+	if (typeof posModuleConstants === 'undefined') {
+		try {
+			const response = await invokeEndpoint('pos_getConstants');
+
+			if (response.error) throw new Error(response.error);
+			posModuleConstants = response;
+		} catch (err) {
+			if (err.message.includes(timeoutMessage)) {
+				throw new TimeoutException("Request timed out when calling 'getPosConstants'.");
+			}
+			logger.warn(`Error returned when invoking 'pos_getConstants'.\n${err.stack}`);
+			throw err;
 		}
-		logger.warn(`Error returned when invoking 'pos_getConstants'.\n${err.stack}`);
-		throw err;
 	}
+
+	return posModuleConstants;
 };
 
-const getPosPendingUnlocks = async (address) => {
+const getPosPendingUnlocks = async address => {
 	try {
 		const response = await invokeEndpoint('pos_getPendingUnlocks', { address });
 		return response;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosPendingUnlocks\'.');
+			throw new TimeoutException("Request timed out when calling 'getPosPendingUnlocks'.");
 		}
-		logger.warn(`Error returned when invoking 'pos_getPendingUnlocks' with address: ${address}.\n${err.stack}`);
+		logger.warn(
+			`Error returned when invoking 'pos_getPendingUnlocks' with address: ${address}.\n${err.stack}`,
+		);
 		throw err;
 	}
 };
 
-const getStaker = async (address) => {
+const getStaker = async address => {
 	try {
 		const staker = await invokeEndpoint('pos_getStaker', { address });
 
@@ -106,9 +131,11 @@ const getStaker = async (address) => {
 		return staker;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getStaker\'.');
+			throw new TimeoutException("Request timed out when calling 'getStaker'.");
 		}
-		logger.warn(`Error returned when invoking 'pos_getStaker' with address: ${address}.\n${err.stack}`);
+		logger.warn(
+			`Error returned when invoking 'pos_getStaker' with address: ${address}.\n${err.stack}`,
+		);
 		throw err;
 	}
 };
@@ -119,9 +146,11 @@ const getPosClaimableRewards = async ({ address }) => {
 		return claimableRewards;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosClaimableRewards\'.');
+			throw new TimeoutException("Request timed out when calling 'getPosClaimableRewards'.");
 		}
-		logger.warn(`Error returned when invoking 'pos_getClaimableRewards' with param: ${address}.\n${err.stack}`);
+		logger.warn(
+			`Error returned when invoking 'pos_getClaimableRewards' with param: ${address}.\n${err.stack}`,
+		);
 		throw err;
 	}
 };
@@ -132,9 +161,11 @@ const getPosLockedReward = async ({ address, tokenID }) => {
 		return lockedReward;
 	} catch (err) {
 		if (err.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPosLockedReward\'.');
+			throw new TimeoutException("Request timed out when calling 'getPosLockedReward'.");
 		}
-		logger.warn(`Error returned when invoking 'pos_getLockedReward' with address: ${address}, tokenID: ${tokenID}.\n${err.stack}`);
+		logger.warn(
+			`Error returned when invoking 'pos_getLockedReward' with address: ${address}, tokenID: ${tokenID}.\n${err.stack}`,
+		);
 		throw err;
 	}
 };
@@ -143,12 +174,11 @@ const getPoSGenesisStakers = async () => {
 	try {
 		const genesisHeight = await getGenesisHeight();
 		const block = await getBlockByHeight(genesisHeight, true);
-		const { stakers = [] } = (block.assets
-			.find(asset => asset.module === MODULE_NAME_POS)).data;
+		const { stakers = [] } = block.assets.find(asset => asset.module === MODULE_NAME_POS).data;
 		return stakers;
 	} catch (error) {
 		if (error.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPoSGenesisStakers\'.');
+			throw new TimeoutException("Request timed out when calling 'getPoSGenesisStakers'.");
 		}
 		throw error;
 	}
@@ -158,12 +188,11 @@ const getPoSGenesisValidators = async () => {
 	try {
 		const genesisHeight = await getGenesisHeight();
 		const block = await getBlockByHeight(genesisHeight, true);
-		const { validators = [] } = (block.assets
-			.find(asset => asset.module === MODULE_NAME_POS)).data;
+		const { validators = [] } = block.assets.find(asset => asset.module === MODULE_NAME_POS).data;
 		return validators;
 	} catch (error) {
 		if (error.message.includes(timeoutMessage)) {
-			throw new TimeoutException('Request timed out when calling \'getPoSGenesisValidators\'.');
+			throw new TimeoutException("Request timed out when calling 'getPoSGenesisValidators'.");
 		}
 		throw error;
 	}

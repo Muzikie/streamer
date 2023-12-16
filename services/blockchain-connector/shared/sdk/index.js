@@ -13,6 +13,10 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
+const { Signals } = require('lisk-service-framework');
+
+const config = require('../../config');
+
 const {
 	getGenesisHeight,
 	getGenesisBlockID,
@@ -83,16 +87,9 @@ const {
 	cacheRegisteredRewardModule,
 } = require('./dynamicReward');
 
-const {
-	getFeeTokenID,
-	getMinFeePerByte,
-	cacheFeeConstants,
-} = require('./fee');
+const { getFeeTokenID, getMinFeePerByte, cacheFeeConstants } = require('./fee');
 
-const {
-	getAuthAccount,
-	getAuthMultiSigRegMsgSchema,
-} = require('./auth');
+const { getAuthAccount, getAuthMultiSigRegMsgSchema } = require('./auth');
 
 const {
 	getChainAccount,
@@ -119,18 +116,28 @@ const { formatTransaction } = require('./formatter');
 const { encodeCCM } = require('./encoder');
 
 const init = async () => {
+	// Cache all the schemas
+	setSchemas(await getSchemas());
+	setMetadata(await getSystemMetadata());
+
 	// Initialize the local cache
 	await getNodeInfo(true);
 	await cacheRegisteredRewardModule();
 	await cacheFeeConstants();
 	await updateTokenInfo();
-
-	// Cache all the schemas
-	setSchemas(await getSchemas());
-	setMetadata(await getSystemMetadata());
+	await getTokenInitializationFees();
+	await getRewardTokenID();
+	await getPosConstants();
+	await getAllPosValidators();
 
 	// Download the genesis block, if applicable
-	await getGenesisBlock();
+	await getGenesisBlock().then(() => {
+		Signals.get('genesisBlockDownloaded').dispatch();
+	});
+
+	if (config.appExitDelay) {
+		setTimeout(() => process.exit(0), config.appExitDelay);
+	}
 };
 
 module.exports = {

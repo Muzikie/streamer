@@ -6,14 +6,11 @@
  * MIT Licensed
  */
 const util = require('util');
-const {
-	MoleculerError,
-	MoleculerServerError,
-} = require('moleculer').Errors;
+const { MoleculerError, MoleculerServerError } = require('moleculer').Errors;
 const _ = require('lodash');
 const kleur = require('kleur');
 const {
-	Exceptions: { ValidationException },
+	Exceptions: { ValidationException, NotFoundException },
 } = require('lisk-service-framework');
 
 module.exports = {
@@ -52,17 +49,21 @@ module.exports = {
 					const reqParams = Object.fromEntries(
 						new Map(Object.entries(req.$params).filter(([, v]) => v)),
 					);
-					if (err && !(err instanceof ValidationException)) this.logger.error(
-						`<= ${this.coloringStatusCode(err.code)} Request error: ${err.name}: ${
-							err.message
-						} \n${err.stack} \nData: \nRequest params: ${util.inspect(
-							reqParams,
-						)} \nRequest body: ${util.inspect(req.body)}`,
-					);
+					if (err && !(err instanceof ValidationException))
+						this.logger.error(
+							`<= ${this.coloringStatusCode(err.code)} Request error: ${err.name}: ${
+								err.message
+							} \n${err.stack} \nData: \nRequest params: ${util.inspect(
+								reqParams,
+							)} \nRequest body: ${util.inspect(req.body)}`,
+						);
 				}
 
 				if (err instanceof ValidationException) {
 					const molecularError = new MoleculerError(err.message, 400);
+					this.sendError(req, res, molecularError);
+				} else if (err instanceof NotFoundException) {
+					const molecularError = new MoleculerError(err.message, 404);
 					this.sendError(req, res, molecularError);
 				} else {
 					const errMessage = err && err.message ? err.message : 'Internal server error';
@@ -144,7 +145,8 @@ module.exports = {
 		logRequest(req) {
 			if (req.$route && !req.$route.logging) return;
 			if (this.settings.enableHTTPRequest) {
-				if (this.settings.logRequest && this.settings.logRequest in this.logger) this.logger[this.settings.logRequest](`=> ${req.method} ${req.url}`);
+				if (this.settings.logRequest && this.settings.logRequest in this.logger)
+					this.logger[this.settings.logRequest](`=> ${req.method} ${req.url}`);
 			}
 		},
 	},

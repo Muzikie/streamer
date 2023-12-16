@@ -42,7 +42,7 @@ test-functional:
 	$(compose) exec -T tests yarn run test:functional
 
 test-integration:
-	$(compose) exec -T tests yarn run test:integration:APIv3:SDKv6
+	$(compose) exec -T tests yarn run test:integration:APIv3
 
 cli: cli-gateway
 
@@ -70,7 +70,9 @@ logs-live-%:
 print-config:
 	$(compose) config
 
-build: build-app-registry build-connector build-indexer build-coordinator build-statistics build-fees build-market build-export build-gateway
+build: build-local build-images
+
+build-images: build-app-registry build-connector build-indexer build-coordinator build-statistics build-fees build-market build-export build-gateway
 
 build-all: build build-template build-tests
 
@@ -121,6 +123,7 @@ build-local:
 	cd ./services/export && yarn install --frozen-lockfile
 	cd ./services/template && yarn install --frozen-lockfile
 	cd ./tests && yarn install --frozen-lockfile
+
 clean: clean-local clean-images
 
 clean-local:

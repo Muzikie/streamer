@@ -33,21 +33,27 @@ const blockWithTransaction = Object.freeze({
 		maxHeightPrevoted: 0,
 		maxHeightGenerated: 0,
 		impliesMaxPrevotes: true,
-		signature: '82e8916fc8a839518cb9e2a2c7b092c40e7d0ade90de8ec99925efc1a1480927d51dc2c889f755e0eef5425689be6edb2f2cbe726fcbb60aaebf7f5c24b52809',
+		signature:
+			'82e8916fc8a839518cb9e2a2c7b092c40e7d0ade90de8ec99925efc1a1480927d51dc2c889f755e0eef5425689be6edb2f2cbe726fcbb60aaebf7f5c24b52809',
 		id: 'c1c7c28f5b123135cb5a25f210390f200cd0ed7cc901c0b5997f084e2998c9cc',
 	},
 	transactions: [
 		{
 			module: 'token',
 			command: 'transfer',
-			params: '0a0804000000000000001080c8afa0251a1402604d9e57a39772fa12f2a860ecf6c1e9cae91122075465737420747828c096b102',
-			nonce: '0',
 			fee: '100000000',
+			nonce: '1',
 			senderPublicKey: '3972849f2ab66376a68671c10a00e8b8b67d880434cc65b04c6ed886dfa91c2c',
 			signatures: [
-				'a7e332b49db6d36c1024a24afbfd6eec2451e41c1cf751a8c609863ffa3e529ef4b8a34cecff29e9fa4bf30de4ce26f58c5d8a06587582a9129a6765064d3404',
+				'c7fd1abf9a552fa9c91b4121c87ae2c97cb0fc0aecc87d0ee8b1aa742238eef4a6815ddba31e21144c9652a7bd5c05577ae1100eac34fba43da6fc4879b8f206',
 			],
-			id: '66870fa27b22c361094ff2d72a794b3d7e531c02a488271c38d02180c05e3c69',
+			params: {
+				amount: '1000000000000',
+				recipientAddress: 'lskv6v53emsaen6cwbbk226wusdpa6ojdonunka4x',
+				data: '',
+				tokenID: '0400000000000000',
+			},
+			id: 'd96c777b67576ddf4cd933a97a60b4311881e68e3c8bef1393ac0020ec8a506c',
 		},
 	],
 	assets: [
@@ -78,7 +84,8 @@ const decodedBlockWithTransaction = Object.freeze({
 		maxHeightPrevoted: 0,
 		maxHeightGenerated: 0,
 		impliesMaxPrevotes: true,
-		signature: '82e8916fc8a839518cb9e2a2c7b092c40e7d0ade90de8ec99925efc1a1480927d51dc2c889f755e0eef5425689be6edb2f2cbe726fcbb60aaebf7f5c24b52809',
+		signature:
+			'82e8916fc8a839518cb9e2a2c7b092c40e7d0ade90de8ec99925efc1a1480927d51dc2c889f755e0eef5425689be6edb2f2cbe726fcbb60aaebf7f5c24b52809',
 		id: 'c1c7c28f5b123135cb5a25f210390f200cd0ed7cc901c0b5997f084e2998c9cc',
 	},
 	assets: [
@@ -93,22 +100,21 @@ const decodedBlockWithTransaction = Object.freeze({
 		{
 			module: 'token',
 			command: 'transfer',
-			params: {
-				tokenID: '0400000000000000',
-				amount: '10000000000',
-				recipientAddress: 'lskz4upsnrwk75wmfurf6kbxsne2nkjqd3yzwdaup',
-				data: 'Test tx',
-				accountInitializationFee: '5000000',
-			},
-			nonce: '0',
 			fee: '100000000',
+			nonce: '1',
 			senderPublicKey: '3972849f2ab66376a68671c10a00e8b8b67d880434cc65b04c6ed886dfa91c2c',
 			signatures: [
-				'a7e332b49db6d36c1024a24afbfd6eec2451e41c1cf751a8c609863ffa3e529ef4b8a34cecff29e9fa4bf30de4ce26f58c5d8a06587582a9129a6765064d3404',
+				'c7fd1abf9a552fa9c91b4121c87ae2c97cb0fc0aecc87d0ee8b1aa742238eef4a6815ddba31e21144c9652a7bd5c05577ae1100eac34fba43da6fc4879b8f206',
 			],
-			id: '66870fa27b22c361094ff2d72a794b3d7e531c02a488271c38d02180c05e3c69',
-			size: 178,
-			minFee: '177000',
+			params: {
+				tokenID: '0400000000000000',
+				amount: '1000000000000',
+				recipientAddress: 'lskv6v53emsaen6cwbbk226wusdpa6ojdonunka4x',
+				data: '',
+			},
+			id: 'd96c777b67576ddf4cd933a97a60b4311881e68e3c8bef1393ac0020ec8a506c',
+			size: 167,
+			minFee: '166000',
 		},
 	],
 });
@@ -133,7 +139,8 @@ const blockWithoutTransaction = Object.freeze({
 		maxHeightPrevoted: 0,
 		maxHeightGenerated: 0,
 		impliesMaxPrevotes: true,
-		signature: '274585e5e93fefa239766d7ca2720fed9118c6c53e95d3ec8d47bbe6c3194d7fe86d6e2d3e8d440e5637da0d1212d6d58985cbc21eb3536e7e67f56bd0582e06',
+		signature:
+			'274585e5e93fefa239766d7ca2720fed9118c6c53e95d3ec8d47bbe6c3194d7fe86d6e2d3e8d440e5637da0d1212d6d58985cbc21eb3536e7e67f56bd0582e06',
 		id: '1363799498535e4e565673855e1a740da99bf910fcaf7b9b9fdf3de7e14a836b',
 	},
 	transactions: [],
@@ -165,7 +172,8 @@ const decodedBlockWithoutTransaction = Object.freeze({
 		maxHeightPrevoted: 0,
 		maxHeightGenerated: 0,
 		impliesMaxPrevotes: true,
-		signature: '274585e5e93fefa239766d7ca2720fed9118c6c53e95d3ec8d47bbe6c3194d7fe86d6e2d3e8d440e5637da0d1212d6d58985cbc21eb3536e7e67f56bd0582e06',
+		signature:
+			'274585e5e93fefa239766d7ca2720fed9118c6c53e95d3ec8d47bbe6c3194d7fe86d6e2d3e8d440e5637da0d1212d6d58985cbc21eb3536e7e67f56bd0582e06',
 		id: '1363799498535e4e565673855e1a740da99bf910fcaf7b9b9fdf3de7e14a836b',
 	},
 	assets: [
@@ -207,7 +215,8 @@ const invalidBlock = Object.freeze({
 	transactions: [],
 });
 
-const invalidEncodedBlock = '80210a197db9206180122202d7c1de74a7353a8bea6f1af1620e5bbb9f6170fa4b5376267f8fb3d0e314d322a141348bdced232cf3c74742d8f3d96f436de3220e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8553a20e626f31527f88edd955c3ce5b6eea63f8c1d2fb6ddd329eac0b81d9ab0919b77422041e6b1c0cd1eb398e64a0af03f1b6547096fb005669b35985776d8f1c2564107480050005a20f89987de86e18d8391339c3b92c796ae7d0f7a75f8d57b2392539cc3c39e5ffe6206080012001a006a40efb32235a979a770225cc996b8419c135d10c61a789b5672f9b943637eb735b46cd37b39bfa598831932f15ff7e52a955fbe4756c3e0a83e0da8dd54065e74041a16080f12120a10a21eee43f81c4bc447ee5f';
+const invalidEncodedBlock =
+	'80210a197db9206180122202d7c1de74a7353a8bea6f1af1620e5bbb9f6170fa4b5376267f8fb3d0e314d322a141348bdced232cf3c74742d8f3d96f436de3220e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8553a20e626f31527f88edd955c3ce5b6eea63f8c1d2fb6ddd329eac0b81d9ab0919b77422041e6b1c0cd1eb398e64a0af03f1b6547096fb005669b35985776d8f1c2564107480050005a20f89987de86e18d8391339c3b92c796ae7d0f7a75f8d57b2392539cc3c39e5ffe6206080012001a006a40efb32235a979a770225cc996b8419c135d10c61a789b5672f9b943637eb735b46cd37b39bfa598831932f15ff7e52a955fbe4756c3e0a83e0da8dd54065e74041a16080f12120a10a21eee43f81c4bc447ee5f';
 
 const genesisBlock = {
 	header: {

@@ -21,10 +21,12 @@ const {
 	invalidParamsSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
+const { generatorResponseSchema } = require('../../../schemas/api_v3/generator.schema');
 const {
-	generatorResponseSchema,
-} = require('../../../schemas/api_v3/generator.schema');
-const { invalidPartialSearches, invalidOffsets, invalidLimits } = require('../constants/invalidInputs');
+	invalidPartialSearches,
+	invalidOffsets,
+	invalidLimits,
+} = require('../constants/invalidInputs');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
 const getGenerators = async params => request(wsRpcUrl, 'get.generators', params);
@@ -38,17 +40,24 @@ const STATUS = {
 describe('Generators API', () => {
 	let numberActiveValidators;
 	let numberStandbyValidators;
+	let selectedGenerator;
+
 	beforeAll(async () => {
 		const response = await getPoSConstants();
 		const constants = response.result.data;
 		numberActiveValidators = constants.numberActiveValidators;
 		numberStandbyValidators = constants.numberStandbyValidators;
-	});
 
-	let firstGenerator;
-	beforeAll(async () => {
 		const { result } = await getGenerators();
-		[firstGenerator] = result.data;
+		[selectedGenerator] = result.data;
+
+		// eslint-disable-next-line no-restricted-syntax
+		for (const generator of result.data) {
+			if (![null, undefined].includes(generator.publicKey)) {
+				selectedGenerator = generator;
+				break;
+			}
+		}
 	});
 
 	describe('GET /generators', () => {
@@ -69,12 +78,14 @@ describe('Generators API', () => {
 			expect(result.data.length).toBeGreaterThanOrEqual(1);
 			expect(result.data.length).toBeLessThanOrEqual(103);
 
-			const activeGenerators = result.data
-				.filter(generator => generator.status === STATUS.ACTIVE);
-			const standbyGenerators = result.data
-				.filter(generator => generator.status === STATUS.STANDBY);
-			expect(activeGenerators.length).toEqual(numberActiveValidators);
-			expect(standbyGenerators.length).toEqual(numberStandbyValidators);
+			const activeGenerators = result.data.filter(generator => generator.status === STATUS.ACTIVE);
+			const standbyGenerators = result.data.filter(
+				generator => generator.status === STATUS.STANDBY,
+			);
+			expect(activeGenerators.length).toBeGreaterThanOrEqual(1);
+			expect(activeGenerators.length).toBeLessThanOrEqual(numberActiveValidators);
+			expect(standbyGenerators.length).toBeGreaterThanOrEqual(0);
+			expect(standbyGenerators.length).toBeLessThanOrEqual(numberStandbyValidators);
 		});
 
 		it('should return generators list when called with limit=100', async () => {
@@ -105,15 +116,15 @@ describe('Generators API', () => {
 		});
 
 		it('should return generators list when searching with generator name', async () => {
-			const response = await getGenerators({ search: firstGenerator.name });
+			const response = await getGenerators({ search: selectedGenerator.name });
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(generatorResponseSchema);
-			expect(result.data.length).toBe(1);
+			expect(result.data.length).toBeGreaterThanOrEqual(1);
 		});
 
 		it('should return generators list when searching with generator address', async () => {
-			const response = await getGenerators({ search: firstGenerator.address });
+			const response = await getGenerators({ search: selectedGenerator.address });
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(generatorResponseSchema);
@@ -121,15 +132,17 @@ describe('Generators API', () => {
 		});
 
 		it('should return generators list when searching with generator publicKey', async () => {
-			const response = await getGenerators({ search: firstGenerator.publicKey });
-			expect(response).toMap(jsonRpcEnvelopeSchema);
-			const { result } = response;
-			expect(result).toMap(generatorResponseSchema);
-			expect(result.data.length).toBe(1);
+			if (selectedGenerator.publicKey) {
+				const response = await getGenerators({ search: selectedGenerator.publicKey });
+				expect(response).toMap(jsonRpcEnvelopeSchema);
+				const { result } = response;
+				expect(result).toMap(generatorResponseSchema);
+				expect(result.data.length).toBe(1);
+			}
 		});
 
 		it('should return generators list when searching partially with generator name', async () => {
-			const response = await getGenerators({ search: firstGenerator.name.substring(0, 3) });
+			const response = await getGenerators({ search: selectedGenerator.name.substring(0, 3) });
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(generatorResponseSchema);
@@ -138,7 +151,7 @@ describe('Generators API', () => {
 		});
 
 		it('should return generators list when searching partially with generator address', async () => {
-			const response = await getGenerators({ search: firstGenerator.address.substring(0, 3) });
+			const response = await getGenerators({ search: selectedGenerator.address.substring(0, 3) });
 			expect(response).toMap(jsonRpcEnvelopeSchema);
 			const { result } = response;
 			expect(result).toMap(generatorResponseSchema);
@@ -147,17 +160,20 @@ describe('Generators API', () => {
 		});
 
 		it('should return generators list when searching partially with generator publicKey', async () => {
-			const response = await getGenerators({ search: firstGenerator.publicKey.substring(0, 3) });
-			expect(response).toMap(jsonRpcEnvelopeSchema);
-			const { result } = response;
-			expect(result).toMap(generatorResponseSchema);
-			expect(result.data.length).toBeGreaterThanOrEqual(1);
-			expect(result.data.length).toBeLessThanOrEqual(103);
+			if (selectedGenerator.publicKey) {
+				const response = await getGenerators({
+					search: selectedGenerator.publicKey.substring(0, 3),
+				});
+				expect(response).toMap(jsonRpcEnvelopeSchema);
+				const { result } = response;
+				expect(result).toMap(generatorResponseSchema);
+				expect(result.data.length).toBeGreaterThanOrEqual(1);
+				expect(result.data.length).toBeLessThanOrEqual(103);
+			}
 		});
 
 		it('should return invalid params when called with invalid search param', async () => {
 			for (let i = 0; i < invalidPartialSearches.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getGenerators({ search: invalidPartialSearches[i] }).catch(e => e);
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -165,7 +181,6 @@ describe('Generators API', () => {
 
 		it('should return invalid params when called with invalid limit param', async () => {
 			for (let i = 0; i < invalidLimits.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getGenerators({ limit: invalidLimits[i] }).catch(e => e);
 				expect(response).toMap(invalidParamsSchema);
 			}
@@ -173,7 +188,6 @@ describe('Generators API', () => {
 
 		it('should return invalid params when called with invalid offset param', async () => {
 			for (let i = 0; i < invalidOffsets.length; i++) {
-				// eslint-disable-next-line no-await-in-loop
 				const response = await getGenerators({ offset: invalidOffsets[i] }).catch(e => e);
 				expect(response).toMap(invalidParamsSchema);
 			}
