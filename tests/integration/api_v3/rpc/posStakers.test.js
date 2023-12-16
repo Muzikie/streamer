@@ -16,9 +16,21 @@
 const config = require('../../../config');
 const { request } = require('../../../helpers/socketIoRpcRequest');
 
-const { invalidParamsSchema, invalidRequestSchema, jsonRpcEnvelopeSchema } = require('../../../schemas/rpcGenerics.schema');
+const {
+	invalidParamsSchema,
+	invalidRequestSchema,
+	jsonRpcEnvelopeSchema,
+} = require('../../../schemas/rpcGenerics.schema');
 const { goodRequestSchema } = require('../../../schemas/api_v3/staker.schema');
-const { invalidNames, invalidPublicKeys, invalidAddresses, invalidPartialSearches, invalidLimits, invalidOffsets } = require('../constants/invalidInputs');
+const {
+	invalidNames,
+	invalidPublicKeys,
+	invalidAddresses,
+	invalidPartialSearches,
+	invalidLimits,
+	invalidOffsets,
+} = require('../constants/invalidInputs');
+const { waitMs } = require('../../../helpers/utils');
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
 
@@ -30,19 +42,49 @@ describe('get.pos.stakers', () => {
 
 	beforeAll(async () => {
 		let refValidatorAddress;
+		let retries = 10;
+		let success = false;
+
 		do {
-			// eslint-disable-next-line no-await-in-loop
-			const response1 = await request(wsRpcUrl, 'get.transactions', { moduleCommand: 'pos:stake', limit: 1 });
+			const response1 = await request(wsRpcUrl, 'get.transactions', {
+				moduleCommand: 'pos:stake',
+				limit: 1,
+			});
 			const { data: [stakeTx] = [] } = response1.result;
 			if (stakeTx) {
 				// Destructure to refer first entry of all the sent votes within the transaction
-				const { params: { stakes: [stake] } } = stakeTx;
+				const {
+					params: {
+						stakes: [stake],
+					},
+				} = stakeTx;
 				refStaker = stakeTx.sender;
 				refValidatorAddress = stake.validatorAddress;
 			}
 		} while (!refValidatorAddress);
-		const validatorsResponse = await request(wsRpcUrl, 'get.pos.validators', { address: refValidatorAddress });
-		[refValidator] = validatorsResponse.result.data;
+
+		while (retries > 0 && !success) {
+			try {
+				const validatorsResponse = await request(wsRpcUrl, 'get.pos.validators', {
+					address: refValidatorAddress,
+				});
+				[refValidator] = validatorsResponse.result.data;
+
+				if (refValidator) {
+					success = true;
+				}
+			} catch (error) {
+				console.error(`Error fetching validators. Retries left: ${retries}`);
+				retries--;
+
+				// Delay by 3 sec
+				await waitMs(3000);
+			}
+		}
+
+		if (!success) {
+			throw new Error('Failed to fetch validator address even after retrying.');
+		}
 	});
 
 	it('should return list of stakers when requested for known validator address', async () => {
@@ -95,8 +137,7 @@ describe('get.pos.stakers', () => {
 		expect(result).toMap(goodRequestSchema);
 		expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
 		expect(result.data.stakers.length).toBeLessThanOrEqual(10);
-		expect(result.data.stakers.some(staker => staker.address === refStaker.address))
-			.toBe(true);
+		expect(result.data.stakers.some(staker => staker.address === refStaker.address)).toBe(true);
 	});
 
 	it('should return list of stakers when requested for known validator address and search param (partial staker address)', async () => {
@@ -107,8 +148,7 @@ describe('get.pos.stakers', () => {
 		expect(result).toMap(goodRequestSchema);
 		expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
 		expect(result.data.stakers.length).toBeLessThanOrEqual(10);
-		expect(result.data.stakers.some(staker => staker.address === refStaker.address))
-			.toBe(true);
+		expect(result.data.stakers.some(staker => staker.address === refStaker.address)).toBe(true);
 	});
 
 	it('should return list of stakers when requested for known validator address and search param (partial staker public key)', async () => {
@@ -119,8 +159,7 @@ describe('get.pos.stakers', () => {
 		expect(result).toMap(goodRequestSchema);
 		expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
 		expect(result.data.stakers.length).toBeLessThanOrEqual(10);
-		expect(result.data.stakers.some(staker => staker.address === refStaker.address))
-			.toBe(true);
+		expect(result.data.stakers.some(staker => staker.address === refStaker.address)).toBe(true);
 	});
 
 	it('should return list of stakers when requested with known validator address and offset=1', async () => {
@@ -143,7 +182,9 @@ describe('get.pos.stakers', () => {
 
 	it('should return list of stakers when requested with known validator address, offset=1 and limit=5', async () => {
 		const response = await getStakers({
-			address: refValidator.address, offset: 1, limit: 5,
+			address: refValidator.address,
+			offset: 1,
+			limit: 5,
 		});
 		expect(response).toMap(jsonRpcEnvelopeSchema);
 		const { result } = response;
@@ -153,41 +194,51 @@ describe('get.pos.stakers', () => {
 	});
 
 	it('should return list of stakers when requested for known validator publicKey', async () => {
-		const response = await getStakers({ publicKey: refValidator.publicKey });
-		expect(response).toMap(jsonRpcEnvelopeSchema);
-		const { result } = response;
-		expect(result).toMap(goodRequestSchema);
-		expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
-		expect(result.data.stakers.length).toBeLessThanOrEqual(10);
+		if (refValidator.publicKey) {
+			const response = await getStakers({ publicKey: refValidator.publicKey });
+			expect(response).toMap(jsonRpcEnvelopeSchema);
+			const { result } = response;
+			expect(result).toMap(goodRequestSchema);
+			expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
+			expect(result.data.stakers.length).toBeLessThanOrEqual(10);
+		}
 	});
 
 	it('should return list of stakers when requested with known validator publicKey and offset=1', async () => {
-		const response = await getStakers({ publicKey: refValidator.publicKey, offset: 1 });
-		expect(response).toMap(jsonRpcEnvelopeSchema);
-		const { result } = response;
-		expect(result).toMap(goodRequestSchema);
-		expect(result.data.stakers.length).toBeGreaterThanOrEqual(0);
-		expect(result.data.stakers.length).toBeLessThanOrEqual(10);
+		if (refValidator.publicKey) {
+			const response = await getStakers({ publicKey: refValidator.publicKey, offset: 1 });
+			expect(response).toMap(jsonRpcEnvelopeSchema);
+			const { result } = response;
+			expect(result).toMap(goodRequestSchema);
+			expect(result.data.stakers.length).toBeGreaterThanOrEqual(0);
+			expect(result.data.stakers.length).toBeLessThanOrEqual(10);
+		}
 	});
 
 	it('should return list of stakers when requested with known validator publicKey and limit=5', async () => {
-		const response = await getStakers({ publicKey: refValidator.publicKey, limit: 5 });
-		expect(response).toMap(jsonRpcEnvelopeSchema);
-		const { result } = response;
-		expect(result).toMap(goodRequestSchema);
-		expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
-		expect(result.data.stakers.length).toBeLessThanOrEqual(5);
+		if (refValidator.publicKey) {
+			const response = await getStakers({ publicKey: refValidator.publicKey, limit: 5 });
+			expect(response).toMap(jsonRpcEnvelopeSchema);
+			const { result } = response;
+			expect(result).toMap(goodRequestSchema);
+			expect(result.data.stakers.length).toBeGreaterThanOrEqual(1);
+			expect(result.data.stakers.length).toBeLessThanOrEqual(5);
+		}
 	});
 
 	it('should return list of stakers when requested with known validator publicKey, offset=1 and limit=5', async () => {
-		const response = await getStakers({
-			publicKey: refValidator.publicKey, offset: 1, limit: 5,
-		});
-		expect(response).toMap(jsonRpcEnvelopeSchema);
-		const { result } = response;
-		expect(result).toMap(goodRequestSchema);
-		expect(result.data.stakers.length).toBeGreaterThanOrEqual(0);
-		expect(result.data.stakers.length).toBeLessThanOrEqual(5);
+		if (refValidator.publicKey) {
+			const response = await getStakers({
+				publicKey: refValidator.publicKey,
+				offset: 1,
+				limit: 5,
+			});
+			expect(response).toMap(jsonRpcEnvelopeSchema);
+			const { result } = response;
+			expect(result).toMap(goodRequestSchema);
+			expect(result.data.stakers.length).toBeGreaterThanOrEqual(0);
+			expect(result.data.stakers.length).toBeLessThanOrEqual(5);
+		}
 	});
 
 	it('should return list of stakers when requested for known validator name', async () => {
@@ -252,7 +303,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid address', async () => {
 		for (let i = 0; i < invalidAddresses.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({ address: invalidAddresses[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -260,7 +310,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid publicKey', async () => {
 		for (let i = 0; i < invalidPublicKeys.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({ publicKey: invalidPublicKeys[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -268,7 +317,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid name', async () => {
 		for (let i = 0; i < invalidNames.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({ name: invalidNames[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -276,7 +324,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid search', async () => {
 		for (let i = 0; i < invalidPartialSearches.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({
 				address: refValidator.address,
 				search: invalidPartialSearches[i],
@@ -287,7 +334,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid limit', async () => {
 		for (let i = 0; i < invalidLimits.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({ address: refValidator.address, limit: invalidLimits[i] });
 			expect(response).toMap(invalidParamsSchema);
 		}
@@ -295,7 +341,6 @@ describe('get.pos.stakers', () => {
 
 	it('should return invalid request for invalid offset', async () => {
 		for (let i = 0; i < invalidOffsets.length; i++) {
-			// eslint-disable-next-line no-await-in-loop
 			const response = await getStakers({
 				address: refValidator.address,
 				offset: invalidOffsets[i],

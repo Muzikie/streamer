@@ -30,14 +30,15 @@ const verifyIfPunished = async validator => {
 	const latestBlockString = await lastBlockCache.get(LAST_BLOCK_KEY);
 	const latestBlock = latestBlockString ? JSON.parse(latestBlockString) : {};
 
-	// TODO: Get this information from SDK directly once available
-	const isPunished = validator.reportMisbehaviorHeights
-		.some(reportMisbehaviorHeight => reportMisbehaviorHeight.start <= latestBlock.height
-			&& latestBlock.height <= reportMisbehaviorHeight.end);
+	const isPunished = validator.reportMisbehaviorHeights.some(
+		reportMisbehaviorHeight =>
+			reportMisbehaviorHeight.start <= latestBlock.height &&
+			latestBlock.height <= reportMisbehaviorHeight.end,
+	);
 	return isPunished;
 };
 
-const getPosValidators = async (params) => {
+const getPosValidators = async params => {
 	const { address, addresses } = params;
 	const validatorAddressList = address ? [address] : addresses;
 
@@ -45,17 +46,12 @@ const getPosValidators = async (params) => {
 		validatorAddressList,
 		async validatorAddress => {
 			const validator = await requestConnector('getPosValidator', { address: validatorAddress });
-			// TODO: Add error handling
-			// TODO: Verify
-			// TODO: Check if it is possible to move this logic to the connector
-			if (validator.isBanned || await verifyIfPunished(validator)) {
+			if (validator.isBanned || (await verifyIfPunished(validator))) {
 				validator.validatorWeight = BigInt('0');
 			} else {
 				const cap = BigInt(validator.selfStake) * BigInt(10);
 				validator.totalStake = BigInt(validator.totalStake);
-				validator.validatorWeight = BigInt(validator.totalStake) > cap
-					? cap
-					: validator.totalStake;
+				validator.validatorWeight = BigInt(validator.totalStake) > cap ? cap : validator.totalStake;
 			}
 			return validator;
 		},
@@ -69,17 +65,17 @@ const getAllPosValidators = async () => {
 	const validators = await BluebirdPromise.map(
 		rawValidators,
 		async validator => {
-			if (validator.isBanned || await verifyIfPunished(validator)) {
+			if (validator.isBanned || (await verifyIfPunished(validator))) {
 				validator.validatorWeight = BigInt('0');
 			} else {
 				const cap = BigInt(validator.selfStake) * BigInt(10);
 				validator.totalStake = BigInt(validator.totalStake);
-				validator.validatorWeight = BigInt(validator.totalStake) > cap
-					? cap
-					: validator.totalStake;
+				validator.validatorWeight = BigInt(validator.totalStake) > cap ? cap : validator.totalStake;
 			}
 
-			const { publicKey = null } = await getIndexedAccountInfo({ address: validator.address }, ['publicKey']);
+			const { publicKey = null } = await getIndexedAccountInfo({ address: validator.address }, [
+				'publicKey',
+			]);
 
 			return {
 				...validator,
@@ -92,7 +88,7 @@ const getAllPosValidators = async () => {
 	return validators;
 };
 
-const getPosValidatorsByStake = async (params) => {
+const getPosValidatorsByStake = async params => {
 	const { validators } = await requestConnector('getPosValidatorsByStake', { limit: params.limit });
 	return validators;
 };

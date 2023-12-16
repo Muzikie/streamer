@@ -35,7 +35,22 @@ pipeline {
 			steps {
 				script { echoBanner(STAGE_NAME) }
 				nvm(readFile('.nvmrc').trim()) {
-					sh 'yarn run eslint'
+					sh 'yarn lint'
+				}
+			}
+		}
+		stage('Format Service') {
+			steps {
+				nvm(readFile(".nvmrc").trim()) {
+					sh '''
+					npm run format
+					if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
+						echo "All files formatted"
+					else
+						echo "Running format is required"
+						exit 1
+					fi
+					'''
 				}
 			}
 		}

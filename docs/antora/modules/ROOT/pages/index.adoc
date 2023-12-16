@@ -6,8 +6,7 @@ Mona Bärenfänger <mona@lightcurve.io>
 :idprefix:
 :imagesdir: ../assets/images
 :page-no-previous: true
-// :docs_general: ROOT::
-:lisk-docs: beta@ROOT::
+:lisk-docs: ROOT::
 
 :url_api_mainnet: https://service.lisk.com/api/v3
 :url_api_testnet: https://testnet-service.lisk.com/api/v3
@@ -27,10 +26,10 @@ Mona Bärenfänger <mona@lightcurve.io>
 :url_services_directory: https://github.com/LiskHQ/lisk-service/tree/development/services
 :url_app_registry: https://github.com/LiskHQ/app-registry
 :url_dynamic_fee: https://github.com/LiskHQ/lips/blob/main/proposals/lip-0013.md
-// :url_http_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-beta.0/docs/api/version3.md
-:url_http_api: reference/api.adoc
-:url_websocket_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-beta.0/docs/api/version3.md
-:url_subscribe_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-beta.0/docs/api/websocket_subscribe_api.md
+// :url_http_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-rc.2/docs/api/version3.md
+:url_http_api: {lisk-docs}api/lisk-service-http.adoc
+:url_websocket_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-rc.2/docs/api/version3.md
+:url_subscribe_api: https://github.com/LiskHQ/lisk-service/blob/v0.7.0-rc.2/docs/api/websocket_subscribe_api.md
 :url_postman: https://www.postman.com/
 :url_curl: https://curl.se/
 :url_httpie: https://httpie.io/
@@ -220,7 +219,7 @@ The Gateway service provides the following APIs, which all users of Lisk Service
 
 // [source,bash]
 // ----
-// make build
+// make build-images
 // ----
 // Please note, this step is only necessary if you wish to build a custom or pre-release version of Lisk Service that does not have a pre-built Docker image published on the Docker Hub.
 // The installation script chooses the last available stable version on the Docker Hub, *unless* there is no local image.
@@ -456,11 +455,15 @@ Lisk Testnet::
 // 	});
 // };
 
-// subscribe('update.block');
+// subscribe('new.block');
+// subscribe('new.transactions');
+// subscribe('delete.block');
+// subscribe('delete.transactions');
 // subscribe('update.round');
-// subscribe('update.forgers');
-// subscribe('update.transactions.confirmed');
+// subscribe('update.generators');
 // subscribe('update.fee_estimates');
+// subscribe('update.metadata');
+// subscribe('update.index.status');
 
 // To log all events
 // [

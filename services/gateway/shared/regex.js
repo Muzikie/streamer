@@ -25,22 +25,27 @@ const PARTIAL_SEARCH = /^[\w!@$&.]{1,64}$/; // Supports address, publicKey & nam
 const PARTIAL_SEARCH_NAME = /^[\w!@$&.]{1,20}$/;
 const TIMESTAMP_RANGE = /^(?:(?:\d+)|(?::(?:\d+))|(?:(?:\d+):(?:\d+)?))$/;
 const HEIGHT_RANGE = /^(?:(?:\d+)|(?::(?:\d+))|(?:(?:\d+):(?:\d+)?))$/;
-const IP = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const IP =
+	/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const LIMIT = /^\b(?:(?:[1-9][0-9]?)|100)\b$/;
 const OFFSET = /^\b([0-9][0-9]*)\b$/;
-const NAME = /^[\w!@$&.]{3,20}$/;
+const NAME = /^[a-z0-9!@$&_.]{1,20}$/;
 const NAME_CSV = /^\b[\w!@$&.,]{3,}\b$/;
+
 const NETWORK_VERSION = /^\d+\.\d+((\.\d+)?(?:-[a-zA-Z\d]+(?:\.\d+)?)?)?(?:\+[a-zA-Z\d]+)?$/;
 const TRANSACTION = /^\b[0-9a-fA-F]+\b$/;
 const TRANSACTION_EXECUTION_STATUS = /^\b(?:pending|successful|failed|,){0,5}\b$/;
 const POS_VALIDATOR_STATUS = /^\b(?:active|standby|banned|punished|ineligible|,){0,9}\b$/;
-const CCM_STATUS = /^\b(?:ok|module_not_supported|module_not_supported|channel_unavailable|recovered|,){0,9}\b$/;
-const DATE_INTERVAL = /^\b(?:(?:\d{4})-(?:(?:1[012])|(?:0?[1-9]))-(?:(?:[012][1-9])|(?:[123]0)|31))(?::(?:(?:\d{4})-(?:(?:1[012])|(?:0?[1-9]))-(?:(?:[012][1-9])|(?:[123]0)|31)))?\b$/;
+const CCM_STATUS =
+	/^\b(?:ok|module_not_supported|module_not_supported|channel_unavailable|recovered|,){0,9}\b$/;
+const DATE_INTERVAL =
+	/^\b(?:(?:\d{4})-(?:(?:1[012])|(?:0?[1-9]))-(?:(?:[012][1-9])|(?:[123]0)|31))(?::(?:(?:\d{4})-(?:(?:1[012])|(?:0?[1-9]))-(?:(?:[012][1-9])|(?:[123]0)|31)))?\b$/;
 const NETWORK_CSV = /^\b(?:mainnet|testnet|betanet|devnet|,){0,7}\b$/;
 const APPLICATION_STATUS = /^\b(?:registered|activated|terminated|unregistered|,){1,7}\b$/;
 const MODULE_COMMAND = /^[0-9a-zA-Z]{0,32}:[0-9a-zA-Z]{0,32}$/;
 const CHAIN_ID = /^\b[a-fA-F0-9]{8}\b$/;
 const CHAIN_ID_CSV = /^\b(?:[a-fA-F0-9]{8}|,)+\b$/;
+const CHAIN_NAME = /^[A-Za-z0-9!@$&_.]{1,32}$/;
 const TOKEN_ID = /^\b[a-fA-F0-9]{16}\b$/;
 const TOKEN_ID_CSV = /^\b(?:[a-fA-F0-9]{16}|,)+\b$/;
 const BLS_KEY = /^\b[a-fA-F0-9]{96}\b$/;
@@ -49,9 +54,11 @@ const MODULE = /^[0-9a-zA-Z]{1,32}$/;
 const COMMAND = MODULE;
 const MODULE_CSV = /^(?:[0-9a-zA-Z]{1,32})(?:,[0-9a-zA-Z]{1,32})*$/;
 const COMMAND_CSV = MODULE_CSV;
-const TOPIC_CSV = /^\b(?:[0-9a-fA-F]{2,64}|lsk[a-hjkm-z2-9]{38})(?:,(?:[0-9a-fA-F]{2,64}|lsk[a-hjkm-z2-9]{38}))*\b$/;
+const TOPIC_CSV =
+	/^\b(?:(?:04|05)?[0-9a-fA-F]{64}|lsk[a-hjkm-z2-9]{38})(?:,(?:(?:04|05)?[0-9a-fA-F]{64}|lsk[a-hjkm-z2-9]{38}))*\b$/;
 const HEX_STRING = /^\b[a-fA-F0-9]+\b$/;
-const EXCEL_EXPORT_FILENAME = /^\btransactions_([a-fA-F0-9]{8})_(lsk[a-hjkm-z2-9]{38})_((\d{4})-((1[012])|(0?[1-9]))-(([012][1-9])|([123]0)|31))_((\d{4})-((1[012])|(0?[1-9]))-(([012][1-9])|([123]0)|31))\.xlsx\b$/;
+const EXCEL_EXPORT_FILENAME =
+	/^\btransactions_([a-fA-F0-9]{8})_(lsk[a-hjkm-z2-9]{38})_((\d{4})-((1[012])|(0?[1-9]))-(([012][1-9])|([123]0)|31))_((\d{4})-((1[012])|(0?[1-9]))-(([012][1-9])|([123]0)|31))\.xlsx\b$/;
 const EVENT_NAME = /^[\w!@$&. ]{1,32}$/;
 const MD5 = /^\b[a-fA-F0-9]{32}\b$/; // MD5 pattern
 
@@ -83,6 +90,7 @@ module.exports = {
 	MODULE_COMMAND,
 	CHAIN_ID,
 	CHAIN_ID_CSV,
+	CHAIN_NAME,
 	TOKEN_ID,
 	TOKEN_ID_CSV,
 	BLS_KEY,

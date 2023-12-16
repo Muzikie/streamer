@@ -35,22 +35,20 @@ const currentSvcStatus = {
 };
 
 const updateSvcStatus = async () => {
-	await BluebirdPromise.map(
-		Object.keys(currentSvcStatus),
-		async microservice => {
-			const broker = (await getAppContext()).getBroker();
-			currentSvcStatus[microservice] = await broker.call(`${microservice}.status`)
-				.then((res) => res.isReady)
-				.catch((err) => {
-					if (err instanceof ServiceNotFoundError) {
-						logger.warn(err);
-					} else {
-						logger.error(err);
-					}
-					return false;
-				});
-		},
-	);
+	await BluebirdPromise.map(Object.keys(currentSvcStatus), async microservice => {
+		const broker = (await getAppContext()).getBroker();
+		currentSvcStatus[microservice] = await broker
+			.call(`${microservice}.status`)
+			.then(res => res.isReady)
+			.catch(err => {
+				if (err instanceof ServiceNotFoundError) {
+					logger.warn(err);
+				} else {
+					logger.error(err);
+				}
+				return false;
+			});
+	});
 };
 
 const getReady = () => {
@@ -62,7 +60,7 @@ const getReady = () => {
 		});
 		return { services: includeSvcForReadiness };
 	} catch (_) {
-		logger.error(`Current service status: ${currentSvcStatus}`);
+		logger.error(`Current service status:\n${JSON.stringify(currentSvcStatus, null, '\t')}`);
 		throw new MoleculerError('Service Unavailable', 503, 'SERVICES_NOT_READY');
 	}
 };

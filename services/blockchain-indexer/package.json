@@ -1,6 +1,6 @@
 {
 	"name": "lisk-service-blockchain-indexer",
-	"version": "0.7.0-rc.1",
+	"version": "0.7.2",
 	"description": "Lisk Service Blockchain Indexer",
 	"keywords": [
 		"lisk",
@@ -30,22 +30,22 @@
 		"test:functional": "jest --config=jest.config.functional.js --detectOpenHandles --forceExit"
 	},
 	"dependencies": {
-		"@liskhq/lisk-cryptography": "4.0.0-rc.1",
-		"@liskhq/lisk-transactions": "6.0.0-rc.1",
-		"@liskhq/lisk-utils": "0.4.0-rc.0",
-		"@liskhq/lisk-validator": "0.8.0-rc.1",
+		"@liskhq/lisk-cryptography": "4.0.0",
+		"@liskhq/lisk-transactions": "6.0.0",
+		"@liskhq/lisk-utils": "0.4.0",
+		"@liskhq/lisk-validator": "0.8.0",
 		"bluebird": "^3.7.2",
 		"bull": "^4.8.1",
 		"camelcase": "^6.3.0",
-		"ioredis": "^4.28.5",
-		"lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/bf8048b920f61a2b27d7c28535dfefed5bd679cb/framework/dist/lisk-service-framework-1.5.1.tgz",
+		"ioredis": "^5.3.2",
+		"lisk-service-framework": "https://github.com/LiskHQ/lisk-service/raw/5cb6fc8e9b9798595d1a4652b9148afcbfaaed1f/framework/dist/lisk-service-framework-1.6.11.tgz",
 		"lodash": "^4.17.21",
 		"require-all": "^3.0.0"
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.14.0",
 		"babel-jest": "^27.3.0",
-		"jest": "^27.3.0",
+		"jest": "^29.7.0",
 		"jest-when": "^3.5.1",
 		"moleculer": "^0.14.17"
 	}

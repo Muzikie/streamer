@@ -16,10 +16,7 @@
 const logger = require('lisk-service-framework').Logger();
 
 const config = require('../../config');
-const {
-	reloadValidatorCache,
-	isPosModuleRegistered,
-} = require('../../shared/dataService');
+const { reloadValidatorCache, isPosModuleRegistered } = require('../../shared/dataService');
 const { validateValidatorCache } = require('../../shared/jobs/validateValidatorsCache');
 
 module.exports = [
@@ -35,7 +32,8 @@ module.exports = [
 					await reloadValidatorCache();
 					logger.info('Successfully initialized validators cache.');
 				} catch (err) {
-					logger.warn(`Initializing validators cache failed due to: ${err.stack}`);
+					logger.warn(`Initializing validators cache failed due to: ${err.message}`);
+					logger.debug(err.stack);
 				}
 			}
 		},
@@ -46,6 +44,7 @@ module.exports = [
 					await reloadValidatorCache();
 				} catch (err) {
 					logger.warn(`Reloading validators cache failed due to: ${err.message}`);
+					logger.debug(err.stack);
 				}
 			}
 		},
@@ -61,7 +60,7 @@ module.exports = [
 				try {
 					await validateValidatorCache();
 				} catch (err) {
-					logger.warn(`Validating validators cache failed due to: ${err.message}.`);
+					logger.warn(`Validating validators cache failed due to: ${err.message}`);
 					logger.debug(err.stack);
 				}
 			}

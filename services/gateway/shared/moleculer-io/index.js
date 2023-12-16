@@ -410,8 +410,8 @@ function makeHandler(svc, handlerItem) {
 		if (config.websocket.enableRateLimit) await rateLimiter.consume(this.handshake.address);
 		const performClientRequest = async (jsonRpcInput, id = 1) => {
 			if (
-				config.jsonRpcStrictMode === 'true'
-				&& (!jsonRpcInput.jsonrpc || jsonRpcInput.jsonrpc !== '2.0')
+				config.jsonRpcStrictMode === 'true' &&
+				(!jsonRpcInput.jsonrpc || jsonRpcInput.jsonrpc !== '2.0')
 			) {
 				const message = `The given data is not a proper JSON-RPC 2.0 request: ${util.inspect(
 					jsonRpcInput,
@@ -427,7 +427,9 @@ function makeHandler(svc, handlerItem) {
 			const action = jsonRpcInput.method;
 			const { params } = jsonRpcInput;
 			svc.logger.info(`   => Client '${this.id}' call '${action}'`);
-			if (svc.settings.logRequestParams && svc.settings.logRequestParams in svc.logger) svc.logger[svc.settings.logRequestParams]('   Params:', params);
+			if (svc.settings.logRequestParams && svc.settings.logRequestParams in svc.logger) {
+				svc.logger[svc.settings.logRequestParams]('   Params:', params);
+			}
 			try {
 				if (_.isFunction(params)) {
 					respond = params;
@@ -442,11 +444,13 @@ function makeHandler(svc, handlerItem) {
 				svc.logger.info(`   <= ${chalk.green.bold('Success')} ${action}`);
 
 				const output = addJsonRpcEnvelope(id, res);
-				respond(output);
+
+				if (respond !== undefined) respond(output);
+				else return output;
 			} catch (err) {
 				if (
-					svc.settings.log4XXResponses
-					|| (Utils.isProperObject(err) && !_.inRange(err.code, 400, 500))
+					svc.settings.log4XXResponses ||
+					(Utils.isProperObject(err) && !_.inRange(err.code, 400, 500))
 				) {
 					svc.logger.error(
 						'   Request error!',

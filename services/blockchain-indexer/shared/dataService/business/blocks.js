@@ -19,13 +19,15 @@ const BluebirdPromise = require('bluebird');
 const {
 	CacheRedis,
 	Logger,
-	DB: { MySQL: { getTableInstance } },
+	DB: {
+		MySQL: { getTableInstance },
+	},
 } = require('lisk-service-framework');
 
 const logger = Logger();
 
-const { getEventsByHeight } = require('./events');
-const { getFinalizedHeight, MODULE, EVENT } = require('../../constants');
+const { getEventsByHeight, getEventsByBlockID } = require('./events');
+const { getFinalizedHeight, MODULE, EVENT, getGenesisHeight } = require('../../constants');
 const blocksTableSchema = require('../../database/schema/blocks');
 
 const { getIndexedAccountInfo } = require('../utils/account');
@@ -45,7 +47,7 @@ const latestBlockCache = CacheRedis('latestBlock', config.endpoints.cache);
 
 let latestBlock;
 
-const normalizeBlock = async (originalBlock) => {
+const normalizeBlock = async (originalBlock, isDeletedBlock = false) => {
 	try {
 		const blocksTable = await getBlocksTable();
 
@@ -64,21 +66,28 @@ const normalizeBlock = async (originalBlock) => {
 			block.generator = {
 				address: block.generatorAddress,
 				publicKey: generatorInfo ? generatorInfo.publicKey : null,
-				name: generatorInfo && generatorInfo.name
-					? generatorInfo.name
-					: await getNameByAddress(block.generatorAddress),
+				name:
+					generatorInfo && generatorInfo.name
+						? generatorInfo.name
+						: await getNameByAddress(block.generatorAddress),
 			};
 		}
 
 		block.isFinal = block.height <= (await getFinalizedHeight());
 		block.numberOfTransactions = block.transactions.length;
-		block.numberOfAssets = block.assets.length;
+		block.numberOfAssets =
+			block.height !== (await getGenesisHeight())
+				? block.assets.length
+				: await (async () => {
+						const response = await requestConnector('getGenesisAssetsLength');
+						return Object.entries(response).length;
+				  })();
 
 		const { numberOfEvents, reward } = await (async () => {
-			const [dbResponse] = await blocksTable.find(
-				{ height: block.height, limit: 1 },
-				['numberOfEvents', 'reward'],
-			);
+			const [dbResponse] = await blocksTable.find({ height: block.height, limit: 1 }, [
+				'numberOfEvents',
+				'reward',
+			]);
 
 			if (dbResponse) {
 				return {
@@ -87,10 +96,13 @@ const normalizeBlock = async (originalBlock) => {
 				};
 			}
 
-			const events = await getEventsByHeight(block.height);
+			const events = isDeletedBlock
+				? await getEventsByBlockID(block.id)
+				: await getEventsByHeight(block.height);
 			const blockRewardEvent = events.find(
-				e => [MODULE.REWARD, MODULE.DYNAMIC_REWARD].includes(e.module)
-					&& e.name === EVENT.REWARD_MINTED,
+				e =>
+					[MODULE.REWARD, MODULE.DYNAMIC_REWARD].includes(e.module) &&
+					e.name === EVENT.REWARD_MINTED,
 			);
 
 			return {
@@ -108,7 +120,7 @@ const normalizeBlock = async (originalBlock) => {
 
 		block.transactions = await BluebirdPromise.map(
 			block.transactions,
-			async (txn) => {
+			async txn => {
 				txn = await normalizeTransaction(txn);
 
 				block.size += txn.size;
@@ -122,22 +134,22 @@ const normalizeBlock = async (originalBlock) => {
 
 		return parseToJSONCompatObj(block);
 	} catch (error) {
-		logger.error(`Error occurred when normalizing block at height ${originalBlock.header.height}, id: ${originalBlock.header.id}:\n${error.stack}`);
+		logger.error(
+			`Error occurred when normalizing block at height ${originalBlock.header.height}, id: ${originalBlock.header.id}:\n${error.stack}`,
+		);
 		throw error;
 	}
 };
 
-const normalizeBlocks = async (blocks) => {
-	const normalizedBlocks = await BluebirdPromise.map(
-		blocks,
-		async block => normalizeBlock(block),
-		{ concurrency: blocks.length },
-	);
+const normalizeBlocks = async blocks => {
+	const normalizedBlocks = await BluebirdPromise.map(blocks, async block => normalizeBlock(block), {
+		concurrency: blocks.length,
+	});
 
 	return normalizedBlocks;
 };
 
-const getBlockByHeight = async (height) => {
+const getBlockByHeight = async height => {
 	const response = await requestConnector('getBlockByHeight', { height });
 	return normalizeBlock(response);
 };
@@ -170,19 +182,22 @@ const isQueryFromIndex = params => {
 	// For 'isDirectQuery' to be 'true', the request params should contain
 	// exactly one of 'directQueryParams' and all of them must be contained
 	// within 'directQueryParams' or 'defaultQueryParams'
-	const isDirectQuery = (paramProps.filter(prop => directQueryParams.includes(prop))).length === 1
-		&& paramProps.every(prop => directQueryParams.concat(defaultQueryParams).includes(prop));
+	const isDirectQuery =
+		paramProps.filter(prop => directQueryParams.includes(prop)).length === 1 &&
+		paramProps.every(prop => directQueryParams.concat(defaultQueryParams).includes(prop));
 
 	const sortOrder = params.sort ? params.sort.split(':')[1] : undefined;
-	const isLatestBlockFetch = (paramProps.length === 1 && params.limit === 1)
-		|| (paramProps.length === 2
-			&& ((params.limit === 1 && params.offset === 0)
-				|| (sortOrder === 'desc' && (params.limit === 1 || params.offset === 0))
-			))
-		|| (paramProps.length === 3 && params.limit === 1 && params.offset === 0 && sortOrder === 'desc');
+	const isLatestBlockFetch =
+		(paramProps.length === 1 && params.limit === 1) ||
+		(paramProps.length === 2 &&
+			((params.limit === 1 && params.offset === 0) ||
+				(sortOrder === 'desc' && (params.limit === 1 || params.offset === 0)))) ||
+		(paramProps.length === 3 && params.limit === 1 && params.offset === 0 && sortOrder === 'desc');
 
 	return !isDirectQuery && !isLatestBlockFetch;
 };
+
+const formatBlock = async (block, isDeletedBlock = false) => normalizeBlock(block, isDeletedBlock);
 
 const getBlocks = async params => {
 	const blocksTable = await getBlocksTable();
@@ -213,14 +228,17 @@ const getBlocks = async params => {
 
 	try {
 		if (params.ids) {
-			if (Array.isArray(params.ids) && !params.ids.length) return blocks;
-			blocks.data = await getBlocksByIDs(params.ids);
+			if (Array.isArray(params.ids) && params.ids.length) {
+				blocks.data = await getBlocksByIDs(params.ids);
+			}
 		} else if (params.id) {
 			blocks.data.push(await getBlockByID(params.id));
-			if ('offset' in params && params.limit) blocks.data = blocks.data.slice(params.offset, params.offset + params.limit);
+			if ('offset' in params && params.limit)
+				blocks.data = blocks.data.slice(params.offset, params.offset + params.limit);
 		} else if (params.height) {
 			blocks.data.push(await getBlockByHeight(Number(params.height)));
-			if ('offset' in params && params.limit) blocks.data = blocks.data.slice(params.offset, params.offset + params.limit);
+			if ('offset' in params && params.limit)
+				blocks.data = blocks.data.slice(params.offset, params.offset + params.limit);
 		} else {
 			blocks.data.push(await getLastBlock());
 		}
@@ -244,7 +262,7 @@ const filterBlockAssets = (modules, block) => {
 	return filteredBlockAssets;
 };
 
-const getBlocksAssets = async (params) => {
+const getBlocksAssets = async params => {
 	const blocksTable = await getBlocksTable();
 	const blockAssets = {
 		data: [],
@@ -279,10 +297,14 @@ const getBlocksAssets = async (params) => {
 	const total = await blocksTable.count(params);
 	const blocksFromDB = await blocksTable.find(params, ['id']);
 
-	logger.debug(`Requesting blockchain application for blocks with IDs: ${blocksFromDB.map(b => b.id).join(', ')}`);
+	logger.debug(
+		`Requesting blockchain application for blocks with IDs: ${blocksFromDB
+			.map(b => b.id)
+			.join(', ')}`,
+	);
 	blockAssets.data = await BluebirdPromise.map(
 		blocksFromDB,
-		async (blockFromDB) => {
+		async blockFromDB => {
 			const block = await getBlockByID(blockFromDB.id);
 
 			return {
@@ -307,6 +329,7 @@ const getBlocksAssets = async (params) => {
 };
 
 module.exports = {
+	formatBlock,
 	getBlocks,
 	getFinalizedHeight,
 	normalizeBlocks,

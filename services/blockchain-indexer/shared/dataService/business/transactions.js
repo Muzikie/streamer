@@ -25,6 +25,7 @@ const {
 const { getBlockByID } = require('./blocks');
 const { getEventsByHeight } = require('./events');
 
+const { getCurrentChainID } = require('./interoperability/chain');
 const { getIndexedAccountInfo } = require('../utils/account');
 const { requestConnector } = require('../../utils/request');
 const { normalizeRangeParam } = require('../../utils/param');
@@ -41,12 +42,15 @@ const getTransactionsTable = () => getTableInstance(transactionsTableSchema, MYS
 
 const getTransactionIDsByBlockID = async blockID => {
 	const transactionsTable = await getTransactionsTable();
-	const transactions = await transactionsTable.find({
-		whereIn: {
-			property: 'blockId',
-			values: [blockID],
+	const transactions = await transactionsTable.find(
+		{
+			whereIn: {
+				property: 'blockID',
+				values: [blockID],
+			},
 		},
-	}, ['id']);
+		['id'],
+	);
 	const transactionsIds = transactions.map(t => t.id);
 	return transactionsIds;
 };
@@ -58,11 +62,6 @@ const normalizeTransactions = async txs => {
 		{ concurrency: txs.length },
 	);
 	return normalizedTransactions;
-};
-
-const getTransactionByID = async id => {
-	const response = await requestConnector('getTransactionByID', { id });
-	return normalizeTransaction(response);
 };
 
 const getTransactionsByIDs = async ids => {
@@ -79,14 +78,28 @@ const validateParams = async params => {
 		params = normalizeRangeParam(params, 'timestamp');
 	}
 
-	if (params.nonce && !(params.senderAddress)) {
-		throw new InvalidParamsException('Nonce based retrieval is only possible along with senderAddress');
+	if (params.nonce && !params.senderAddress) {
+		throw new InvalidParamsException(
+			'Nonce based retrieval is only possible along with senderAddress',
+		);
+	}
+
+	// If recieving chainID is current chain ID then return all transactions with receivingChainID = null
+	if (params.receivingChainID) {
+		const currentChainID = await getCurrentChainID();
+
+		if (params.receivingChainID === currentChainID) {
+			params.receivingChainID = null;
+		}
 	}
 
 	if (params.executionStatus) {
 		const { executionStatus, ...remParams } = params;
 		params = remParams;
-		const executionStatuses = executionStatus.split(',').map(e => e.trim()).filter(e => e !== 'any');
+		const executionStatuses = executionStatus
+			.split(',')
+			.map(e => e.trim())
+			.filter(e => e !== 'any');
 		params.whereIn = { property: 'executionStatus', values: executionStatuses };
 	}
 
@@ -111,24 +124,23 @@ const getTransactions = async params => {
 	params = await validateParams(params);
 
 	const total = await transactionsTable.count(params);
-	const resultSet = await transactionsTable.find(
-		{ ...params, limit: params.limit || total },
-		['id', 'timestamp', 'height', 'blockID', 'executionStatus', 'index', 'minFee'],
-	);
+	const resultSet = await transactionsTable.find({ ...params, limit: params.limit || total }, [
+		'id',
+		'timestamp',
+		'height',
+		'blockID',
+		'executionStatus',
+		'index',
+		'minFee',
+	]);
 	params.ids = resultSet.map(row => row.id);
 
 	if (params.ids.length) {
 		const BATCH_SIZE = 25;
 		for (let i = 0; i < Math.ceil(params.ids.length / BATCH_SIZE); i++) {
 			transactions.data = transactions.data.concat(
-				// eslint-disable-next-line no-await-in-loop
 				await getTransactionsByIDs(params.ids.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE)),
 			);
-		}
-	} else if (params.id) {
-		transactions.data.push(await getTransactionByID(params.id));
-		if ('offset' in params && params.limit) {
-			transactions.data = transactions.data.slice(params.offset, params.offset + params.limit);
 		}
 	}
 
@@ -136,10 +148,9 @@ const getTransactions = async params => {
 		transactions.data,
 		async transaction => {
 			const senderAddress = getLisk32AddressFromPublicKey(transaction.senderPublicKey);
-			const senderAccount = await getIndexedAccountInfo(
-				{ address: senderAddress, limit: 1 },
-				['name'],
-			);
+			const senderAccount = await getIndexedAccountInfo({ address: senderAddress, limit: 1 }, [
+				'name',
+			]);
 
 			transaction.sender = {
 				address: senderAddress,
@@ -186,17 +197,15 @@ const getTransactions = async params => {
 	return transactions;
 };
 
-const getTransactionsByBlockID = async blockID => {
-	const block = await getBlockByID(blockID);
+const formatTransactionsInBlock = async block => {
 	const transactions = await BluebirdPromise.map(
 		block.transactions,
-		async (transaction) => {
+		async (transaction, index) => {
 			const senderAddress = getLisk32AddressFromPublicKey(transaction.senderPublicKey);
 
-			const senderAccount = await getIndexedAccountInfo(
-				{ address: senderAddress, limit: 1 },
-				['name'],
-			);
+			const senderAccount = await getIndexedAccountInfo({ address: senderAddress, limit: 1 }, [
+				'name',
+			]);
 
 			transaction.sender = {
 				address: senderAddress,
@@ -223,13 +232,13 @@ const getTransactionsByBlockID = async blockID => {
 				id: block.id,
 				height: block.height,
 				timestamp: block.timestamp,
+				isFinal: block.isFinal,
 			};
 
 			const transactionsTable = await getTransactionsTable();
-			const [indexedTxInfo = {}] = await transactionsTable.find(
-				{ id: transaction.id, limit: 1 },
-				['executionStatus'],
-			);
+			const [indexedTxInfo = {}] = await transactionsTable.find({ id: transaction.id, limit: 1 }, [
+				'executionStatus',
+			]);
 
 			if (indexedTxInfo.executionStatus) {
 				transaction.executionStatus = indexedTxInfo.executionStatus;
@@ -238,6 +247,7 @@ const getTransactionsByBlockID = async blockID => {
 				transaction.executionStatus = await getTransactionExecutionStatus(transaction, events);
 			}
 
+			transaction.index = index;
 			return transaction;
 		},
 		{ concurrency: block.transactions.length },
@@ -253,13 +263,20 @@ const getTransactionsByBlockID = async blockID => {
 	};
 };
 
+const getTransactionsByBlockID = async blockID => {
+	const block = await getBlockByID(blockID);
+	return formatTransactionsInBlock(block);
+};
+
 module.exports = {
 	getTransactions,
 	getTransactionIDsByBlockID,
 	getTransactionsByBlockID,
 	getTransactionsByIDs,
 	normalizeTransaction,
+	formatTransactionsInBlock,
 
 	// For unit test
 	validateParams,
+	normalizeTransactions,
 };

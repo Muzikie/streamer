@@ -24,13 +24,10 @@ const sender = {
 	name: Joi.string().pattern(regex.NAME).allow(null).optional(),
 };
 
-const getCurrentTime = () => Math.floor(Date.now() / 1000);
-
 const block = {
 	id: Joi.string().pattern(regex.HASH_SHA256).required(),
 	height: Joi.number().integer().min(1).required(),
-	timestamp: Joi.number().integer().positive().max(getCurrentTime())
-		.required(),
+	timestamp: Joi.number().integer().positive().required(),
 	isFinal: Joi.boolean().required(),
 };
 
@@ -49,24 +46,31 @@ const pendingTransactionSchema = {
 	moduleCommand: Joi.string().pattern(regex.MODULE_COMMAND).required(),
 	nonce: Joi.string().required(),
 	fee: Joi.string().required(),
+	minFee: Joi.string().required(),
 	size: Joi.number().integer().positive().required(),
 	sender: Joi.object(sender).required(),
 	params: Joi.object().required(),
+	signatures: Joi.array()
+		.items(Joi.string().pattern(regex.HASH_SHA512).allow('').required())
+		.required(),
 	executionStatus: Joi.string().valid('pending').required(),
 	meta: Joi.object(transactionMetaSchema).optional(),
-	minFee: Joi.string().required(),
 };
 
 const transactionSchema = {
 	...pendingTransactionSchema,
 	block: Joi.object(block).required(),
 	index: Joi.number().integer().min(0).required(),
-	executionStatus: Joi.string().valid(...TRANSACTION_EXECUTION_STATUSES.filter(status => status !== 'pending')).required(),
+	executionStatus: Joi.string()
+		.valid(...TRANSACTION_EXECUTION_STATUSES.filter(status => status !== 'pending'))
+		.required(),
 };
 
 const postTransactionSchema = {
 	transactionID: Joi.string().required(),
-	message: Joi.string().valid('Transaction payload was successfully passed to the network node.').required(),
+	message: Joi.string()
+		.valid('Transaction payload was successfully passed to the network node.')
+		.required(),
 };
 
 module.exports = {

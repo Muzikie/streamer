@@ -49,7 +49,7 @@ The common configurations described in this section apply to all the microservic
 *Must be identical for all the microservices.*
 Make sure that all microservices can connect with the message broker.
 This could be a NATS or a Redis instance.
-|redis://127.0.0.1:6379/0
+|redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_BROKER_TIMEOUT`
 | number
@@ -103,7 +103,7 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
         SERVICE_LOG_LEVEL: 'info',
         // SERVICE_BROKER_TIMEOUT: 10,
         // SERVICE_LOG_CONSOLE: 'false',
@@ -118,7 +118,7 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
         SERVICE_LOG_LEVEL: 'info',
         // SERVICE_BROKER_TIMEOUT: 10,
         // SERVICE_LOG_CONSOLE: 'false',
@@ -156,7 +156,7 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `JSON_RPC_STRICT_MODE`
 | boolean
@@ -181,7 +181,7 @@ Must be listed as comma-separated values.
 | URL of the volatile cache storage (Redis).
 Used to cache RPC requests.
 Required when `ENABLE_REQUEST_CACHING` is enabled.
-| redis://127.0.0.1:6379/5
+| redis://lisk:password@127.0.0.1:6379/5
 
 | `GATEWAY_DEPENDENCIES`
 | string
@@ -296,7 +296,7 @@ By default, it is set to run every minute.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Gateway microservice 
+.Example environment variables for the Gateway microservice
 ----
 module.exports = {
   apps: [
@@ -307,8 +307,8 @@ module.exports = {
       env: {
         PORT: 9901,
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_GATEWAY_REDIS_VOLATILE: 'redis://127.0.0.1:6379/5',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_GATEWAY_REDIS_VOLATILE: 'redis://lisk:password@127.0.0.1:6379/5',
         ENABLE_HTTP_API: 'http-status,http-version3,http-exports',
         ENABLE_WS_API: 'blockchain,rpc-v3',
         GATEWAY_DEPENDENCIES: 'indexer,connector',
@@ -346,7 +346,7 @@ module.exports = {
 ====
 
 
-=== Connector
+=== Blockchain Connector
 
 
 [cols="2,1,~,~m",options="header",stripes="hover"]
@@ -359,7 +359,7 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `LISK_APP_WS`
 | string
@@ -391,19 +391,63 @@ Only to be used when the genesis block is large enough to be transmitted over AP
 | `ENABLE_BLOCK_CACHING`
 | boolean
 | Boolean flag to enable block caching.
-Enabled by default. 
+Enabled by default.
 To disable it, set it to `false`.
 | true
 
 | `EXPIRY_IN_HOURS`
 | number
-| Expiry time in hours for block cache. 
+| Expiry time in hours for block cache.
 By default, it is set to `12` hours.
 | 12
 
+| `CLIENT_INSTANTIATION_MAX_WAIT_TIME`
+| number
+| Maximum wait time (in milliseconds) for the API client instantiation before forcefully instantiating a new client when getApiClient is invoked.
+By default, it is set to `5000`.
+| 5000
+
+| `CLIENT_INSTANTIATION_RETRY_INTERVAL`
+| number
+| Retry interval (in milliseconds) to invoke instantiate API client when getApiClient is invoked.
+By default, it is set to `1`.
+| 1
+
+| `CLIENT_ALIVE_ASSUMPTION_TIME`
+| number
+| Interval (in milliseconds) for which the WS API Client is assumed to be alive since the last ping/pong success check.
+By default, it is set to `5000`.
+| 5000
+
+| `HEARTBEAT_ACK_MAX_WAIT_TIME`
+| number
+| Maximum time (in milliseconds) within which the checkIsClientAlive's algorithm expects a corresponding `pong` for the `ping` sent to the WS server.
+By default, it is set to `1000`.
+| 1000
+
+| `ENDPOINT_INVOKE_MAX_RETRIES`
+| number
+| Maximum number of endpoint invocation request retries to the node.
+By default, it is set to `3`.
+| 5
+
+| `ENDPOINT_INVOKE_RETRY_DELAY`
+| number
+| Delay (in milliseconds) between each endpoint invocation request retry.
+By default, it is set to `10`.
+| 10
+
+| `CONNECTOR_EXIT_DELAY_IN_HOURS`
+| number
+| Delay (in hours) after which the blockchain-connector microservice exits. The service should restart automatically if deployed using Docker or PM2.
+To be removed eventually.
+To enable it, set it higher than `0`.
+By default, it is set to `0`.
+| 0
+
 | `JOB_INTERVAL_CACHE_CLEANUP`
 | number
-| Job run interval to clean up block cache. 
+| Job run interval to clean up block cache.
 By default, it is set to 0.
 | 0
 
@@ -430,7 +474,7 @@ By default, it is set to an empty string `''`.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Blockchain Connector microservice 
+.Example environment variables for the Blockchain Connector microservice
 ----
 module.exports = {
   apps: [
@@ -440,7 +484,7 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
         LISK_APP_WS: 'ws://127.0.0.1:7887',
         GEOIP_JSON: 'https://geoip.lisk.com/json',
         // ENABLE_BLOCK_CACHING: true,
@@ -470,7 +514,7 @@ module.exports = {
 
 
 
-=== Coordinator
+=== Blockchain Coordinator
 
 [cols="2,1,~,~m",options="header",stripes="hover"]
 |===
@@ -482,13 +526,13 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_MESSAGE_QUEUE_REDIS`
 | string
 | URL of the Redis instance hosting the job queue to schedule the block indexing jobs.
 Must match the value supplied for the `indexer` microservice.
-| redis://127.0.0.1:6379/3
+| redis://lisk:password@127.0.0.1:6379/3
 
 | `JOB_INTERVAL_INDEX_MISSING_BLOCKS`
 | number
@@ -499,14 +543,14 @@ By default, it is set to `0`.
 | `JOB_SCHEDULE_INDEX_MISSING_BLOCKS`
 | string
 | Job run cron schedule to index missing blocks.
-By default, it is set to run every 15 minutes.
-| */15 * * * *
+By default, it is set to run every 5 minutes.
+| */5 * * * *
 |===
 
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Coordinator microservice 
+.Example environment variables for the Coordinator microservice
 ----
 module.exports = {
   apps: [
@@ -516,8 +560,8 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_MESSAGE_QUEUE_REDIS: 'redis://127.0.0.1:6379/3',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_MESSAGE_QUEUE_REDIS: 'redis://lisk:password@127.0.0.1:6379/3',
         // SERVICE_BROKER_TIMEOUT: 10,
         // SERVICE_LOG_LEVEL: 'info',
         // SERVICE_LOG_CONSOLE: false,
@@ -526,7 +570,7 @@ module.exports = {
         // SERVICE_LOG_FILE: false,
         // DOCKER_HOST: 'local',
         // JOB_INTERVAL_INDEX_MISSING_BLOCKS: 0,
-        // JOB_SCHEDULE_INDEX_MISSING_BLOCKS: '*/15 * * * *',
+        // JOB_SCHEDULE_INDEX_MISSING_BLOCKS: '*/5 * * * *',
       },
     },
     // Configuration for other microservices.
@@ -536,7 +580,7 @@ module.exports = {
 ====
 
 
-=== Indexer
+=== Blockchain Indexer
 
 [cols="2,1,~,~m",options="header",stripes="hover"]
 |===
@@ -548,7 +592,7 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_INDEXER_MYSQL`
 | string
@@ -559,12 +603,12 @@ module.exports = {
 | string
 | URL of the job queue to process the scheduled indexing jobs by the Blockchain Coordinator (Redis).
 Must match the value supplied for the `coordinator` microservice.
-| redis://127.0.0.1:6379/3
+| redis://lisk:password@127.0.0.1:6379/3
 
 | `SERVICE_INDEXER_REDIS_VOLATILE`
 | string
 | URL of the volatile cache storage (Redis).
-| redis://127.0.0.1:6379/2
+| redis://lisk:password@127.0.0.1:6379/2
 
 | `ENABLE_DATA_RETRIEVAL_MODE`
 | string
@@ -584,27 +628,12 @@ Must match the value supplied for the `coordinator` microservice.
 | `SERVICE_INDEXER_CACHE_REDIS`
 | string
 | URL of the cache storage (Redis).
-| redis://127.0.0.1:6379/1
+| redis://lisk:password@127.0.0.1:6379/1
 
 | `SERVICE_INDEXER_MYSQL_READ_REPLICA`
 | string
 | Connection string for the replicated MySQL (read-only) instance that the microservice connects to.
 | mysql://lisk:password@127.0.0.1:3306/lisk
-
-| `ENABLE_APPLY_SNAPSHOT`
-| boolean
-| Boolean flag to enable initialization of the index with the Lisk Service database snapshot.
-| false
-
-| `INDEX_SNAPSHOT_URL`
-| string
-| URL from where the Lisk Service database snapshot will be downloaded.
-| 
-
-| `ENABLE_SNAPSHOT_ALLOW_INSECURE_HTTP`
-| boolean
-| Boolean flag to enable downloading the snapshot from an (unsecured) HTTP URL.
-| true
 
 | `LISK_STATIC`
 | string
@@ -655,9 +684,9 @@ By default, it is set to run every `10` seconds.
 
 | `JOB_SCHEDULE_REFRESH_INDEX_STATUS`
 | string
-| Job run cron schedule to refresh indexing status. 
+| Job run cron schedule to refresh indexing status.
 By default, it is set to an empty string `''`.
-| 
+|
 
 | `JOB_INTERVAL_REFRESH_BLOCKCHAIN_APPS_STATS`
 | number
@@ -703,7 +732,7 @@ By default, it is set to `0`.
 
 | `JOB_SCHEDULE_TRIGGER_ACCOUNT_UPDATES`
 | string
-| Job run cron schedule to trigger account updates. 
+| Job run cron schedule to trigger account updates.
 By default, it is set to run every 15 minutes.
 | */15 * * * *
 
@@ -713,17 +742,72 @@ By default, it is set to run every 15 minutes.
 By default, it is set to `0`.
 | 0
 
+| `ACCOUNT_BALANCE_UPDATE_BATCH_SIZE`
+| number
+| Number of accounts for which the balance index is updated at a time.
+By default, it is set to `1000`.
+| 1000
+
+| `INDEX_BLOCKS_QUEUE_SCHEDULED_JOB_MAX_COUNT`
+| number
+| Maximum number of jobs (in active and waiting state) allowed in the block indexing queue.
+By default, it is set to `100000`.
+| 100000
+
 | `MAINCHAIN_SERVICE_URL`
 | string
 | Mainchain service URL for custom deployments.
 | https://service.lisk.com
 
+| `INVOKE_ALLOWED_METHODS`
+| string
+| List of allowed methods that can be invoked via the `/invoke` API endpoint.
+The list can be expressed as a CSV.
+To allow invocation of all endpoints, set it to `*`.
+To allow invocation of all the registered methods under the specified namespaces, set it similar to `legacy,chain`.
+To allow invocation of specific methods, set it similar to `chain_getBlocksByIDs,chain_getBlocksByHeight`.
+| `*`, `legacy,chain`, `chain_getBlocksByIDs`
+
 |===
+
+==== Database snapshot configuration
+
+To accelerate the indexing process, the blockchain-indexer microservice also supports automatic download and an application of a snapshot to the MySQL/MariaDB databases. The following environment variables in the table below can be used to configure the same.
+
+[cols="2,1,~,~m",options="header",stripes="hover"]
+
+|===
+|Environment variable
+|Datatype
+|Description
+|Sample
+
+|`ENABLE_APPLY_SNAPSHOT`
+|boolean
+|Enable or disable auto-apply snapshot feature. By default, the value is false.
+|false
+
+|`DURABILITY_VERIFY_FREQUENCY`
+|number
+|Frequency in milliseconds to verify if a block is indexed or rolled-back successfully. By default, it is set to 1.
+|1
+
+|`INDEX_SNAPSHOT_URL`
+|string
+|Custom snapshot download URL (expected to end with sql.gz).
+|https://snapshots.lisk.io/mainnet/service.sql.gz
+
+|`ENABLE_SNAPSHOT_ALLOW_INSECURE_HTTP`
+|boolean
+|Boolean flag to enable downloading the snapshot from an (unsecured) HTTP URL. By default, this is set to false.
+|false
+|===
+
 
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Blockchain Indexer microservice 
+.Example environment variables for the Blockchain Indexer microservice
 ----
 module.exports = {
   apps: [
@@ -733,15 +817,16 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_INDEXER_CACHE_REDIS: 'redis://127.0.0.1:6379/1',
-        SERVICE_INDEXER_REDIS_VOLATILE: 'redis://127.0.0.1:6379/2',
-        SERVICE_MESSAGE_QUEUE_REDIS: 'redis://127.0.0.1:6379/3',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_INDEXER_CACHE_REDIS: 'redis://lisk:password@127.0.0.1:6379/1',
+        SERVICE_INDEXER_REDIS_VOLATILE: 'redis://lisk:password@127.0.0.1:6379/2',
+        SERVICE_MESSAGE_QUEUE_REDIS: 'redis://lisk:password@127.0.0.1:6379/3',
         SERVICE_INDEXER_MYSQL: 'mysql://lisk:password@127.0.0.1:3306/lisk',
         ENABLE_DATA_RETRIEVAL_MODE: 'true',
         ENABLE_INDEXING_MODE: 'true',
         ENABLE_PERSIST_EVENTS: 'false',
         // ENABLE_APPLY_SNAPSHOT: 'false',
+        // DURABILITY_VERIFY_FREQUENCY: 1,
         // INDEX_SNAPSHOT_URL: '',
         // ENABLE_SNAPSHOT_ALLOW_INSECURE_HTTP: 'true',
         // SERVICE_INDEXER_MYSQL_READ_REPLICA: 'mysql://lisk:password@127.0.0.1:3306/lisk',
@@ -756,6 +841,8 @@ module.exports = {
         // LISK_STATIC: 'https://static-data.lisk.com',
         // DEVNET_MAINCHAIN_URL: 'http://devnet-service.liskdev.net:9901',
         // ESTIMATES_BUFFER_BYTES_LENGTH: 0,
+        // ACCOUNT_BALANCE_UPDATE_BATCH_SIZE: 1000,
+        // INDEX_BLOCKS_QUEUE_SCHEDULED_JOB_MAX_COUNT: 100000,
         // JOB_INTERVAL_DELETE_SERIALIZED_EVENTS: 0,
         // JOB_SCHEDULE_DELETE_SERIALIZED_EVENTS: '*/5 * * * *',
         // JOB_INTERVAL_REFRESH_VALIDATORS: 0,
@@ -794,7 +881,7 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_APP_REGISTRY_MYSQL`
 | string
@@ -808,7 +895,7 @@ module.exports = {
 
 | `DEFAULT_APPS`
 | string
-| Default blockchain applications. 
+| Default blockchain applications.
 By default, it is set to `lisk_mainchain`.
 | lisk_mainchain
 
@@ -850,7 +937,7 @@ By default, it is set to run every `10` minutes.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Blockchain App Registry microservice 
+.Example environment variables for the Blockchain App Registry microservice
 ----
 module.exports = {
   apps: [
@@ -860,7 +947,7 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
         SERVICE_APP_REGISTRY_MYSQL: 'mysql://lisk:password@127.0.0.1:3306/lisk',
         ENABLE_REBUILD_INDEX_AT_INIT: false,
         // SERVICE_BROKER_TIMEOUT: 10,
@@ -897,12 +984,12 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_FEE_ESTIMATOR_CACHE`
 | string
 | URL of the cache storage (Redis).
-| redis://127.0.0.1:6379/1
+| redis://lisk:password@127.0.0.1:6379/1
 
 | `ENABLE_FEE_ESTIMATOR_QUICK`
 | boolean
@@ -945,7 +1032,7 @@ By default, it starts at the genesis height in full mode and the current block h
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Fee Estimator microservice 
+.Example environment variables for the Fee Estimator microservice
 ----
 module.exports = {
   apps: [
@@ -955,8 +1042,8 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_FEE_ESTIMATOR_CACHE: 'redis://127.0.0.1:6379/1',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_FEE_ESTIMATOR_CACHE: 'redis://lisk:password@127.0.0.1:6379/1',
         ENABLE_FEE_ESTIMATOR_QUICK: true,
         ENABLE_FEE_ESTIMATOR_FULL: false,
         // FEE_EST_COLD_START_BATCH_SIZE: 1,
@@ -993,7 +1080,7 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_STATISTICS_MYSQL`
 | string
@@ -1003,7 +1090,7 @@ module.exports = {
 | `SERVICE_STATISTICS_REDIS`
 | string
 | URL of the cache storage (Redis).
-| redis://127.0.0.1:6379/1
+| redis://lisk:password@127.0.0.1:6379/1
 
 | `TRANSACTION_STATS_HISTORY_LENGTH_DAYS`
 | number
@@ -1035,7 +1122,7 @@ By default, it is set to `0`.
 
 | `JOB_SCHEDULE_VERIFY_TRANSACTION_STATS`
 | string
-|Job run cron schedule to verify if the transaction statistics have been built correctly. 
+|Job run cron schedule to verify if the transaction statistics have been built correctly.
 By default, it is set to run every 3rd hour after the first `15` minutes.
 | 15 */3 * * *
 
@@ -1044,7 +1131,7 @@ By default, it is set to run every 3rd hour after the first `15` minutes.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Transaction Statistics microservice 
+.Example environment variables for the Transaction Statistics microservice
 ----
 module.exports = {
   apps: [
@@ -1054,8 +1141,8 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_STATISTICS_REDIS: 'redis://127.0.0.1:6379/1',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_STATISTICS_REDIS: 'redis://lisk:password@127.0.0.1:6379/1',
         SERVICE_STATISTICS_MYSQL: 'mysql://lisk:password@127.0.0.1:3306/lisk',
         TRANSACTION_STATS_HISTORY_LENGTH_DAYS: 366,
         // SERVICE_STATISTICS_MYSQL_READ_REPLICA: 'mysql://reader:password@127.0.0.1:3307/lisk',
@@ -1090,12 +1177,12 @@ module.exports = {
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_MARKET_REDIS`
 | string
 | URL of the cache storage (Redis).
-| redis://127.0.0.1:6379/2
+| redis://lisk:password@127.0.0.1:6379/2
 
 | `SERVICE_MARKET_FIAT_CURRENCIES`
 | string
@@ -1181,7 +1268,7 @@ By default, it is set to an empty string `''`.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Market microservice 
+.Example environment variables for the Market microservice
 ----
 module.exports = {
   apps: [
@@ -1191,8 +1278,8 @@ module.exports = {
       // [...]
       env: {
         // --- Remember to set the properties below
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_MARKET_REDIS: 'redis://127.0.0.1:6379/2',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_MARKET_REDIS: 'redis://lisk:password@127.0.0.1:6379/2',
         SERVICE_MARKET_FIAT_CURRENCIES: 'EUR,USD,CHF,GBP,RUB,PLN,JPY,AUD,GBP,INR',
         SERVICE_MARKET_TARGET_PAIRS: 'LSK_BTC,LSK_EUR,LSK_USD,LSK_CHF,LSK_PLN,LSK_JPY,LSK_AUD,LSK_GBP,LSK_INR,BTC_EUR,BTC_USD,BTC_CHF',
         // EXCHANGERATESAPI_IO_API_KEY: ''
@@ -1236,17 +1323,17 @@ For the local file system, use `*SERVICE_EXPORT_PARTIALS*` and `*SERVICE_EXPORT_
 | `SERVICE_BROKER`
 | string
 | URL of the microservice message broker (NATS or Redis).
-| redis://127.0.0.1:6379/0  
+| redis://lisk:password@127.0.0.1:6379/0
 
 | `SERVICE_EXPORT_REDIS`
 | string
 | URL of the permanent cache storage (Redis).
-| redis://127.0.0.1:6379/3
+| redis://lisk:password@127.0.0.1:6379/3
 
 | `SERVICE_EXPORT_REDIS_VOLATILE`
 | string
 | URL of the volatile cache storage (Redis).
-| redis://127.0.0.1:6379/4
+| redis://lisk:password@127.0.0.1:6379/4
 
 | `SERVICE_EXPORT_PARTIALS`
 | string
@@ -1266,17 +1353,17 @@ For the local file system, use `*SERVICE_EXPORT_PARTIALS*` and `*SERVICE_EXPORT_
 | `EXPORT_S3_ACCESS_KEY`
 | string
 | Amazon S3 bucket access key for the specified endpoint.
-| 
+|
 
 | `EXPORT_S3_SECRET_KEY`
 | string
 | Amazon S3 bucket secret key.
-| 
+|
 
 | `EXPORT_S3_SESSION_TOKEN`
 | string
 | Amazon S3 bucket session token.
-| 
+|
 
 | `EXPORT_S3_REGION`
 | string
@@ -1320,7 +1407,7 @@ By default, it is set to run daily at 04:45 am.
 .Sample Configurations
 [%collapsible]
 ====
-.Example environment variables for the Export microservice 
+.Example environment variables for the Export microservice
 ----
 module.exports = {
   apps: [
@@ -1329,9 +1416,9 @@ module.exports = {
       name: 'lisk-service-export',
       // [...]
       env: {
-        SERVICE_BROKER: 'redis://127.0.0.1:6379/0',
-        SERVICE_EXPORT_REDIS: 'redis://127.0.0.1:6379/3',
-        SERVICE_EXPORT_REDIS_VOLATILE: 'redis://127.0.0.1:6379/4',
+        SERVICE_BROKER: 'redis://lisk:password@127.0.0.1:6379/0',
+        SERVICE_EXPORT_REDIS: 'redis://lisk:password@127.0.0.1:6379/3',
+        SERVICE_EXPORT_REDIS_VOLATILE: 'redis://lisk:password@127.0.0.1:6379/4',
         // SERVICE_EXPORT_PARTIALS: './data/partials',
         // EXPORT_S3_BUCKET_NAME_PARTIALS: 'partials',
         // SERVICE_EXPORT_STATIC: './data/static',
@@ -1357,3 +1444,5 @@ module.exports = {
 };
 ----
 ====
+
+

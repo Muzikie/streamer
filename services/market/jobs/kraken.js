@@ -23,8 +23,8 @@ const { reload } = require('../shared/market/sources/kraken');
 
 const logger = Logger();
 
-const reloadMarketPrices = async () => reload()
-	.catch(err => {
+const reloadMarketPrices = async () =>
+	reload().catch(err => {
 		if (err instanceof ServiceUnavailableException) {
 			logger.warn('Unable to fetch market prices from Kraken right now. Will retry later.');
 			return;
@@ -39,11 +39,11 @@ module.exports = [
 		interval: config.job.refreshPricesKraken.interval,
 		schedule: config.job.refreshPricesKraken.schedule,
 		init: async () => {
-			logger.debug('Initializing market prices from Kraken');
+			logger.debug('Initializing market prices from Kraken.');
 			await reloadMarketPrices();
 		},
 		controller: async () => {
-			logger.debug('Job scheduled to update prices from Kraken');
+			logger.debug('Job scheduled to update prices from Kraken.');
 			await reloadMarketPrices();
 		},
 	},

@@ -16,7 +16,9 @@
 /* eslint-disable import/no-dynamic-require */
 const path = require('path');
 
-const posValidatorsPath = path.resolve(`${__dirname}/../../../../../shared/dataService/pos/validators`);
+const posValidatorsPath = path.resolve(
+	`${__dirname}/../../../../../shared/dataService/pos/validators`,
+);
 
 jest.mock('lisk-service-framework', () => {
 	const actual = jest.requireActual('lisk-service-framework');
@@ -63,22 +65,22 @@ describe('Test validatorComparator method', () => {
 		expect(result).toBeGreaterThan(0);
 	});
 
-	it('should return -1 when validator weight is same but first address is smaller', async () => {
+	it('should return 1 when validator weight is same but first address is smaller', async () => {
 		const { validatorComparator } = require(posValidatorsPath);
 		const result = validatorComparator(
 			{ validatorWeight: BigInt(1e20), hexAddress: '002e84247fd3876baca6698d98f0ace199af96ed' },
 			{ validatorWeight: BigInt(1e20), hexAddress: '0282ed03925a5c31271fa3b70bb94ce12fd83ea9' },
-		);
-		expect(result).toBe(-1);
-	});
-
-	it('should return 1 when validator weight is same but first address is greater', async () => {
-		const { validatorComparator } = require(posValidatorsPath);
-		const result = validatorComparator(
-			{ validatorWeight: BigInt(1e20), hexAddress: '0282ed03925a5c31271fa3b70bb94ce12fd83ea9' },
-			{ validatorWeight: BigInt(1e20), hexAddress: '002e84247fd3876baca6698d98f0ace199af96ed' },
 		);
 		expect(result).toBe(1);
+	});
+
+	it('should return -1 when validator weight is same but first address is greater', async () => {
+		const { validatorComparator } = require(posValidatorsPath);
+		const result = validatorComparator(
+			{ validatorWeight: BigInt(1e20), hexAddress: '0282ed03925a5c31271fa3b70bb94ce12fd83ea9' },
+			{ validatorWeight: BigInt(1e20), hexAddress: '002e84247fd3876baca6698d98f0ace199af96ed' },
+		);
+		expect(result).toBe(-1);
 	});
 
 	it('should return 0 when both validator weight and address are equal', async () => {

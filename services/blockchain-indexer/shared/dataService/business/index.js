@@ -13,13 +13,10 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const {
-	getGenerators,
-	getNumberOfGenerators,
-	reloadGeneratorsCache,
-} = require('./generators');
+const { getGenerators, getNumberOfGenerators, reloadGeneratorsCache } = require('./generators');
 
 const {
+	formatBlock,
 	getBlocks,
 	getFinalizedHeight,
 	normalizeBlocks,
@@ -35,12 +32,10 @@ const {
 	getTransactionsByBlockID,
 	getTransactionsByIDs,
 	normalizeTransaction,
+	formatTransactionsInBlock,
 } = require('./transactions');
 
-const {
-	getPendingTransactions,
-	loadAllPendingTransactions,
-} = require('./pendingTransactions');
+const { getPendingTransactions, loadAllPendingTransactions } = require('./pendingTransactions');
 
 const {
 	getBlockchainApps,
@@ -90,6 +85,7 @@ const {
 	getEvents,
 	getEventsByHeight,
 	cacheEventsByBlockID,
+	deleteEventsFromCacheByBlockID,
 	getEventsByBlockID,
 	deleteEventsFromCache,
 } = require('./events');
@@ -103,6 +99,7 @@ const {
 	getNetworkPeersStatistics,
 } = require('./network');
 const { estimateTransactionFees } = require('./transactionsEstimateFees');
+// const { isMainchain, resolveMainchainServiceURL } = require('./mainchain');
 const { invokeEndpoint } = require('./invoke');
 
 const { setFeeEstimates, getFeeEstimates, initFeeEstimates } = require('./feeEstimates');
@@ -118,6 +115,7 @@ module.exports = {
 	reloadGeneratorsCache,
 
 	// Blocks
+	formatBlock,
 	getBlocks,
 	getFinalizedHeight,
 	normalizeBlocks,
@@ -137,11 +135,13 @@ module.exports = {
 	postTransactions,
 	dryRunTransactions,
 	estimateTransactionFees,
+	formatTransactionsInBlock,
 
 	// Events
 	getEvents,
 	getEventsByHeight,
 	cacheEventsByBlockID,
+	deleteEventsFromCacheByBlockID,
 	getEventsByBlockID,
 	deleteEventsFromCache,
 

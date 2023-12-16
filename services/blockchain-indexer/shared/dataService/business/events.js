@@ -19,9 +19,7 @@ const {
 	CacheLRU,
 	Exceptions: { NotFoundException },
 	DB: {
-		MySQL: {
-			getTableInstance,
-		},
+		MySQL: { getTableInstance },
 	},
 } = require('lisk-service-framework');
 
@@ -30,26 +28,28 @@ const config = require('../../../config');
 const blocksTableSchema = require('../../database/schema/blocks');
 const eventsTableSchema = require('../../database/schema/events');
 const eventTopicsTableSchema = require('../../database/schema/eventTopics');
+const transactionsTableSchema = require('../../database/schema/transactions');
 
 const { requestConnector } = require('../../utils/request');
 const { normalizeRangeParam } = require('../../utils/param');
 const { parseToJSONCompatObj } = require('../../utils/parser');
+const { LENGTH_ID, EVENT_TOPIC_PREFIX } = require('../../constants');
 
 const MYSQL_ENDPOINT = config.endpoints.mysqlReplica;
 
 const getBlocksTable = () => getTableInstance(blocksTableSchema, MYSQL_ENDPOINT);
 const getEventsTable = () => getTableInstance(eventsTableSchema, MYSQL_ENDPOINT);
-const getEventTopicsTable = () => getTableInstance(eventTopicsTableSchema, MYSQL_ENDPOINT);
+const getTransactionsTable = () => getTableInstance(transactionsTableSchema, MYSQL_ENDPOINT);
 
 const eventCache = CacheLRU('events');
 const eventCacheByBlockID = CacheLRU('eventsByBlockID');
 
-const getEventsByHeightFromNode = async (height) => {
+const getEventsByHeightFromNode = async height => {
 	const events = await requestConnector('getEventsByHeight', { height });
 	return parseToJSONCompatObj(events);
 };
 
-const getEventsByHeight = async (height) => {
+const getEventsByHeight = async height => {
 	// Get from cache
 	const cachedEvents = await eventCache.get(height);
 	if (cachedEvents) return JSON.parse(cachedEvents);
@@ -60,8 +60,9 @@ const getEventsByHeight = async (height) => {
 		const dbEventStrings = await eventsTable.find({ height }, ['eventStr']);
 
 		if (dbEventStrings.length) {
-			const dbEvents = dbEventStrings
-				.map(({ eventStr }) => eventStr ? JSON.parse(eventStr) : eventStr);
+			const dbEvents = dbEventStrings.map(({ eventStr }) =>
+				eventStr ? JSON.parse(eventStr) : eventStr,
+			);
 			await eventCache.set(height, JSON.stringify(dbEvents));
 			return dbEvents;
 		}
@@ -73,7 +74,7 @@ const getEventsByHeight = async (height) => {
 	return eventsFromNode;
 };
 
-const getEventsByBlockID = async (blockID) => {
+const getEventsByBlockID = async blockID => {
 	// Get from cache
 	const cachedEvents = await eventCacheByBlockID.get(blockID);
 	if (cachedEvents) return JSON.parse(cachedEvents);
@@ -83,8 +84,9 @@ const getEventsByBlockID = async (blockID) => {
 	const dbEventStrings = await eventsTable.find({ blockID }, ['eventStr']);
 
 	if (dbEventStrings.length) {
-		const dbEvents = dbEventStrings
-			.map(({ eventStr }) => eventStr ? JSON.parse(eventStr) : eventStr);
+		const dbEvents = dbEventStrings.map(({ eventStr }) =>
+			eventStr ? JSON.parse(eventStr) : eventStr,
+		);
 		eventCacheByBlockID.set(blockID, JSON.stringify(dbEvents));
 		return dbEvents;
 	}
@@ -96,12 +98,13 @@ const cacheEventsByBlockID = async (blockID, events) => {
 	await eventCacheByBlockID.set(blockID, JSON.stringify(events));
 };
 
-const deleteEventsFromCache = async (height) => eventCache.delete(height);
+const deleteEventsFromCache = async height => eventCache.delete(height);
 
-const getEvents = async (params) => {
+const deleteEventsFromCacheByBlockID = async blockID => eventCacheByBlockID.delete(blockID);
+
+const getEvents = async params => {
 	const blocksTable = await getBlocksTable();
 	const eventsTable = await getEventsTable();
-	const eventTopicsTable = await getEventTopicsTable();
 
 	const events = {
 		data: [],
@@ -118,58 +121,122 @@ const getEvents = async (params) => {
 		params = normalizeRangeParam(params, 'timestamp');
 	}
 
-	if (params.topic) {
-		const { topic, ...remParams } = params;
-		params = remParams;
-		params.whereIn = {
-			property: 'topic',
-			values: topic.split(','),
-		};
-	}
+	params.leftOuterJoin = [];
+	params.whereIn = [];
 
 	if (params.transactionID) {
-		const { transactionID, topic, ...remParams } = params;
+		const { transactionID, ...remParams } = params;
 		params = remParams;
-		if (!topic) {
-			params.topic = transactionID;
+
+		const allTxIDs = [];
+		if (transactionID.length === LENGTH_ID) {
+			allTxIDs.push(EVENT_TOPIC_PREFIX.TX_ID.concat(transactionID));
 		} else {
-			params.andWhere = { topic: transactionID };
+			allTxIDs.push(transactionID);
 		}
+
+		params.leftOuterJoin.push({
+			targetTable: `${eventTopicsTableSchema.tableName} as eventTopicsForTxID`,
+			leftColumn: `${eventsTableSchema.tableName}.id`,
+			rightColumn: `eventTopicsForTxID.eventID`,
+		});
+
+		params.whereIn.push({
+			property: 'eventTopicsForTxID.topic',
+			values: allTxIDs,
+		});
 	}
 
 	if (params.senderAddress) {
-		const { senderAddress, topic, ...remParams } = params;
+		const { senderAddress, ...remParams } = params;
 		params = remParams;
-		if (!topic) {
-			params.topic = senderAddress;
-		} else {
-			params.andWhere = { topic: senderAddress };
+
+		// Get all transactions IDs for sender Address
+		const transactionsTable = await getTransactionsTable();
+		const resultSet = await transactionsTable.find({ senderAddress }, ['id']);
+		const txIDs = resultSet.map(row => row.id);
+
+		const txIDsToQuery = [];
+
+		// eslint-disable-next-line no-restricted-syntax
+		for (const txID of txIDs) {
+			if (txID.length === LENGTH_ID) {
+				txIDsToQuery.push(EVENT_TOPIC_PREFIX.TX_ID.concat(txID));
+			} else {
+				txIDsToQuery.push(txID);
+			}
 		}
+
+		params.leftOuterJoin.push({
+			targetTable: `${eventTopicsTableSchema.tableName} as eventTopicsForSenderAddress`,
+			leftColumn: `${eventsTableSchema.tableName}.id`,
+			rightColumn: `eventTopicsForSenderAddress.eventID`,
+		});
+
+		params.whereIn.push({
+			property: 'eventTopicsForSenderAddress.topic',
+			values: txIDsToQuery,
+		});
 	}
 
-	if (params.blockID) {
+	if ('blockID' in params) {
 		const { blockID, ...remParams } = params;
 		params = remParams;
+
 		const [block] = await blocksTable.find({ id: blockID, limit: 1 }, ['height']);
+
 		if (!block || !block.height) {
 			throw new NotFoundException(`Invalid blockID: ${blockID}`);
 		}
-		if ('height' in params && params.height !== block.height) {
-			throw new NotFoundException(`Invalid combination of blockID: ${blockID} and height: ${params.height}`);
+
+		if ('height' in params && Number(params.height) !== block.height) {
+			let heightLowerBound = Number(params.height);
+			let heightHigherBound = Number(params.height);
+
+			if (typeof params.height === 'string' && params.height.includes(':')) {
+				const [fromStr, toStr] = params.height.split(':');
+				heightLowerBound = Number(fromStr);
+				heightHigherBound = Number(toStr);
+			}
+
+			if (block.height < heightLowerBound || block.height > heightHigherBound) {
+				throw new NotFoundException(
+					`Invalid combination of blockID: ${blockID} and height: ${params.height}`,
+				);
+			}
 		}
 		params.height = block.height;
 	}
 
-	params.leftOuterJoin = {
-		targetTable: eventsTableSchema.tableName,
-		leftColumn: `${eventsTableSchema.tableName}.id`,
-		rightColumn: `${eventTopicsTableSchema.tableName}.eventID`,
-	};
+	if (params.topic) {
+		const { topic, ...remParams } = params;
+		params = remParams;
 
-	const eventsInfo = await eventTopicsTable.find(
-		{ ...params, distinct: 'eventID' },
-		['eventStr', 'height', 'index'],
-	);
+		const topics = topic.split(',');
+		const topicsToQuery = [];
+		topics.forEach(t => {
+			if (t.length === LENGTH_ID) {
+				topicsToQuery.push(EVENT_TOPIC_PREFIX.TX_ID.concat(t), EVENT_TOPIC_PREFIX.CCM_ID.concat(t));
+			} else {
+				topicsToQuery.push(t);
+			}
+		});
+
+		params.leftOuterJoin.push({
+			targetTable: `${eventTopicsTableSchema.tableName} as eventTopicsForTopic`,
+			leftColumn: `${eventsTableSchema.tableName}.id`,
+			rightColumn: `eventTopicsForTopic.eventID`,
+		});
+
+		params.whereIn.push({
+			property: 'eventTopicsForTopic.topic',
+			values: topicsToQuery,
+		});
+	}
+
+	const { topic, ...paramsWithoutTopic } = params;
+	params = paramsWithoutTopic;
+	const eventsInfo = await eventsTable.find(params, ['eventStr', 'height', 'index']);
 
 	events.data = await BluebirdPromise.map(
 		eventsInfo,
@@ -183,7 +250,10 @@ const getEvents = async (params) => {
 				event = eventsFromCache.find(entry => entry.index === index);
 			}
 
-			const [{ id, timestamp } = {}] = await blocksTable.find({ height, limit: 1 }, ['id', 'timestamp']);
+			const [{ id, timestamp } = {}] = await blocksTable.find({ height, limit: 1 }, [
+				'id',
+				'timestamp',
+			]);
 
 			return parseToJSONCompatObj({
 				...event,
@@ -193,20 +263,8 @@ const getEvents = async (params) => {
 		{ concurrency: eventsInfo.length },
 	);
 
-	let total;
-	const { order, sort, ...remParams } = params;
-
-	if (isTopicInQuery) {
-		total = await eventTopicsTable.count(
-			{ ...remParams, groupBy: 'eventID' },
-			['eventID'],
-		);
-	} else {
-		// If params dosent contain event_topics specific column data
-		// then count all rows of event table for query optimization.
-		const { leftOuterJoin, ...remParamsWithoutJoin } = remParams;
-		total = await eventsTable.count(remParamsWithoutJoin, ['id']);
-	}
+	const { order, sort, ...remParamsWithoutOrderAndSort } = params;
+	const total = await eventsTable.count(remParamsWithoutOrderAndSort);
 
 	events.meta = {
 		count: events.data.length,
@@ -221,6 +279,7 @@ module.exports = {
 	getEvents,
 	getEventsByHeight,
 	cacheEventsByBlockID,
+	deleteEventsFromCacheByBlockID,
 	getEventsByBlockID,
 	deleteEventsFromCache,
 };

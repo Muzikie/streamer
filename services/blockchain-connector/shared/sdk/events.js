@@ -17,10 +17,11 @@ const util = require('util');
 
 const { Logger, Signals } = require('lisk-service-framework');
 
+const config = require('../../config');
+
 const { getApiClient } = require('./client');
 const { formatEvent } = require('./formatter');
 const { getRegisteredEvents, getEventsByHeight, getNodeInfo } = require('./endpoints');
-const config = require('../../config');
 const { updateTokenInfo } = require('./token');
 
 const logger = Logger();
@@ -42,7 +43,7 @@ const events = [
 let eventsCounter;
 
 const logError = (method, err) => {
-	logger.warn(`Invocation for ${method} failed with error: ${err.message}.`);
+	logger.warn(`Invocation for ${method} failed with error: ${err.message}`);
 	logger.debug(err.stack);
 };
 
@@ -54,41 +55,72 @@ const subscribeToAllRegisteredEvents = async () => {
 	const registeredEvents = await getRegisteredEvents();
 	const allEvents = registeredEvents.concat(events);
 	allEvents.forEach(event => {
-		apiClient.subscribe(
-			event,
-			async payload => {
-				// Force update necessary caches on new chain events
-				if (event.startsWith('chain_')) {
-					eventsCounter++; // Increase counter with every newBlock/deleteBlock
+		apiClient.subscribe(event, async payload => {
+			// Force update necessary caches on new chain events
+			if (event.startsWith('chain_')) {
+				eventsCounter++; // Increase counter with every newBlock/deleteBlock
 
-					await getNodeInfo(true).catch(err => logError('getNodeInfo', err));
-					await updateTokenInfo().catch(err => logError('updateTokenInfo', err));
-				}
+				await getNodeInfo(true).catch(err => logError('getNodeInfo', err));
+				await updateTokenInfo().catch(err => logError('updateTokenInfo', err));
+			}
 
-				logger.debug(`Received event: ${event} with payload:\n${util.inspect(payload)}`);
-				Signals.get(event).dispatch(payload);
-			},
-		);
+			logger.debug(`Received event: ${event} with payload:\n${util.inspect(payload)}`);
+			Signals.get(event).dispatch(payload);
+		});
 		logger.info(`Subscribed to the API client event: ${event}.`);
 	});
 };
 
-const getEventsByHeightFormatted = async (height) => {
+const getEventsByHeightFormatted = async height => {
 	const chainEvents = await getEventsByHeight(height);
-	const formattedEvents = chainEvents.map((event) => formatEvent(event));
+	const formattedEvents = chainEvents.map(event => formatEvent(event));
 	return formattedEvents;
 };
 
 // To ensure API Client is alive and receiving chain events
-getNodeInfo().then(nodeInfo => {
-	setInterval(() => {
-		if (eventsCounter === 0) {
-			Signals.get('resetApiClient').dispatch();
-		} else {
-			eventsCounter = 0;
-		}
-	}, config.connectionVerifyBlockInterval * nodeInfo.genesis.blockTime * 1000);
-});
+let isNodeSynced = false;
+let isGenesisBlockDownloaded = false;
+
+const ensureAPIClientLiveness = () => {
+	if (isNodeSynced && isGenesisBlockDownloaded) {
+		setInterval(() => {
+			if (typeof eventsCounter === 'number' && eventsCounter > 0) {
+				eventsCounter = 0;
+			} else {
+				if (typeof eventsCounter !== 'number') {
+					logger.warn(
+						`eventsCounter ended up with non-numeric value: ${JSON.stringify(
+							eventsCounter,
+							null,
+							'\t',
+						)}.`,
+					);
+					eventsCounter = 0;
+				}
+
+				Signals.get('resetApiClient').dispatch();
+				logger.info("Dispatched 'resetApiClient' signal to re-instantiate the API client.");
+			}
+		}, config.clientConnVerifyInterval);
+	} else {
+		logger.info(
+			`Cannot start the events-based client liveness check yet. Either the node is not yet synced or the genesis block hasn't been downloaded yet.\nisNodeSynced: ${isNodeSynced}, isGenesisBlockDownloaded: ${isGenesisBlockDownloaded}`,
+		);
+	}
+};
+
+const nodeIsSyncedListener = () => {
+	isNodeSynced = true;
+	ensureAPIClientLiveness();
+};
+
+const genesisBlockDownloadedListener = () => {
+	isGenesisBlockDownloaded = true;
+	ensureAPIClientLiveness();
+};
+
+Signals.get('nodeIsSynced').add(nodeIsSyncedListener);
+Signals.get('genesisBlockDownloaded').add(genesisBlockDownloadedListener);
 
 module.exports = {
 	events,

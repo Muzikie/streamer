@@ -18,15 +18,17 @@ const packageJson = require('./package.json');
 const config = {};
 
 // Moleculer broker config
-config.transporter = process.env.SERVICE_BROKER || 'redis://127.0.0.1:6379/0';
+config.transporter = process.env.SERVICE_BROKER || 'redis://lisk:password@127.0.0.1:6379/0';
 config.brokerTimeout = Number(process.env.SERVICE_BROKER_TIMEOUT) || 5; // in seconds
 
 /**
  * External endpoints
  */
 config.endpoints = {};
-config.endpoints.redis = process.env.SERVICE_EXPORT_REDIS || 'redis://127.0.0.1:6379/3';
-config.endpoints.volatileRedis = process.env.SERVICE_EXPORT_REDIS_VOLATILE || 'redis://127.0.0.1:6379/4';
+config.endpoints.redis =
+	process.env.SERVICE_EXPORT_REDIS || 'redis://lisk:password@127.0.0.1:6379/3';
+config.endpoints.volatileRedis =
+	process.env.SERVICE_EXPORT_REDIS_VOLATILE || 'redis://lisk:password@127.0.0.1:6379/4';
 
 // Logging
 config.log = {
@@ -83,6 +85,8 @@ config.queue = {
 			attempts: 5,
 			timeout: 5 * 60 * 1000, // millisecs
 			removeOnComplete: true,
+			removeOnFail: true,
+			stackTraceLimit: 0,
 		},
 		settings: {},
 	},
@@ -116,7 +120,7 @@ config.s3.bucketNameDefault = process.env.EXPORT_S3_BUCKET_NAME || 'export';
 config.job = {
 	// Interval takes priority over schedule and must be greater than 0 to be valid
 	purgeCache: {
-		interval: process.env.JOB_INTERVAL_CACHE_PURGE || 0,
+		interval: Number(process.env.JOB_INTERVAL_CACHE_PURGE) || 0,
 		schedule: process.env.JOB_SCHEDULE_CACHE_PURGE || '45 4 * * *',
 	},
 };

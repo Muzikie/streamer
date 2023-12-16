@@ -26,9 +26,13 @@ const {
 	Logger,
 } = require('lisk-service-framework');
 
-const { resolveMainchainServiceURL, resolveChannelInfo, getCurrentChainID } = require('./interoperability');
+const {
+	resolveMainchainServiceURL,
+	resolveChannelInfo,
+	getCurrentChainID,
+} = require('./interoperability');
 const { dryRunTransactions } = require('./transactionsDryRun');
-const { tokenHasUserAccount, getTokenConstants } = require('./token');
+const { tokenHasUserAccount, getTokenConstants, getTokenBalances } = require('./token');
 const { getSchemas } = require('./schemas');
 
 const {
@@ -38,6 +42,7 @@ const {
 	LENGTH_BYTE_SIGNATURE,
 	LENGTH_BYTE_ID,
 	DEFAULT_NUM_OF_SIGNATURES,
+	CCM_SENT_FAILED_ERROR_MESSAGE,
 } = require('../../constants');
 
 const { getLisk32AddressFromPublicKey } = require('../../utils/account');
@@ -63,9 +68,10 @@ const OPTIONAL_TRANSACTION_PROPERTIES = Object.freeze({
 	},
 	SIGNATURES: {
 		propName: 'signatures',
-		defaultValue: (params) => new Array(params.numberOfSignatures)
-			.fill()
-			.map(() => getRandomBytes(LENGTH_BYTE_SIGNATURE).toString('hex')),
+		defaultValue: params =>
+			new Array(params.numberOfSignatures)
+				.fill()
+				.map(() => getRandomBytes(LENGTH_BYTE_SIGNATURE).toString('hex')),
 	},
 	ID: {
 		propName: 'id',
@@ -80,18 +86,16 @@ const OPTIONAL_TRANSACTION_PARAMS_PROPERTIES = Object.freeze({
 	},
 	MESSAGE_FEE_TOKEN_ID: {
 		propName: 'messageFeeTokenID',
-		defaultValue: (params) => params.messageFeeTokenID,
+		defaultValue: params => params.messageFeeTokenID,
 	},
 });
 
 const mockOptionalProperties = (inputObject, inputObjectOptionalProps, additionalParams) => {
-	Object
-		.values(inputObjectOptionalProps)
-		.forEach(optionalPropInfo => {
-			if (!(optionalPropInfo.propName in inputObject)) {
-				inputObject[optionalPropInfo.propName] = optionalPropInfo.defaultValue(additionalParams);
-			}
-		});
+	Object.values(inputObjectOptionalProps).forEach(optionalPropInfo => {
+		if (!(optionalPropInfo.propName in inputObject)) {
+			inputObject[optionalPropInfo.propName] = optionalPropInfo.defaultValue(additionalParams);
+		}
+	});
 
 	return inputObject;
 };
@@ -113,34 +117,36 @@ const mockTransaction = async (_transaction, numberOfSignatures) => {
 		{ numberOfSignatures },
 	);
 
-	const channelInfo = txWithRequiredProps.module === MODULE.TOKEN
-		&& txWithRequiredProps.command === COMMAND.TRANSFER_CROSS_CHAIN
-		? await resolveChannelInfo(txWithRequiredProps.params.receivingChainID)
-		: {};
+	const channelInfo =
+		txWithRequiredProps.module === MODULE.TOKEN &&
+		txWithRequiredProps.command === COMMAND.TRANSFER_CROSS_CHAIN
+			? await resolveChannelInfo(txWithRequiredProps.params.receivingChainID)
+			: {};
 
 	const { messageFeeTokenID } = channelInfo;
 
 	const mockedTransactionParams = messageFeeTokenID
 		? mockOptionalProperties(
-			filterOptionalProps(
-				txWithRequiredProps.params,
-				Object
-					.values(OPTIONAL_TRANSACTION_PARAMS_PROPERTIES)
-					.map(optionalProp => optionalProp.propName),
-			),
-			OPTIONAL_TRANSACTION_PARAMS_PROPERTIES,
-			{ messageFeeTokenID },
-		)
+				filterOptionalProps(
+					txWithRequiredProps.params,
+					Object.values(OPTIONAL_TRANSACTION_PARAMS_PROPERTIES).map(
+						optionalProp => optionalProp.propName,
+					),
+				),
+				OPTIONAL_TRANSACTION_PARAMS_PROPERTIES,
+				{ messageFeeTokenID },
+		  )
 		: txWithRequiredProps.params;
 
 	return { ...mockedTransaction, params: mockedTransactionParams };
 };
 
-const getNumberOfSignatures = async (address) => {
+const getNumberOfSignatures = async address => {
 	try {
 		const authAccountInfo = await requestConnector('getAuthAccount', { address });
-		const numberOfSignatures = (authAccountInfo.mandatoryKeys.length
-			+ authAccountInfo.optionalKeys.length) || DEFAULT_NUM_OF_SIGNATURES;
+		const numberOfSignatures =
+			authAccountInfo.mandatoryKeys.length + authAccountInfo.optionalKeys.length ||
+			DEFAULT_NUM_OF_SIGNATURES;
 		return numberOfSignatures;
 	} catch (error) {
 		logger.warn(`Error while retrieving auth information for the account ${address}.`);
@@ -148,13 +154,31 @@ const getNumberOfSignatures = async (address) => {
 	}
 };
 
-const getCcmBuffer = async (transaction) => {
-	if (transaction.module !== MODULE.TOKEN
-		|| transaction.command !== COMMAND.TRANSFER_CROSS_CHAIN) return null;
+const getCcmBuffer = async transaction => {
+	if (transaction.module !== MODULE.TOKEN || transaction.command !== COMMAND.TRANSFER_CROSS_CHAIN)
+		return null;
 
-	// TODO: Add error handling
-	const { data: { events } } = await dryRunTransactions({ transaction, skipVerify: true });
+	const {
+		data: { events },
+	} = await dryRunTransactions({ transaction, skipVerify: true });
 	const ccmSendSuccess = events.find(event => event.name === EVENT.CCM_SEND_SUCCESS);
+
+	if (!ccmSendSuccess) {
+		const { data: dryRunResult } = await dryRunTransactions({ transaction, skipVerify: false });
+		if (dryRunResult.errorMessage) {
+			throw new ValidationException(dryRunResult.errorMessage);
+		}
+
+		const ccmSentFailed = dryRunResult.events.find(event => event.name === EVENT.CCM_SENT_FAILED);
+		if (ccmSentFailed) {
+			throw new ValidationException(CCM_SENT_FAILED_ERROR_MESSAGE[ccmSentFailed.code]);
+		}
+
+		// If none of the known reasons are matched, do not assign messageFee
+		// No messageFee will result in not bouncing the failed CCM
+		logger.warn(JSON.stringify({ transaction, dryRunResult }, null, '\t'));
+		return Buffer.from('', 'hex');
+	}
 
 	// Encode CCM (required to calculate CCM length)
 	const { ccm } = ccmSendSuccess.data;
@@ -165,12 +189,12 @@ const getCcmBuffer = async (transaction) => {
 };
 
 const calcDynamicFeeEstimates = (estimatePerByte, minFee, size) => ({
-	low: BigInt(minFee) + (BigInt(estimatePerByte.low) * BigInt(size)),
-	medium: BigInt(minFee) + (BigInt(estimatePerByte.med) * BigInt(size)),
-	high: BigInt(minFee) + (BigInt(estimatePerByte.high) * BigInt(size)),
+	low: BigInt(minFee) + BigInt(Math.round(Number(estimatePerByte.low) * Number(BigInt(size)))),
+	medium: BigInt(minFee) + BigInt(Math.round(Number(estimatePerByte.med) * Number(BigInt(size)))),
+	high: BigInt(minFee) + BigInt(Math.round(Number(estimatePerByte.high) * Number(BigInt(size)))),
 });
 
-const calcAdditionalFees = async (transaction) => {
+const calcAdditionalFees = async transaction => {
 	const additionalFees = {
 		fee: {},
 		params: {},
@@ -181,13 +205,17 @@ const calcAdditionalFees = async (transaction) => {
 		const { tokenID } = transaction.params;
 
 		if (transaction.command === COMMAND.TRANSFER) {
-			const { data: { isExists } } = await tokenHasUserAccount({
+			const {
+				data: { isExists },
+			} = await tokenHasUserAccount({
 				tokenID,
 				address: transaction.params.recipientAddress,
 			});
 
 			if (!isExists) {
-				const { data: { extraCommandFees } } = await getTokenConstants();
+				const {
+					data: { extraCommandFees },
+				} = await getTokenConstants();
 				additionalFees.fee = {
 					userAccountInitializationFee: extraCommandFees.userAccountInitializationFee,
 				};
@@ -195,22 +223,41 @@ const calcAdditionalFees = async (transaction) => {
 			}
 		} else if (transaction.command === COMMAND.TRANSFER_CROSS_CHAIN) {
 			const mainchainServiceURL = await resolveMainchainServiceURL();
-			const { data: appMetadataResponse } = await HTTP
-				.get(`${mainchainServiceURL}/api/v3/blockchain/apps/meta?chainID=${transaction.params.receivingChainID}`);
+			const { data: appMetadataResponse } = await HTTP.get(
+				`${mainchainServiceURL}/api/v3/blockchain/apps/meta?chainID=${transaction.params.receivingChainID}`,
+			);
 
-			if (!appMetadataResponse || !appMetadataResponse.data
-				|| appMetadataResponse.data.length === 0) {
-				throw new ValidationException(`Application off-chain metadata is not available for the chain: ${transaction.params.receivingChainID}.`);
+			if (
+				!appMetadataResponse ||
+				!appMetadataResponse.data ||
+				appMetadataResponse.data.length === 0
+			) {
+				throw new ValidationException(
+					`Application off-chain metadata is not available for the chain: ${transaction.params.receivingChainID}.`,
+				);
 			}
 
-			const { data: [{ serviceURLs: [{ http: receivingServiceURL }] }] } = appMetadataResponse;
-			const { data: tokenConstantsResponse } = await HTTP.get(`${receivingServiceURL}/api/v3/token/constants`);
-			const { data: { extraCommandFees } } = tokenConstantsResponse;
+			const {
+				data: [
+					{
+						serviceURLs: [{ http: receivingServiceURL }],
+					},
+				],
+			} = appMetadataResponse;
+			const { data: tokenConstantsResponse } = await HTTP.get(
+				`${receivingServiceURL}/api/v3/token/constants`,
+			);
+			const {
+				data: { extraCommandFees },
+			} = tokenConstantsResponse;
 
 			// Check if escrow account exists only when tokenID specified in the params is a native token
 			const currentChainID = await getCurrentChainID();
 			if (tokenID.startsWith(currentChainID)) {
-				const { exists: escrowAccountExists } = await requestConnector('tokenHasEscrowAccount', { tokenID, escrowChainID: transaction.params.receivingChainID });
+				const { exists: escrowAccountExists } = await requestConnector('tokenHasEscrowAccount', {
+					tokenID,
+					escrowChainID: transaction.params.receivingChainID,
+				});
 				if (!escrowAccountExists) {
 					additionalFees.fee = {
 						escrowAccountInitializationFee: extraCommandFees.escrowAccountInitializationFee,
@@ -220,9 +267,12 @@ const calcAdditionalFees = async (transaction) => {
 			}
 
 			// Check if user account exists on the receiving chain
-			const { data: accountExistsResponse } = await HTTP
-				.get(`${receivingServiceURL}/api/v3/token/account/exists?tokenID=${tokenID}&address=${transaction.params.recipientAddress}`);
-			const { data: { isExists: userAccountExists } } = accountExistsResponse;
+			const { data: accountExistsResponse } = await HTTP.get(
+				`${receivingServiceURL}/api/v3/token/account/exists?tokenID=${tokenID}&address=${transaction.params.recipientAddress}`,
+			);
+			const {
+				data: { isExists: userAccountExists },
+			} = accountExistsResponse;
 			if (!userAccountExists) {
 				additionalFees.params = {
 					messageFee: {
@@ -254,8 +304,7 @@ const calcAdditionalFees = async (transaction) => {
 
 const validateTransactionParams = async transaction => {
 	// Mock optional values if not present before schema validation.
-	if (transaction.module === MODULE.TOKEN
-		&& transaction.command === COMMAND.TRANSFER_CROSS_CHAIN) {
+	if (transaction.module === MODULE.TOKEN && transaction.command === COMMAND.TRANSFER_CROSS_CHAIN) {
 		if (!('messageFee' in transaction.params)) {
 			transaction.params.messageFee = DEFAULT_MESSAGE_FEE;
 		}
@@ -265,20 +314,53 @@ const validateTransactionParams = async transaction => {
 		}
 	}
 
-	const allSchemas = await getSchemas();
-	const txCommand = allSchemas.data.commands.find(e => e.moduleCommand === `${transaction.module}:${transaction.command}`);
+	if (transaction.params.tokenID) {
+		const senderAddress = getLisk32AddressFromPublicKey(transaction.senderPublicKey);
+		const {
+			data: { extraCommandFees },
+		} = await getTokenConstants();
+		const {
+			data: [balanceInfo],
+		} = await getTokenBalances({ address: senderAddress, tokenID: transaction.params.tokenID });
 
-	if (!txCommand || !txCommand.schema) {
-		throw new ValidationException(`${transaction.module}:${transaction.command} is not a valid transaction.`);
+		if (
+			BigInt(balanceInfo.availableBalance) <
+			BigInt(transaction.params.amount) + BigInt(extraCommandFees.userAccountInitializationFee)
+		) {
+			throw new ValidationException(
+				`${senderAddress} has insufficient balance for ${transaction.params.tokenID} to send the transaction.`,
+			);
+		}
 	}
 
-	const txParamsSchema = txCommand.schema;
-	const parsedTxParams = parseInputBySchema(transaction.params, txParamsSchema);
+	const allSchemas = await getSchemas();
+	const txCommand = allSchemas.data.commands.find(
+		e => e.moduleCommand === `${transaction.module}:${transaction.command}`,
+	);
+
+	if (!txCommand || !txCommand.schema) {
+		throw new ValidationException(
+			`${transaction.module}:${transaction.command} is not a valid transaction.`,
+		);
+	}
 
 	try {
+		const txParamsSchema = txCommand.schema;
+		const parsedTxParams = parseInputBySchema(transaction.params, txParamsSchema);
+
 		validator.validate(txParamsSchema, parsedTxParams);
 	} catch (err) {
-		throw new InvalidParamsException(err);
+		throw new ValidationException(err);
+	}
+};
+
+const validateUserHasTokenAccount = async (tokenID, address) => {
+	const response = await tokenHasUserAccount({ tokenID, address });
+
+	if (!response.data.isExists) {
+		throw new ValidationException(
+			`${address} has no balance for tokenID: ${tokenID}, necessary to make this transaction. Please top-up the account with some balance and retry.`,
+		);
 	}
 };
 
@@ -290,31 +372,36 @@ const estimateTransactionFees = async params => {
 		meta: {},
 	};
 
+	const senderAddress = getLisk32AddressFromPublicKey(params.transaction.senderPublicKey);
+	const feeEstimatePerByte = getFeeEstimates();
+
+	// Validate if the sender has balance for transaction fee
+	await validateUserHasTokenAccount(feeEstimatePerByte.feeTokenID, senderAddress);
 	await validateTransactionParams(params.transaction);
 
-	const senderAddress = getLisk32AddressFromPublicKey(params.transaction.senderPublicKey);
 	const numberOfSignatures = await getNumberOfSignatures(senderAddress);
 
 	const trxWithMockProps = await mockTransaction(params.transaction, numberOfSignatures);
 	const additionalFees = await calcAdditionalFees(trxWithMockProps);
-	let formattedTransaction = await requestConnector(
-		'formatTransaction',
-		{ transaction: trxWithMockProps, additionalFee: additionalFees.total.toString() },
-	);
-	const feeEstimatePerByte = getFeeEstimates();
+	let formattedTransaction = await requestConnector('formatTransaction', {
+		transaction: trxWithMockProps,
+		additionalFee: additionalFees.total.toString(),
+	});
 
 	// Calculate message fee for cross-chain transfers
 	if (
-		params.transaction.module === MODULE.TOKEN
-		&& params.transaction.command === COMMAND.TRANSFER_CROSS_CHAIN
+		params.transaction.module === MODULE.TOKEN &&
+		params.transaction.command === COMMAND.TRANSFER_CROSS_CHAIN
 	) {
+		const channelInfo = await resolveChannelInfo(params.transaction.params.receivingChainID);
+		await validateUserHasTokenAccount(channelInfo.messageFeeTokenID, senderAddress);
+
 		// Calculate message fee
 		const ccmBuffer = await getCcmBuffer({
 			...formattedTransaction,
 			fee: formattedTransaction.minFee,
 		});
 		const ccmLength = ccmBuffer.length;
-		const channelInfo = await resolveChannelInfo(params.transaction.params.receivingChainID);
 
 		const ccmByteFee = BigInt(ccmLength) * BigInt(channelInfo.minReturnFeePerByte);
 		const totalMessageFee = additionalFees.params.messageFee
@@ -329,20 +416,17 @@ const estimateTransactionFees = async params => {
 		};
 
 		// Calculate the transaction size and minFee with updated params, for higher accuracy
-		formattedTransaction = await requestConnector(
-			'formatTransaction',
-			{
-				transaction: {
-					...trxWithMockProps,
-					params: {
-						...trxWithMockProps.params,
-						messageFeeTokenID: channelInfo.messageFeeTokenID,
-						messageFee: totalMessageFee.toString(),
-					},
+		formattedTransaction = await requestConnector('formatTransaction', {
+			transaction: {
+				...trxWithMockProps,
+				params: {
+					...trxWithMockProps.params,
+					messageFeeTokenID: channelInfo.messageFeeTokenID,
+					messageFee: totalMessageFee.toString(),
 				},
-				additionalFee: additionalFees.total.toString(),
 			},
-		);
+			additionalFee: additionalFees.total.toString(),
+		});
 
 		// Add params to meta
 		estimateTransactionFeesRes.meta.breakdown = {
@@ -352,11 +436,12 @@ const estimateTransactionFees = async params => {
 					ccmByteFee,
 					additionalFees: BUFFER_BYTES_LENGTH
 						? {
-							...additionalFees.params.messageFee,
-							bufferBytes: BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte),
-						} : {
-							...additionalFees.params.messageFee,
-						},
+								...additionalFees.params.messageFee,
+								bufferBytes: BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte),
+						  }
+						: {
+								...additionalFees.params.messageFee,
+						  },
 				},
 			},
 		};
@@ -364,9 +449,8 @@ const estimateTransactionFees = async params => {
 
 	const { minFee, size } = formattedTransaction;
 
-	// TODO: Remove BUFFER_BYTES_LENGTH support after RC is tagged
-	const estimatedMinFee = BigInt(minFee)
-		+ BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte);
+	const estimatedMinFee =
+		BigInt(minFee) + BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte);
 
 	// Populate the response with transaction minimum fee information
 	estimateTransactionFeesRes.data = {
@@ -388,9 +472,9 @@ const estimateTransactionFees = async params => {
 					byteFee: (BigInt(size) * BigInt(feeEstimatePerByte.minFeePerByte)).toString(),
 					additionalFees: BUFFER_BYTES_LENGTH
 						? {
-							...additionalFees.fee,
-							bufferBytes: BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte),
-						}
+								...additionalFees.fee,
+								bufferBytes: BigInt(BUFFER_BYTES_LENGTH * feeEstimatePerByte.minFeePerByte),
+						  }
 						: { ...additionalFees.fee },
 				},
 			},
@@ -400,8 +484,7 @@ const estimateTransactionFees = async params => {
 	// Add priority only when the priority fee values are non-zero
 	const { low, med, high } = feeEstimatePerByte;
 	if (low !== 0 || med !== 0 || high !== 0) {
-		const dynamicFeeEstimates = calcDynamicFeeEstimates(
-			feeEstimatePerByte, estimatedMinFee, size);
+		const dynamicFeeEstimates = calcDynamicFeeEstimates(feeEstimatePerByte, estimatedMinFee, size);
 
 		estimateTransactionFeesRes.transaction.fee.priority = dynamicFeeEstimates;
 	}
@@ -413,10 +496,12 @@ module.exports = {
 	estimateTransactionFees,
 
 	// Export for the unit tests
+	getCcmBuffer,
 	calcDynamicFeeEstimates,
 	mockTransaction,
 	calcAdditionalFees,
 	filterOptionalProps,
 	getNumberOfSignatures,
 	validateTransactionParams,
+	validateUserHasTokenAccount,
 };

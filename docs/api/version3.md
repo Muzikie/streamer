@@ -169,6 +169,7 @@ _Supports pagination._
       "transactionRoot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "assetsRoot": "6e904b2f678eb3b6c3042acb188a607d903d441d61508d047fe36b3c982995c8",
       "stateRoot": "95d9b1773b78034b8df9ac741c903b881da761d8ba002a939de28a4b86982c04",
+      "eventRoot": "7dee8ae1899582aabb0c4b967ceda6874329dba57b5eb23d7c62890917a55cbd",
       "maxHeightGenerated": 559421,
       "maxHeightPrevoted": 559434,
       "validatorsHash": "ad0076aa444f6cda608bb163c3bd77d9bf172f1d2803d53095bc0f277db6bcb3",
@@ -336,6 +337,12 @@ _Supports pagination._
       "fee": "5166000",
       "minFee": "165000",
       "size": 166,
+      "block": {
+        "id": "ebb1ba587a1e8385a2aac1317edcb872c05b2b07df6560fabd0f0d23d7d6a0df",
+        "height": 122721,
+        "timestamp": 1678989430,
+        "isFinal": true
+      },
       "sender": {
         "address": "lskyvvam5rxyvbvofxbdfcupxetzmqxu22phm4yuo",
         "publicKey": "475697e34ae02b394721020d38677a072dbd5c03d61c1c8fdd6563eb66160fa3",
@@ -347,21 +354,18 @@ _Supports pagination._
         "recipientAddress": "lskezo8pcrbsoceuuu64rpc8w2qkont2ec3n772yu",
         "data": ""
       },
-      "block": {
-        "id": "ebb1ba587a1e8385a2aac1317edcb872c05b2b07df6560fabd0f0d23d7d6a0df",
-        "height": 122721,
-        "timestamp": 1678989430,
-        "isFinal": true
-      },
+      "signatures": [
+        "48425002226745847e155cf5480478c2336a43bb178439e9058cc2b50e26335cf7c8360b6c6a49793d7ae8d087bc746cab9618655e6a0adba4694cce2015b50f"
+      ],
+      "executionStatus": "successful",
+      "index": 0,
       "meta": {
         "recipient": {
           "address": "lskezo8pcrbsoceuuu64rpc8w2qkont2ec3n772yu",
           "publicKey": null,
           "name": null
         }
-      },
-      "executionStatus": "successful",
-      "index": 0
+      }
     },
   ],
   "meta": {
@@ -757,7 +761,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | transactionID | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
 | senderAddress | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* |  |
-| topic | String | `/^\b(?:[0-9a-fA-F]{2,64}\|lsk[a-hjkm-z2-9]{38})(?:,(?:[0-9a-fA-F]{2,64}\|lsk[a-hjkm-z2-9]{38}))*\b$/` | *(empty)* | Can be expressed as a CSV. |
+| topic | String | `/^\b(?:(?:04\|05)?[0-9a-fA-F]{64}\|lsk[a-hjkm-z2-9]{38})(?:,(?:(?:04\|05)?[0-9a-fA-F]{64}\|lsk[a-hjkm-z2-9]{38}))*\b$/` | *(empty)* | Can be expressed as a CSV. For performance reasons, we do not allow users to query default topics such as `03`. |
 | blockID | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
 | height | String | `/^(?:(?:\d+)\|(?::(?:\d+))\|(?:(?:\d+):(?:\d+)?))$/` | *(empty)* | Query by height or a height range. Can be expressed as an interval i.e. `1:20` or `1:` or `:20`. Specified values are inclusive. |
 | timestamp | String | `/^(?:(?:\d+)\|(?::(?:\d+))\|(?:(?:\d+):(?:\d+)?))$/` | *(empty)* | Query by timestamp or a timestamp range. Can be expressed as an interval i.e. `1000000:2000000` or `1000000:` or `:2000000`. Specified values are inclusive. |
@@ -898,7 +902,7 @@ Retrieves user-specific details from the Auth module.
 | --------- | ---- | ---------- | ------- | ------- |
 | address | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | Required. |
 <!-- | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  | -->
-<!-- | name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  | -->
+<!-- | name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  | -->
 
 #### Response example
 
@@ -956,7 +960,7 @@ Retrieves user-specific details from the Validator module.
 | --------- | ---- | ---------- | ------- | ------- |
 | address | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | Required. |
 <!-- | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  | -->
-<!-- | name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  | -->
+<!-- | name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  | -->
 
 #### Response example
 
@@ -1055,7 +1059,7 @@ Validates if an entry exists in the Token sub-store for the specified address.
 | tokenID | String | `/^\b[a-fA-F0-9]{16}\b$/` | *(empty)* | Required. |
 | address | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 
 #### Response example
 
@@ -1103,14 +1107,14 @@ Retrieves the balances from the Token sub-store for the specified address.
 | limit | Number | `[1,100]` | 10 |  |
 | offset | Number | `[0,Inf)` | 0 |  |
 <!-- | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  | -->
-<!-- | name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  | -->
+<!-- | name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  | -->
 
 #### Response example
 
 200 OK
 
 ```jsonc
-{
+{   
   "data": {
     "tokenID": "0000000000000000",
     "availableBalance": "1000000000",
@@ -1444,7 +1448,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | limit | Number | `[1,100]` | 10 |  |
 | offset | Number | `[0,Inf)` | 0 |  |
 
@@ -1499,7 +1503,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | limit | Number | `[1,100]` | 10 |  |
 | offset | Number | `[0,Inf)` | 0 |  |
 
@@ -1618,7 +1622,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | search | String | `/^[\w!@$&.]{1,64}$/` | *(empty)* | Case-insensitive search by name, address or publicKey. Supports both partial and full text search. |
 | limit | Number | `[1,100]` | 10 |  |
 | offset | Number | `[0,Inf)` | 0 |  |
@@ -1680,7 +1684,7 @@ Retrieves the list of stakes sent by the specified user by their address, public
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | search | String | `/^[\w!@$&.]{1,64}$/` | *(empty)* | Case-insensitive search by name, address or publicKey. Supports both partial and full text search. |
 
 #### Response example
@@ -1740,7 +1744,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | isLocked | Boolean | `[true, false]` | *(empty)* |  |
 | limit | Number | `[1,100]` | 10 |  |
 | offset | Number | `[0,Inf)` | 0 |  |
@@ -1808,7 +1812,7 @@ _Supports pagination._
 | --------- | ---- | ---------- | ------- | ------- |
 | address   | String | `/^lsk[a-hjkm-z2-9]{38}$/` | *(empty)* | One of address, publicKey or name required. |
 | publicKey | String | `/^\b(?:[A-Fa-f0-9]){64}\b$/` | *(empty)* |  |
-| name | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* |  |
+| name | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* |  |
 | status | String | `/^\b(?:active\|standby\|banned\|punished\|ineligible\|,){0,9}\b$/` | *(empty)* | Can be expressed as a CSV. |
 | search | String | `/^[\w!@$&.]{1,64}$/` | *(empty)* | Case-insensitive search by name, address or publicKey. Supports both partial and full text search. |
 | limit | Number | `[1,100]` | 10 |  |
@@ -2107,8 +2111,7 @@ _Supports pagination._
       "count": 100,
       "offset": 25,
       "total": 43749
-    },
-    "links": {}
+    }
 }
 ```
 
@@ -2268,8 +2271,7 @@ No parameters are required.
         "2.1": 41
       }
     },
-    "meta": {},
-    "links": {}
+    "meta": {}
   }
 ```
 
@@ -5638,7 +5640,7 @@ _Supports pagination._
 | Parameter | Type | Validation | Default | Comment |
 | --------- | ---- | ---------- | ------- | ------- |
 | chainID | String | `/^\b(?:[a-fA-F0-9]{8}\|,)+\b$/` | *(empty)* | Can be expressed as a CSV. |
-| chainName | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* | Supports case-insensitive chain name. |
+| chainName | String | `/^[A-Za-z0-9!@$&_.]{1,32}$/` | *(empty)* | Supports case-insensitive chain name. |
 | status | String | `/^\b(?:registered\|activated\|terminated\|unregistered\|,){1,7}\b$/` | *(empty)* | Can be expressed as a CSV. |
 | search | String | `/^[\w!@$&.]{1,20}$/` | *(empty)* | Case-insensitive search by chain name. Supports both partial and full text search. |
 | limit | Number | `[1,100]` | 10 |  |
@@ -5826,6 +5828,7 @@ Proxy request to directly invoke application endpoint. Returns endpoint response
       "transactionRoot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "assetsRoot": "6e904b2f678eb3b6c3042acb188a607d903d441d61508d047fe36b3c982995c8",
       "stateRoot": "95d9b1773b78034b8df9ac741c903b881da761d8ba002a939de28a4b86982c04",
+      "eventRoot": "7dee8ae1899582aabb0c4b967ceda6874329dba57b5eb23d7c62890917a55cbd",
       "maxHeightGenerated": 559421,
       "maxHeightPrevoted": 559434,
       "validatorsHash": "ad0076aa444f6cda608bb163c3bd77d9bf172f1d2803d53095bc0f277db6bcb3",
@@ -5908,7 +5911,7 @@ _Supports pagination._
 
 | Parameter | Type | Validation | Default | Comment |
 | --------- | ---- | ---------- | ------- | ------- |
-| chainName | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* | Supports case-insensitive chain name. |
+| chainName | String | `/^[A-Za-z0-9!@$&_.]{1,32}$/` | *(empty)* | Supports case-insensitive chain name. |
 | network | String | `/^\b(?:mainnet\|testnet\|betanet\|devnet\|,){0,7}\b$/` | *(empty)* | Can be expressed as a CSV. |
 | search | String | `/^[\w!@$&.]{1,20}$/` | *(empty)* | Case-insensitive search by chain name. Supports both partial and full text search. |
 | limit | Number | `[1,100]` | 10 |  |
@@ -5965,8 +5968,8 @@ _Supports pagination._
 
 | Parameter | Type | Validation | Default | Comment |
 | --------- | ---- | ---------- | ------- | ------- |
-| chainName | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* | Supports case-insensitive chain name. |
-| displayName | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* | Supports case-insensitive display name. |
+| chainName | String | `/^[A-Za-z0-9!@$&_.]{1,32}$/` | *(empty)* | Supports case-insensitive chain name. |
+| displayName | String | `/^[a-z0-9!@$&_.]{1,20}$/` | *(empty)* | Supports case-insensitive display name. |
 | chainID | String | `/^\b(?:[a-fA-F0-9]{8}\|,)+\b$/` | *(empty)* | Can be expressed as a CSV. |
 | isDefault | Boolean | `[true, false]` | *(empty)* |  |
 | network | String | `/^\b(?:mainnet\|testnet\|betanet\|devnet\|,){0,7}\b$/` | *(empty)* | Can be expressed as a CSV. |
@@ -6058,7 +6061,7 @@ _Supports pagination._
 
 | Parameter | Type | Validation | Default | Comment |
 | --------- | ---- | ---------- | ------- | ------- |
-| chainName | String | `/^[\w!@$&.]{3,20}$/` | *(empty)* | Supports case-insensitive chain name. |
+| chainName | String | `/^[A-Za-z0-9!@$&_.]{1,32}$/` | *(empty)* | Supports case-insensitive chain name. |
 | chainID | String | `/^\b[a-fA-F0-9]{8}\b$/` | *(empty)* | |
 | tokenName | String | `/^[\w!@$&.,]{3,}$/` | *(empty)* | Supports case-insensitive token name. |
 | tokenID | String | `/^\b([a-fA-F0-9]{16})(,[a-fA-F0-9]{16})*\b$/` | *(empty)* | Can be expressed as a CSV. |

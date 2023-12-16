@@ -25,7 +25,9 @@ const {
 const schema = require('../../constants/blocksSchema');
 
 const tableName = 'functional_test';
+
 const testDir = 'testDir';
+
 schema.tableName = tableName;
 
 const getTable = () => getTableInstance(schema, testDir);
@@ -110,7 +112,10 @@ describe('Test sqlite3 implementation', () => {
 			const count = await testTable.deleteByPrimaryKey([existingBlockId]);
 			expect(count).toEqual(1);
 
-			const result = await testTable.find({ [schema.primaryKey]: existingBlock[schema.primaryKey] }, ['id']);
+			const result = await testTable.find(
+				{ [schema.primaryKey]: existingBlock[schema.primaryKey] },
+				['id'],
+			);
 			expect(result.length).toBe(0);
 			expect(result.every(b => b.id !== existingBlock.id)).toBeTruthy();
 		});
@@ -121,7 +126,9 @@ describe('Test sqlite3 implementation', () => {
 			const existingBlockCount = await testTable.count();
 
 			const existingIds = existingBlock.map(e => e.id);
-			const numAffectedRows = await testTable.delete({ whereIn: { property: 'id', values: existingIds } });
+			const numAffectedRows = await testTable.delete({
+				whereIn: { property: 'id', values: existingIds },
+			});
 			expect(numAffectedRows).toEqual(existingBlockCount);
 
 			const count = await testTable.count({});
@@ -134,7 +141,9 @@ describe('Test sqlite3 implementation', () => {
 			const existingBlockCount = await testTable.count();
 
 			const existingId = existingBlock.map(e => e.id);
-			const numAffectedRows = await testTable.delete({ whereIn: { property: 'id', values: existingId } });
+			const numAffectedRows = await testTable.delete({
+				whereIn: { property: 'id', values: existingId },
+			});
 			expect(numAffectedRows).toEqual(existingBlockCount);
 
 			const count = await testTable.count({});
@@ -313,10 +322,13 @@ describe('Test sqlite3 implementation', () => {
 			const connection = await getDBConnection(tableName);
 			const trx = await startDBTransaction(connection);
 			const { id } = blockWithoutTransaction.header;
-			await testTable.increment({
-				increment: { timestamp: 5 },
-				where: { id },
-			}, trx);
+			await testTable.increment(
+				{
+					increment: { timestamp: 5 },
+					where: { id },
+				},
+				trx,
+			);
 			await commitDBTransaction(trx);
 			const [retrievedBlock] = await testTable.find({ id }, ['timestamp']);
 			expect(retrievedBlock).toBeTruthy();
@@ -347,7 +359,10 @@ describe('Test sqlite3 implementation', () => {
 			const existingBlockCount = await testTable.count();
 
 			const existingIds = existingBlock.map(e => e.id);
-			const numAffectedRows = await testTable.delete({ whereIn: { property: 'id', values: existingIds } }, trx);
+			const numAffectedRows = await testTable.delete(
+				{ whereIn: { property: 'id', values: existingIds } },
+				trx,
+			);
 			await commitDBTransaction(trx);
 
 			expect(numAffectedRows).toEqual(existingBlockCount);
@@ -365,7 +380,10 @@ describe('Test sqlite3 implementation', () => {
 			const existingBlockCount = await testTable.count();
 
 			const existingId = existingBlock.map(e => e.id);
-			const numAffectedRows = await testTable.delete({ whereIn: { property: 'id', values: existingId } }, trx);
+			const numAffectedRows = await testTable.delete(
+				{ whereIn: { property: 'id', values: existingId } },
+				trx,
+			);
 			await commitDBTransaction(trx);
 
 			expect(numAffectedRows).toEqual(existingBlockCount);

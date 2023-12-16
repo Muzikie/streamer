@@ -21,36 +21,34 @@ const {
 } = require('../constants/transactionsDryRun');
 const { transactionsMap } = require('../constants/transactionsEstimateFees');
 
-const {
-	request,
-} = require('../../../helpers/socketIoRpcRequest');
+const { request } = require('../../../helpers/socketIoRpcRequest');
 
 const {
-	invalidParamsSchema,
 	jsonRpcEnvelopeSchema,
-	emptyResponseSchema,
+	invalidParamsSchema,
+	invalidRequestSchema,
 } = require('../../../schemas/rpcGenerics.schema');
 
-const { transactionEstimateFees } = require('../../../schemas/api_v3/transactionsEstimateFees.schema');
+const {
+	transactionEstimateFees,
+} = require('../../../schemas/api_v3/transactionsEstimateFees.schema');
 const { invalidPublicKeys, invalidAddresses } = require('../constants/invalidInputs');
 
-const getEntries = (o, prefix = '') => Object
-	.entries(o)
-	.flatMap(
-		([k, v]) => Object(v) === v ? getEntries(v, `${prefix}${k}.`) : [[`${prefix}${k}`, v]],
+const getEntries = (o, prefix = '') =>
+	Object.entries(o).flatMap(([k, v]) =>
+		Object(v) === v ? getEntries(v, `${prefix}${k}.`) : [[`${prefix}${k}`, v]],
 	);
 
-const getSumOfMetaValues = (meta) => {
+const getSumOfMetaValues = meta => {
 	const flattenedEntries = getEntries(meta.breakdown);
 	const flattenedObject = Object.fromEntries(flattenedEntries);
-	const sum = Object
-		.values(flattenedObject)
-		.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0));
+	const sum = Object.values(flattenedObject).reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0));
 	return sum.toString();
 };
 
 const wsRpcUrl = `${config.SERVICE_ENDPOINT}/rpc-v3`;
-const calculateTransactionFees = async params => request(wsRpcUrl, 'post.transactions.estimate-fees', params);
+const calculateTransactionFees = async params =>
+	request(wsRpcUrl, 'post.transactions.estimate-fees', params);
 
 describe('Method post.transactions.estimate-fees', () => {
 	it('should return transaction fees when called with valid transaction object with all properties', async () => {
@@ -102,37 +100,33 @@ describe('Method post.transactions.estimate-fees', () => {
 		const { senderPublicKey, ...remTransactionObject } = TRANSACTION_OBJECT_VALID;
 		for (let i = 0; i < invalidPublicKeys.length; i++) {
 			remTransactionObject.senderPublicKey = invalidPublicKeys[i];
-			// eslint-disable-next-line no-await-in-loop
 			const response = await calculateTransactionFees({ transaction: remTransactionObject });
 			expect(response).toMap(invalidParamsSchema);
 		}
 	});
 
-	it('should return empty response when requested with invalid address', async () => {
+	it('should return invalid request when requested with invalid address', async () => {
 		const { params, ...remTransactionObject } = TRANSACTION_OBJECT_VALID;
 		for (let i = 0; i < invalidAddresses.length; i++) {
 			remTransactionObject.params = {
 				...params,
 				recipientAddress: invalidAddresses[i],
 			};
-			// eslint-disable-next-line no-await-in-loop
 			const response = await calculateTransactionFees({ transaction: remTransactionObject });
-			expect(response).toMap(emptyResponseSchema);
+			expect(response).toMap(invalidRequestSchema);
 		}
 	});
 
 	describe('Test estimate-fees transactions for all transaction types', () => {
-		Object
-			.entries(transactionsMap)
-			.forEach(([transactionType, transactionObject]) => {
-				it(`should return transaction fees when called with ${transactionType} transaction object`, async () => {
-					const { fee, ...remTransactionObject } = transactionObject;
-					const response = await calculateTransactionFees({ transaction: remTransactionObject });
-					const { result } = response;
-					expect(result).toMap(transactionEstimateFees);
-					expect(getSumOfMetaValues(result.meta)).toEqual(result.data.transaction.fee.minimum);
-				});
+		Object.entries(transactionsMap).forEach(([transactionType, transactionObject]) => {
+			it(`should return transaction fees when called with ${transactionType} transaction object`, async () => {
+				const { fee, ...remTransactionObject } = transactionObject;
+				const response = await calculateTransactionFees({ transaction: remTransactionObject });
+				const { result } = response;
+				expect(result).toMap(transactionEstimateFees);
+				expect(getSumOfMetaValues(result.meta)).toEqual(result.data.transaction.fee.minimum);
 			});
+		});
 	});
 
 	it('should return invalid params when called with valid transaction string', async () => {

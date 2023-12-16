@@ -29,26 +29,35 @@ const handleError = (error, expectedStatusCode) => {
 
 const handleResponse = (response, expectedStatusCode = 200) => {
 	if (response.status === expectedStatusCode) return response.data;
-	throw new Error(`Status code: ${response.response.status}
-	\n${JSON.stringify(response.response.data, null, 2)}`);
+	throw new Error(`Status code: ${response.status}
+	\n${JSON.stringify(response.data, null, 2)}`);
 };
 
 const api = {
-	get: (url, expectedStatusCode) => axios.get(url)
-		.then(response => handleResponse(response, expectedStatusCode))
-		.catch(error => handleError(error, expectedStatusCode)),
-	post: (url, data, expectedStatusCode) => axios.post(url, data)
-		.then(response => handleResponse(response, expectedStatusCode))
-		.catch(error => handleError(error, expectedStatusCode)),
-	put: (url, data, expectedStatusCode) => axios.put(url, data)
-		.then(response => handleResponse(response, expectedStatusCode))
-		.catch(error => handleError(error, expectedStatusCode)),
-	del: (url, expectedStatusCode) => axios.delete(url)
-		.then(response => handleResponse(response, expectedStatusCode))
-		.catch(error => handleError(error, expectedStatusCode)),
-	request: (config, expectedStatusCode) => axios(config)
-		.then(response => handleResponse(response, expectedStatusCode))
-		.catch(error => handleError(error, expectedStatusCode)),
+	get: (url, expectedStatusCode) =>
+		axios
+			.get(url)
+			.then(response => handleResponse(response, expectedStatusCode))
+			.catch(error => handleError(error, expectedStatusCode)),
+	post: (url, data, expectedStatusCode) =>
+		axios
+			.post(url, data)
+			.then(response => handleResponse(response, expectedStatusCode))
+			.catch(error => handleError(error, expectedStatusCode)),
+	put: (url, data, expectedStatusCode) =>
+		axios
+			.put(url, data)
+			.then(response => handleResponse(response, expectedStatusCode))
+			.catch(error => handleError(error, expectedStatusCode)),
+	del: (url, expectedStatusCode) =>
+		axios
+			.delete(url)
+			.then(response => handleResponse(response, expectedStatusCode))
+			.catch(error => handleError(error, expectedStatusCode)),
+	request: (config, expectedStatusCode) =>
+		axios(config)
+			.then(response => handleResponse(response, expectedStatusCode))
+			.catch(error => handleError(error, expectedStatusCode)),
 };
 
 module.exports = {

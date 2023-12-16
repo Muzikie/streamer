@@ -41,7 +41,7 @@ Every microservice is independently managed and placed in a separate directory u
 - The default installation method is based on Docker.
 - Some token conversion rates in the Market service require their API keys.
 - For the events information to be always available in the API, please set `system.keepEventsForHeights: -1` in the Lisk application node config.
-- It is highly recommended to *NOT* enable any plugins on the Lisk application node when running Lisk Service against it. Enabling them can cause performance issues in Lisk Service.
+- It is highly recommended to _NOT_ enable any plugins on the Lisk application node when running Lisk Service against it. Enabling them can cause performance issues in Lisk Service.
 
 ## Architecture Diagram
 
@@ -95,7 +95,7 @@ cd lisk-service
 If you wish to build the local version of Lisk Service execute the following command below:
 
 ```bash
-make build
+make build-images
 ```
 
 > This step is only necessary if you wish to build a custom or pre-release version of Lisk Service that does not have a pre-built Docker image published on the Docker Hub. The installation script chooses the last available stable version on Docker Hub, **unless** there is no local image. If you are unsure about any local builds, use the `make clean` command to remove all locally built docker images.
@@ -106,8 +106,8 @@ The following system requirements are recommended to start Lisk Service:
 
 #### Memory
 
-- Machines with a minimum of 8 GB RAM for the Mainnet.
-- Machines with a minimum of 8 GB RAM for the Testnet.
+- Machines with a minimum of 16 GB RAM for the Mainnet.
+- Machines with a minimum of 16 GB RAM for the Testnet.
 
 #### Storage
 

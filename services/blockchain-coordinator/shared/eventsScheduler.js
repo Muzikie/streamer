@@ -13,40 +13,46 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
-const { Signals } = require('lisk-service-framework');
+const { Logger, Signals } = require('lisk-service-framework');
 
 const MessageQueue = require('bull');
 const config = require('../config');
 
-const eventsQueue = new MessageQueue(
-	config.queue.event.name,
-	config.endpoints.messageQueue,
-	{ defaultJobOptions: config.queue.defaultJobOptions },
-);
+const logger = Logger();
 
-const scheduleUpdatesOnNewBlock = async (payload) => {
-	const { blockHeader } = payload;
-	await eventsQueue.add({ blockHeader, isNewBlock: true });
+const eventMessageQueue = new MessageQueue(config.queue.event.name, config.endpoints.messageQueue, {
+	defaultJobOptions: config.queue.defaultJobOptions,
+});
+
+const scheduleUpdatesOnNewBlock = async block => {
+	const { header } = block;
+	logger.debug(`Scheduling indexing new block at height: ${header.height}.`);
+	await eventMessageQueue.add({ block, isNewBlock: true });
+	logger.info(`Finished scheduling indexing new block at height: ${header.height}.`);
 };
 
-const scheduleDeleteBlock = async (payload) => {
-	const { blockHeader } = payload;
-	await eventsQueue.add({ blockHeader, isDeleteBlock: true });
+const scheduleDeleteBlock = async payload => {
+	const { header } = payload;
+	logger.debug(`Scheduling updates for the delete block at height: ${header.height}.`);
+	await eventMessageQueue.add({ header, isDeleteBlock: true });
+	logger.info(`Finished scheduling updates for the delete block at height: ${header.height}.`);
 };
 
-const scheduleUpdatesOnNewRound = async (payload) => {
-	const { nextValidators: validators } = payload;
-	await eventsQueue.add({ validators, isNewRound: true });
+const scheduleUpdatesOnNewRound = async payload => {
+	const { validators } = payload;
+	logger.debug('Scheduling updates on new round.');
+	await eventMessageQueue.add({ validators, isNewRound: true });
+	logger.debug('Finished scheduling updates on new round}.');
 };
 
 const initEventsScheduler = async () => {
-	const newBlockListener = async (payload) => scheduleUpdatesOnNewBlock(payload);
+	const newBlockListener = async payload => scheduleUpdatesOnNewBlock(payload);
 	Signals.get('newBlock').add(newBlockListener);
 
-	const deleteBlockListener = async (payload) => scheduleDeleteBlock(payload);
+	const deleteBlockListener = async payload => scheduleDeleteBlock(payload);
 	Signals.get('deleteBlock').add(deleteBlockListener);
 
-	const newRoundListener = async (payload) => scheduleUpdatesOnNewRound(payload);
+	const newRoundListener = async payload => scheduleUpdatesOnNewRound(payload);
 	Signals.get('newRound').add(newRoundListener);
 };
 

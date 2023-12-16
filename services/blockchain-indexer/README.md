@@ -1,11 +1,11 @@
 # Lisk Service Blockchain Indexer
 
-The Blockchain Indexer service, in the *indexing* mode, is primarily responsible to index all the blockchain information, based on the scheduled jobs by the Blockchain Coordinator.
-In the *data service* mode, it serves user request queries made via the RESTful API or WebSocket-based RPC calls.
+The Blockchain Indexer service, in the _indexing_ mode, is primarily responsible to index all the blockchain information, based on the scheduled jobs by the Blockchain Coordinator.
+In the _data service_ mode, it serves user request queries made via the RESTful API or WebSocket-based RPC calls.
 It can run both the indexer and data service modes simultaneously, and is enabled by default.
 
 This microservice encapsulates most of the business logic for the Lisk Service API. By default, it only implements the business logic for all the available commands from the Lisk SDK.
-The *applyTransaction* and *revertTransaction* hooks implement the indexing logic and are specific to each available command. The *applyTransaction* is triggered when processing an included transaction within a new block while (usually) indexing the `chain_newBlock` event. The *revertTransaction* hook is triggered when processing an included transaction within a deleted block while processing the `chain_deleteBlock` event. All the implemented hooks are grouped [here](./shared/indexer/transactionProcessor). Command specific hooks are always implemented within a single file and are grouped by the module. When interested in extending Lisk Service and implementing hooks for your custom modules, please check the [Extending Indexer](#extending-indexer) section below.
+The _applyTransaction_ and _revertTransaction_ hooks implement the indexing logic and are specific to each available command. The _applyTransaction_ is triggered when processing an included transaction within a new block while (usually) indexing the `chain_newBlock` event. The _revertTransaction_ hook is triggered when processing an included transaction within a deleted block while processing the `chain_deleteBlock` event. All the implemented hooks are grouped [here](./shared/indexer/transactionProcessor). Command specific hooks are always implemented within a single file and are grouped by the module. When interested in extending Lisk Service and implementing hooks for your custom modules, please check the [Extending Indexer](#extending-indexer) section below.
 
 > Note that this installation instruction is required only for development activities. For a regular Lisk Service user the official [documentation](https://lisk.com/documentation/lisk-service/) is sufficient to run an instance. The global readme file present in the root directory describes running all the microservices at once.
 
@@ -40,10 +40,13 @@ A list of the most commonly used environment variables is presented below:
 - `ENABLE_INDEXING_MODE`: Boolean flag to enable the Data Indexing mode.
 - `ENABLE_PERSIST_EVENTS`: Boolean flag to permanently maintain the events in the MySQL database.
 - `ENABLE_APPLY_SNAPSHOT`: Boolean flag to enable initialization of the index with the Lisk Service DB snapshot.
+- `DURABILITY_VERIFY_FREQUENCY`: Frequency in milliseconds to verify if a block is indexed or rolled-back successfully. By default, it is set to 1.
 - `INDEX_SNAPSHOT_URL`: URL from where the Lisk Service DB snapshot will be downloaded.
 - `ENABLE_SNAPSHOT_ALLOW_INSECURE_HTTP`: Boolean flag to enable downloading snapshot from an (unsecured) HTTP URL.
 - `LISK_STATIC`: URL of Lisk static assets.
 - `SERVICE_INDEXER_CACHE_REDIS`: URL of the cache storage (Redis).
+- `ACCOUNT_BALANCE_UPDATE_BATCH_SIZE`: Number of accounts for which the balance index is updated at a time. By default, it is set to 1000.
+- `INDEX_BLOCKS_QUEUE_SCHEDULED_JOB_MAX_COUNT`: Maximum number of jobs (in active and waiting state) allowed in the block indexing queue. By default, it is set to 100000.
 - `JOB_INTERVAL_DELETE_SERIALIZED_EVENTS`: Job run interval to delete serialized events. By default, it is set to 0.
 - `JOB_SCHEDULE_DELETE_SERIALIZED_EVENTS`: Job run cron schedule to delete serialized events. By default, it is set to run every 5th minute (`*/5 * * * *`).
 - `JOB_INTERVAL_REFRESH_VALIDATORS`: Job run interval to refresh validators cache. By default, it is set to 0.
@@ -62,6 +65,7 @@ A list of the most commonly used environment variables is presented below:
 - `JOB_SCHEDULE_TRIGGER_ACCOUNT_UPDATES`: Job run cron schedule to trigger account updates. By default, it is set to run every 15th minute (`*/15 * * * *`).
 - `ESTIMATES_BUFFER_BYTES_LENGTH`: Transaction buffer bytes to consider when estimating the transaction fees. By default, it is set to 0.
 - `MAINCHAIN_SERVICE_URL`: Mainchain service URL for custom deployments.
+- `INVOKE_ALLOWED_METHODS`: List of allowed methods that can be invoked via the `/invoke` API endpoint. The list can be expressed as a CSV. To allow invocation of all endpoints, set it to `*`. To allow invocation of all the registered methods under the specified namespaces, set it similar to `legacy,chain`. To allow invocation of specific methods, set it similar to `chain_getBlocksByIDs,chain_getBlocksByHeight`.
 
 > **Note**: `interval` takes priority over `schedule` and must be greater than 0 to be valid for all the moleculer job configurations.
 
@@ -84,16 +88,16 @@ Press `Ctrl+C` in the terminal to stop the process.
 
 ## Extending Indexer
 
-The *applyTransaction* and *revertTransaction* hooks are arranged per command in a file and are grouped by the module that they belong to.<br />
+The _applyTransaction_ and _revertTransaction_ hooks are arranged per command in a file and are grouped by the module that they belong to.<br />
 Existing hooks are located in the [shared/indexer/transactionProcessor](./shared/indexer/transactionProcessor) directory.
 
 When implementing the custom hooks please adhere to the following:
 
 - Create a sub-directory with the module name. For example: [token](./shared/indexer/transactionProcessor/token).
 - Add `index.js` under the above directory.
-  - Export a `MODULE_NAME` variable. The value must match the *module* name as registered within the application.
+  - Export a `MODULE_NAME` variable. The value must match the _module_ name as registered within the application.
 - Create a file specific to the command for which you need to implement the custom hooks. For example: [transfer](./shared/indexer/transactionProcessor/token/transfer.js).
-  - Export a `COMMAND_NAME` variable. The value must match the *command* name as registered within the application.
+  - Export a `COMMAND_NAME` variable. The value must match the _command_ name as registered within the application.
   - Implement the custom logic for the `applyTransaction` and `revertTransaction` hooks.
   - Export the hooks.
 - To aid your development, please use the sample templates [here](./shared/indexer/transactionProcessor/0_moduleName).

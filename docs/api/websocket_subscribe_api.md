@@ -31,6 +31,8 @@ Lisk Service leverages the two-way communication approach by utilizing the WebSo
     - [Payload](#payload-6)
   - [`update.metadata`](#updatemetadata)
     - [Payload](#payload-7)
+  - [`update.index.status`](#updateindexstatus)
+    - [Payload](#payload-8)
 
 ## Access paths and compatibility
 
@@ -96,6 +98,7 @@ Updates about a newly generated block.
       "transactionRoot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "assetsRoot": "6e904b2f678eb3b6c3042acb188a607d903d441d61508d047fe36b3c982995c8",
       "stateRoot": "95d9b1773b78034b8df9ac741c903b881da761d8ba002a939de28a4b86982c04",
+      "eventRoot": "7dee8ae1899582aabb0c4b967ceda6874329dba57b5eb23d7c62890917a55cbd",
       "maxHeightGenerated": 559421,
       "maxHeightPrevoted": 559434,
       "validatorsHash": "ad0076aa444f6cda608bb163c3bd77d9bf172f1d2803d53095bc0f277db6bcb3",
@@ -146,6 +149,7 @@ Updates about a deleted block. This usually happens when the chain switches fork
       "transactionRoot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "assetsRoot": "6e904b2f678eb3b6c3042acb188a607d903d441d61508d047fe36b3c982995c8",
       "stateRoot": "95d9b1773b78034b8df9ac741c903b881da761d8ba002a939de28a4b86982c04",
+      "eventRoot": "7dee8ae1899582aabb0c4b967ceda6874329dba57b5eb23d7c62890917a55cbd",
       "maxHeightGenerated": 559421,
       "maxHeightPrevoted": 559434,
       "validatorsHash": "ad0076aa444f6cda608bb163c3bd77d9bf172f1d2803d53095bc0f277db6bcb3",
@@ -364,5 +368,28 @@ Updates about recent metadata changes.
   "mainnet": ["Lisk", "Colecti"],
   "testnet": ["Lisk", "Enevti"],
   "betanet": ["Lisk"],
+}
+```
+
+## `update.index.status`
+
+Updates about index status changes.
+
+### Payload
+
+```jsonc
+{
+  "data": {
+    "genesisHeight": 0,
+    "lastBlockHeight": 18779,
+    "lastIndexedBlockHeight": 13955,
+    "chainLength": 18780,
+    "numBlocksIndexed": 13956,
+    "percentageIndexed": 74.31,
+    "isIndexingInProgress": true
+  },
+  "meta": {
+    "lastUpdate": 1700848735
+  }
 }
 ```

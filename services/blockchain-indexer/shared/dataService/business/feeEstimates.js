@@ -13,6 +13,8 @@
  * Removal or modification of this copyright notice is prohibited.
  *
  */
+const logger = require('lisk-service-framework').Logger();
+
 const { requestFeeEstimator, requestConnector } = require('../../utils/request');
 
 let feeEstimates = {
@@ -22,7 +24,7 @@ let feeEstimates = {
 	minFeePerByte: 1000,
 };
 
-const setFeeEstimates = async (payload) => {
+const setFeeEstimates = async payload => {
 	if (payload && Object.keys(payload).length > 0 && payload.status !== 'SERVICE_UNAVAILABLE') {
 		feeEstimates = payload;
 	}
@@ -31,8 +33,12 @@ const setFeeEstimates = async (payload) => {
 const getFeeEstimates = () => feeEstimates;
 
 const getFeeEstimatesFromFeeEstimator = async () => {
-	const response = await requestFeeEstimator('estimates');
-	setFeeEstimates(response);
+	try {
+		const response = await requestFeeEstimator('estimates');
+		setFeeEstimates(response);
+	} catch (err) {
+		logger.warn(`Failed to fetch fee estimates from fee-estimator. Error:${err.message}`);
+	}
 
 	return getFeeEstimates();
 };
@@ -47,4 +53,7 @@ module.exports = {
 	setFeeEstimates,
 	getFeeEstimates,
 	getFeeEstimatesFromFeeEstimator,
+
+	// for testing
+	defaultFeeEstimates: feeEstimates,
 };
